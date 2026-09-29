@@ -1,0 +1,6 @@
+Weather_Variable,Correlation_with_Productivity,Observations
+Rainfall_mm_day,-0.1202047756969062,6552
+Temperature_C,0.2032773763872195,6552
+Relative_Humidity_pct,0.01614024991440023,6552
+Wind_Speed_m_s,-0.13194468752361982,6552
+Solar_Radiation_MJ_m2_day,-0.055693656947819484,6552

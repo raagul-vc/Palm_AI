@@ -1,0 +1,12 @@
+Dataset,Status,Details
+FFB + plantation,AVAILABLE,"6,552 monthly records / 42 blocks / 2012-2024"
+Leaf nutrients,AVAILABLE,Source-linked sampling events; unavailable periods remain blank
+Soil nutrients,AVAILABLE,Source-linked composite sampling events; unavailable periods remain blank
+NASA weather,AVAILABLE,156 monthly records; integrated by Year + Month_Number
+DRIS reference,AVAILABLE,"3,700 rows; kept as reference because no common Block_ID/Year key exists"
+Harvesting,NOT PROVIDED,Needs block + harvest date/round + harvested FFB
+Field inspection,NOT PROVIDED,Needs block + date + issue + severity
+Drainage / waterlogging,NOT PROVIDED,Needs block + date + drainage/waterlogging status
+Fertilizer application,NOT PROVIDED,Needs block + date + fertilizer type + N/P/K quantities
+FFB price,NOT PROVIDED,Needs month/date + FFB price per tonne
+Satellite / multispectral,NOT PROVIDED,Needs coordinates/polygon + NDVI/NDMI/LST or equivalent

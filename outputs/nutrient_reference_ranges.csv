@@ -1,0 +1,7 @@
+Nutrient,Low_Reference_Q25,High_Reference_Q75,Threshold_Method
+N_pct,2.4197963328,2.8932929688861644,linear interpolation on distinct available block/sample-year observations
+P_pct,0.1468552488217008,0.162608336591704,linear interpolation on distinct available block/sample-year observations
+K_pct,0.8156907136404363,1.1622681404906814,linear interpolation on distinct available block/sample-year observations
+Ca_pct,0.5287018823689871,0.7248269256428054,linear interpolation on distinct available block/sample-year observations
+Mg_pct,0.2023579631175186,0.2843787530071866,linear interpolation on distinct available block/sample-year observations
+B_ppm,10.0,15.0,linear interpolation on distinct available block/sample-year observations
