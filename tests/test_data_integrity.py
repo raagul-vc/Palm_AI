@@ -1,5 +1,6 @@
 ﻿import json
 import math
+import re
 import unittest
 from pathlib import Path
 
@@ -26,6 +27,25 @@ class PalmDataIntegrityTests(unittest.TestCase):
         self.assertEqual(body["soil_sample_count"], 8)
         self.assertEqual(body["period_start"], 2012)
         self.assertEqual(body["period_end"], 2024)
+
+    def test_flask_serves_built_frontend_and_spa_fallback(self):
+        root = self.client.get("/")
+        self.assertEqual(root.status_code, 200)
+        html = root.get_data(as_text=True)
+        self.assertIn("Palm AI", html)
+        root.close()
+        script_match = re.search(r'<script[^>]+src="([^"]+\.js)"', html)
+        self.assertIsNotNone(script_match)
+        script_path = script_match.group(1)
+        script = self.client.get(script_path)
+        self.assertEqual(script.status_code, 200)
+        self.assertIn("javascript", script.content_type)
+        script.close()
+        deep_url = self.client.get("/productivity/yield-forecast")
+        self.assertEqual(deep_url.status_code, 200)
+        self.assertIn('id="root"', deep_url.get_data(as_text=True))
+        deep_url.close()
+        self.assertEqual(self.client.get("/api/not-a-route").status_code, 404)
 
     def test_nutrient_api_has_all_blocks_and_null_boron(self):
         response = self.client.get("/api/nutrients")

@@ -12,7 +12,7 @@ import {
 } from "recharts";
 import "./App.css";
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || "/api").replace(/\/+$/, "");
+const API_BASE = "/api";
 
 const sections = [
   { id: "overview", label: "Overview", icon: LayoutDashboard, title: "Risk and Productivity Overview", description: "Yield, nutrients, DRIS, weather and block health from project data." },

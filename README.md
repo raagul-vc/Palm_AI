@@ -7,7 +7,7 @@ Palm AI is a plantation intelligence dashboard built around the project’s inte
 - `data/` contains the master dataset, NASA POWER monthly weather, DRIS references, and field input data.
 - `backend/` contains Flask routes and analysis/validation scripts.
 - `requirements.txt` pins the Python runtime, model, and production WSGI server dependencies.
-- `models/yield_forecast_model.pkl` is the saved yield model used by the forecast route.
+- `models/yield_forecast_model.pkl` is preserved for model and validation workflows; the forecast API serves the saved output cache.
 - `outputs/` contains block diagnostics, risk outputs, model predictions, and time-based validation results.
 - `frontend/` contains the React and Vite application.
 
@@ -49,7 +49,7 @@ Harvest reporting uses observed monthly `FFB_Production_t` from the master datas
 
 ## API routes
 
-The Flask API runs at `http://127.0.0.1:5000` and provides:
+The Flask API is available on the same origin under `/api` (local default: `http://127.0.0.1:5000`) and provides:
 
 - `GET /api/health`
 - `GET /api/risk`
@@ -76,34 +76,38 @@ CSV-backed API results serialize missing values as JSON `null`. Missing optional
 
 ## Run locally
 
-Install the Python dependencies once from the project root:
+Install the Python dependencies from the project root and build the React app:
 
 ```powershell
-.\venv\Scripts\python.exe -m pip install -r requirements.txt
-```
-
-For local development, start Flask:
-
-```powershell
-.\venv\Scripts\python.exe backend/api.py
-```
-
-In a second PowerShell terminal:
-
-```powershell
+python -m pip install -r requirements.txt
 cd frontend
-npm run dev
+npm ci
+npm run build
+cd ..
 ```
 
-Open the URL printed by Vite, normally `http://localhost:5173` or `http://127.0.0.1:5173`. Vite proxies `/api` requests to Flask. A deployed frontend can set `VITE_API_BASE_URL` to the API base URL; the default is same-origin `/api`.
-
-For a production backend process, run Waitress from the project root instead of Flask's development server:
+Start the combined application from the project root:
 
 ```powershell
-.\venv\Scripts\python.exe -m waitress --listen=127.0.0.1:5000 backend.api:app
+python backend/api.py
 ```
 
-Put the frontend and API behind the same-origin HTTPS reverse proxy, or set `VITE_API_BASE_URL` to the API origin and set `PALM_AI_CORS_ORIGINS` to a comma-separated list of exact trusted frontend origins.
+Flask listens on `0.0.0.0` and uses `PORT` when set (otherwise port 5000). Open `http://127.0.0.1:5000`. Both the React UI and `/api/*` endpoints are served from that origin. A deep URL such as `/productivity/yield-forecast` returns the React app so browser refresh works.
+
+For frontend hot reload during development, run `python backend/api.py` in one terminal and `cd frontend; npm run dev` in another. Vite proxies `/api` to the local Flask server; production assets contain only relative `/api` requests.
+
+## Single-service Render deployment
+
+The root-level `render.yaml` defines one Docker-based Render Web Service with the repository root as its context. Its multi-stage `Dockerfile` runs `npm ci` and `npm run build` for Vite, installs the pinned Python dependencies, then copies the existing backend, datasets, saved model, generated outputs, and `frontend/dist` into the runtime image. Flask serves the SPA and its static assets; Gunicorn serves Flask on `0.0.0.0:$PORT`.
+
+- Render root directory: `.` (repository root).
+- Build: Render builds `Dockerfile`; the frontend build step is `npm ci && npm run build` in `frontend/`, followed by `pip install -r requirements.txt` in the Python image.
+- Start: `gunicorn backend.api:app --bind 0.0.0.0:$PORT --workers ${WEB_CONCURRENCY:-2}` (configured as the Docker service command; port defaults to 10000 for local container runs).
+- Environment: Render supplies `PORT`; `PYTHONUNBUFFERED=1` and `WEB_CONCURRENCY=2` are set in `render.yaml`. No API base URL or secret is required. `PALM_AI_CORS_ORIGINS` is only needed if a separate cross-origin client is intentionally used.
+
+Adding this Blueprint and Dockerfile does not remove or edit any separately configured Render services. Do not sync/deploy this service until you choose to create the combined service.
+
+To smoke-test the combined local service after building, open the root URL, refresh a deep path, then check `/api/health` and the other endpoints listed above. Run `python -m unittest tests.test_data_integrity -v` for data/API checks. For the Docker production image, build with `docker build -t palm-ai .` and run with `docker run --rm -p 10000:10000 -e PORT=10000 palm-ai`.
 
 ## Data coverage and current limitations
 

@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, make_response, request
+from flask import Flask, abort, jsonify, make_response, request, send_from_directory
 from flask_cors import CORS
 import pandas as pd
 import numpy as np
@@ -6,14 +6,30 @@ from functools import lru_cache
 from pathlib import Path
 import os
 
-app = Flask(__name__)
+BASE_DIR = Path(__file__).resolve().parent.parent
+FRONTEND_DIST_DIR = BASE_DIR / "frontend" / "dist"
+
+app = Flask(__name__, static_folder=None)
 cors_origins = [origin.strip() for origin in os.environ.get("PALM_AI_CORS_ORIGINS", "").split(",") if origin.strip()]
 if cors_origins:
     CORS(app, origins=cors_origins, expose_headers=["X-Data-Availability", "X-Data-Reason"])
 
-BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
 OUTPUT_DIR = BASE_DIR / "outputs"
+
+
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
+def serve_frontend(path):
+    """Serve the built React app and fall back to it for client-side routes."""
+    if path == "api" or path.startswith("api/"):
+        abort(404)
+    if not FRONTEND_DIST_DIR.is_dir():
+        return "Frontend build not found. Build it with npm --prefix frontend run build.", 503
+    candidate = FRONTEND_DIST_DIR / path
+    if path and candidate.is_file():
+        return send_from_directory(FRONTEND_DIST_DIR, path)
+    return send_from_directory(FRONTEND_DIST_DIR, "index.html")
 
 
 def load_csv(filename):
@@ -458,7 +474,7 @@ def monthly_weather_data():
 
 if __name__ == "__main__":
     app.run(
-        host=os.environ.get("PALM_AI_HOST", "127.0.0.1"),
+        host=os.environ.get("HOST", "0.0.0.0"),
         port=int(os.environ.get("PORT", "5000")),
         debug=False,
     )
