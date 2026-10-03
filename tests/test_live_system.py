@@ -5,7 +5,7 @@ import os
 API_BASE = os.environ.get('PALM_AI_TEST_API_BASE', 'http://127.0.0.1:5000').rstrip('/')
 FRONTEND_URL = os.environ.get('PALM_AI_TEST_FRONTEND_URL', 'http://localhost:5173/')
 
-def test_endpoint(url):
+def probe_endpoint(url):
     try:
         req = urllib.request.Request(url)
         with urllib.request.urlopen(req) as resp:
@@ -15,7 +15,7 @@ def test_endpoint(url):
         return 'ERROR', str(e), None
 
 print("=== 1. FRONTEND SERVER ===")
-status, size, ct = test_endpoint(FRONTEND_URL)
+status, size, ct = probe_endpoint(FRONTEND_URL)
 print(f"Vite ({FRONTEND_URL}): Status {status}, Size {size} bytes, Type {ct}")
 
 print("\n=== 2. ALL 20 BACKEND ENDPOINTS ===")
@@ -44,7 +44,7 @@ endpoints = [
 
 all_pass = True
 for ep in endpoints:
-    st, sz, ct = test_endpoint(API_BASE + ep)
+    st, sz, ct = probe_endpoint(API_BASE + ep)
     pass_flag = (st == 200 and sz > 0)
     if not pass_flag:
         all_pass = False
