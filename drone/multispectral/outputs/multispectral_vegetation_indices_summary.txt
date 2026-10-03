@@ -1,0 +1,53 @@
+================================================================================
+           PALM_AI: MULTISPECTRAL VEGETATION INDICES VALIDATION REPORT          
+================================================================================
+
+STATUS:                 CALCULATION_AND_VALIDATION_COMPLETE
+DATASET:                MSUAV500K Multispectral Benchmark (Zenodo DOI: 10.5281/zenodo.16743974)
+SENSOR:                 MicaSense Altum UAV Multispectral
+TOTAL TILES ANALYZED:   34 (512x512 pixels each)
+TOTAL PIXELS EVALUATED: 8,912,896
+ALL TILES PASSED:       True
+
+VERIFIED BAND ASSIGNMENT & FORMULAS
+------------------------------------
+  - Band 0 (Blue):      475 nm (Atmospheric reference)
+  - Band 1 (Green):     560 nm (Chlorophyll reflection peak)
+  - Band 2 (Red):       668 nm (Chlorophyll absorption dip)
+  - Band 3 (Red Edge):  717 nm (Canopy nitrogen/chlorophyll transition)
+  - Band 4 (NIR):       842 nm (Mesophyll cellular reflectance)
+
+  * NDVI = (NIR - Red) / (NIR + Red)           = (Band_4 - Band_2) / (Band_4 + Band_2)
+  * NDRE = (NIR - RedEdge) / (NIR + RedEdge)   = (Band_4 - Band_3) / (Band_4 + Band_3)
+
+DATASET-WIDE AGGREGATE STATISTICAL METRICS
+-------------------------------------------
+  NDVI [Normalized Difference Vegetation Index]:
+    - Mean of Means:    0.7958 +/- 0.3581
+    - Median of Medians:0.9216
+    - Empirical Range:  [-1.0000, 1.0000]
+    - Valid [-1, +1]:   True
+
+  NDRE [Normalized Difference Red Edge Index]:
+    - Mean of Means:    0.4792 +/- 0.1655
+    - Median of Medians:0.5094
+    - Empirical Range:  [-1.0000, 1.0000]
+    - Valid [-1, +1]:   True
+
+CANOPY HEALTH TIER BREAKDOWN (DATASET AVERAGE)
+----------------------------------------------
+  * High Health Canopy (NDVI >= 0.6):        91.14%
+  * Moderate Health Canopy (0.4 <= NDVI < 0.6): 2.30%
+  * Low Health / Stressed (0.2 <= NDVI < 0.4): 0.23%
+  * Non-vegetation / Soil / Shadow (NDVI < 0.2): 6.33%
+
+SCIENTIFIC VALIDATION FINDINGS
+------------------------------
+1. Theoretical bounds check: All pixel values in all 34 tiles strictly reside within [-1.0, +1.0].
+2. Spectral signature consistency: As expected in healthy dense tree canopy,
+   Mean NDVI (0.796) > Mean NDRE (0.479) > 0.0.
+   Red Edge demonstrates intermediate reflectance between Red absorption and NIR plateau.
+3. Radiometric depth: 8-bit calibrated surface reflectance rasters correctly converted to float32
+   prior to index computation, with zero division errors or NaN artifacts.
+4. Data Integrity: No synthetic bands fabricated; MOPAD RGB images remained excluded.
+================================================================================

@@ -1,0 +1,87 @@
+{
+  "status": "COMPLETED",
+  "task": "RGB UAV object detection",
+  "model": "YOLO11n pretrained (yolo11n.pt)",
+  "ultralytics_version": "8.4.166",
+  "torch_version": "2.13.0+cu126",
+  "device": "NVIDIA GeForce RTX 3050 Laptop GPU",
+  "epochs_requested": 50,
+  "epochs_completed": 50,
+  "patience": 15,
+  "image_size": 1024,
+  "batch_size": 2,
+  "seed": 42,
+  "training_time_seconds": 6063.21,
+  "training_time_minutes": 101.0535,
+  "dataset_yaml": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\dataset_yolo\\data.yaml",
+  "validation_images": 500,
+  "validation_objects": 32846,
+  "precision": 0.959810468963059,
+  "recall": 0.9898831869672204,
+  "map50": 0.9799088598197855,
+  "map50_95": 0.888404005026808,
+  "per_class": {
+    "Dead": {
+      "precision": 0.9927565756785183,
+      "recall": 1.0,
+      "map50": 0.995,
+      "map50_95": 0.8862300861774124
+    },
+    "Healthy": {
+      "precision": 0.9958848658031152,
+      "recall": 0.9919850098384987,
+      "map50": 0.9948507027969534,
+      "map50_95": 0.9492337299886184
+    },
+    "Grass": {
+      "precision": 0.8318656375984209,
+      "recall": 0.9894736842105263,
+      "map50": 0.9211447393870308,
+      "map50_95": 0.7574539019446787
+    },
+    "Small": {
+      "precision": 0.9947475882610245,
+      "recall": 0.9825557809330628,
+      "map50": 0.994082889867975,
+      "map50_95": 0.9194452735384295
+    },
+    "Yellow": {
+      "precision": 0.9837976774742166,
+      "recall": 0.9854014598540146,
+      "map50": 0.9944659670469681,
+      "map50_95": 0.9296570334849011
+    }
+  },
+  "results_dict": {
+    "metrics/precision(B)": 0.959810468963059,
+    "metrics/recall(B)": 0.9898831869672204,
+    "metrics/mAP50(B)": 0.9799088598197855,
+    "metrics/mAP50-95(B)": 0.888404005026808,
+    "fitness": 0.888404005026808
+  },
+  "best_checkpoint": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\models\\palm_yolo_best.pt",
+  "training_checkpoint": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\runs\\yolo11n_site2_50e_seed42\\weights\\best.pt",
+  "training_run_dir": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_training\\yolo11n_site2_50e_seed42",
+  "evaluation_dir": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_evaluation\\best_1024_val",
+  "confusion_matrix": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_evaluation\\best_1024_val\\confusion_matrix.png",
+  "confusion_matrix_normalized": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_evaluation\\best_1024_val\\confusion_matrix_normalized.png",
+  "curves": {
+    "PR_curve": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_evaluation\\best_1024_val\\BoxPR_curve.png",
+    "F1_curve": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_evaluation\\best_1024_val\\BoxF1_curve.png",
+    "P_curve": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_evaluation\\best_1024_val\\BoxP_curve.png",
+    "R_curve": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_evaluation\\best_1024_val\\BoxR_curve.png"
+  },
+  "prediction_samples": [
+    "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_predictions\\val_samples\\52000_20000_112_3831.jpg",
+    "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_predictions\\val_samples\\44000_16000_217_687.jpg",
+    "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_predictions\\val_samples\\44000_16000_1283_1474.jpg",
+    "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_predictions\\val_samples\\52000_20000_237_2249.jpg",
+    "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_predictions\\val_samples\\44000_16000_975_3947.jpg",
+    "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_predictions\\val_samples\\44000_16000_680_261.jpg",
+    "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_predictions\\val_samples\\44000_16000_3911_3052.jpg",
+    "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_predictions\\val_samples\\44000_16000_2540_3571.jpg",
+    "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_predictions\\val_samples\\52000_20000_2339_2488.jpg",
+    "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_predictions\\val_samples\\44000_16000_2015_3679.jpg"
+  ],
+  "prediction_dir": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_predictions\\val_samples"
+}

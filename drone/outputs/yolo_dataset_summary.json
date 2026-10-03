@@ -1,0 +1,78 @@
+{
+  "overall_status": "PASS",
+  "class_mapping": {
+    "0": "Dead",
+    "1": "Healthy",
+    "2": "Grass",
+    "3": "Small",
+    "4": "Yellow"
+  },
+  "splits": {
+    "train": {
+      "split": "train",
+      "image_count": 1803,
+      "label_file_count": 1803,
+      "object_count": 118740,
+      "class_distribution": {
+        "Dead": 234,
+        "Healthy": 89958,
+        "Grass": 431,
+        "Small": 26644,
+        "Yellow": 1473
+      },
+      "expected_image_count": 1803,
+      "expected_object_count": 118740,
+      "missing_label_count": 0,
+      "missing_labels": [],
+      "orphan_label_count": 0,
+      "orphan_labels": [],
+      "invalid_label_count": 0,
+      "malformed_label_line_count": 0,
+      "invalid_labels": [],
+      "duplicate_image_stem_count": 0,
+      "conversion_mismatch_count": 0,
+      "conversion_mismatches": [],
+      "image_dimensions": {
+        "1024x1024": 1803
+      },
+      "wrong_dimension_count": 0,
+      "wrong_dimensions": [],
+      "unreadable_image_count": 0,
+      "unreadable_images": [],
+      "status": "PASS"
+    },
+    "val": {
+      "split": "val",
+      "image_count": 500,
+      "label_file_count": 500,
+      "object_count": 32846,
+      "class_distribution": {
+        "Dead": 61,
+        "Healthy": 24884,
+        "Grass": 95,
+        "Small": 7395,
+        "Yellow": 411
+      },
+      "expected_image_count": 500,
+      "expected_object_count": 32846,
+      "missing_label_count": 0,
+      "missing_labels": [],
+      "orphan_label_count": 0,
+      "orphan_labels": [],
+      "invalid_label_count": 0,
+      "malformed_label_line_count": 0,
+      "invalid_labels": [],
+      "duplicate_image_stem_count": 0,
+      "conversion_mismatch_count": 0,
+      "conversion_mismatches": [],
+      "image_dimensions": {
+        "1024x1024": 500
+      },
+      "wrong_dimension_count": 0,
+      "wrong_dimensions": [],
+      "unreadable_image_count": 0,
+      "unreadable_images": [],
+      "status": "PASS"
+    }
+  }
+}

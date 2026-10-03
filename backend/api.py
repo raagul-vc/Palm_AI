@@ -1,5 +1,6 @@
 from flask import Flask, abort, jsonify, make_response, request, send_from_directory
 from flask_cors import CORS
+import json
 import pandas as pd
 import numpy as np
 from functools import lru_cache
@@ -103,6 +104,116 @@ def risk_data():
         return unavailable_records(f"Optional output {filename} is not present")
 
     return jsonify(dataframe_records(filter_block(df)))
+
+
+def load_canonical_risk():
+    cache_file = OUTPUT_DIR / "canonical_block_risk.json"
+    if not cache_file.exists():
+        try:
+            from backend.canonical_risk_engine import generate_and_save_canonical_risk
+            return generate_and_save_canonical_risk()
+        except Exception as exc:
+            app.logger.warning("Failed to generate canonical risk: %s", exc)
+            return {}
+    try:
+        with open(cache_file, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as exc:
+        app.logger.warning("Failed to load canonical risk: %s", exc)
+        return {}
+
+
+@app.route("/api/risk/summary")
+def risk_summary():
+    canonical = load_canonical_risk()
+    if not canonical:
+        return unavailable_object({}, "Canonical risk data unavailable")
+
+    scores = [b["overall_risk_score"] for b in canonical.values() if b.get("overall_risk_score") is not None]
+    levels = [b.get("risk_level") for b in canonical.values()]
+    prod_risks = [b["risk_components"]["production_risk"] for b in canonical.values() if b["risk_components"].get("production_risk") is not None]
+    nut_risks = [b["risk_components"]["nutrient_risk"] for b in canonical.values() if b["risk_components"].get("nutrient_risk") is not None]
+    dris_risks = [b["risk_components"]["dris_risk"] for b in canonical.values() if b["risk_components"].get("dris_risk") is not None]
+
+    total = len(canonical)
+    high_cnt = levels.count("HIGH")
+    med_cnt = levels.count("MEDIUM")
+    low_cnt = levels.count("LOW")
+
+    dris_obs_count = sum(1 for b in canonical.values() if b["agronomic_evidence"]["dris_indicators"]["status"] == "observed")
+    soil_obs_count = sum(1 for b in canonical.values() if b["agronomic_evidence"]["soil_indicators"]["status"] == "observed")
+
+    summary_payload = {
+        "total_blocks": total,
+        "year": 2024,
+        "score_statistics": {
+            "mean": round(float(np.mean(scores)), 2) if scores else 0.0,
+            "median": round(float(np.median(scores)), 2) if scores else 0.0,
+            "min": round(float(np.min(scores)), 2) if scores else 0.0,
+            "max": round(float(np.max(scores)), 2) if scores else 0.0,
+        },
+        "risk_level_counts": {
+            "HIGH": high_cnt,
+            "MEDIUM": med_cnt,
+            "LOW": low_cnt,
+        },
+        "risk_level_percentages": {
+            "HIGH": round(high_cnt / total * 100, 1) if total else 0.0,
+            "MEDIUM": round(med_cnt / total * 100, 1) if total else 0.0,
+            "LOW": round(low_cnt / total * 100, 1) if total else 0.0,
+        },
+        "component_averages": {
+            "production_risk_mean": round(float(np.mean(prod_risks)), 1) if prod_risks else None,
+            "nutrient_risk_mean": round(float(np.mean(nut_risks)), 1) if nut_risks else None,
+            "dris_risk_mean": round(float(np.mean(dris_risks)), 1) if dris_risks else None,
+        },
+        "evidence_coverage": {
+            "palm_agronomic": f"{total} / {total} blocks (100% available)",
+            "rgb_drone": f"0 / {total} blocks (unmapped - MOPAD Site 2 independent module)",
+            "multispectral": f"0 / {total} blocks (unmapped - MSUAV500K independent module)",
+            "leaf_nutrients_observed": f"{total} / {total} blocks",
+            "dris_observed": f"{dris_obs_count} / {total} blocks",
+            "soil_observed": f"{soil_obs_count} / {total} blocks",
+            "weather_block_discriminating": f"0 / {total} blocks (estate repetition; excluded from risk score)",
+        },
+        "blocks": [
+            {
+                "Block_ID": b["Block_ID"],
+                "Division_ID": b["Division_ID"],
+                "overall_risk_score": b["overall_risk_score"],
+                "risk_level": b["risk_level"],
+                "production_risk": b["risk_components"]["production_risk"],
+                "nutrient_risk": b["risk_components"]["nutrient_risk"],
+                "dris_risk": b["risk_components"]["dris_risk"],
+                "soil_status": b["agronomic_evidence"]["soil_indicators"]["status"],
+                "evidence_status": b["evidence_status"],
+                "recommended_action": b["recommended_action"],
+            }
+            for b in canonical.values()
+        ],
+    }
+    return jsonify(summary_payload)
+
+
+@app.route("/api/risk/<block_id>")
+def block_risk_detail(block_id):
+    canonical = load_canonical_risk()
+    norm_id = str(block_id).strip().upper()
+    if norm_id in canonical:
+        return jsonify(canonical[norm_id])
+    return jsonify({
+        "error": f"Block '{block_id}' not found in plantation records",
+        "status": 404
+    }), 404
+
+
+@app.route("/api/evidence-registry")
+def evidence_registry_data():
+    reg_file = OUTPUT_DIR / "multi_source_evidence_registry.json"
+    if not reg_file.exists():
+        return unavailable_object({}, "Evidence registry output is not present")
+    with open(reg_file, "r", encoding="utf-8") as f:
+        return jsonify(json.load(f))
 
 
 @app.route("/api/nutrients")

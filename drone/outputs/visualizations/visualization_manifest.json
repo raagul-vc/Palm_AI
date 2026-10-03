@@ -1,0 +1,47 @@
+{
+  "seed": 20260930,
+  "samples": [
+    {
+      "split": "train2017",
+      "source_filename": "52000_20000_1009_1058.jpg",
+      "image_id": 1919,
+      "annotation_count": 77,
+      "output": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\visualizations\\train2017_52000_20000_1009_1058_annotated.jpg"
+    },
+    {
+      "split": "train2017",
+      "source_filename": "44000_4000_1443_3933.jpg",
+      "image_id": 1690,
+      "annotation_count": 55,
+      "output": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\visualizations\\train2017_44000_4000_1443_3933_annotated.jpg"
+    },
+    {
+      "split": "train2017",
+      "source_filename": "44000_16000_2392_630.jpg",
+      "image_id": 2631,
+      "annotation_count": 24,
+      "output": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\visualizations\\train2017_44000_16000_2392_630_annotated.jpg"
+    },
+    {
+      "split": "val2017",
+      "source_filename": "44000_4000_806_90.jpg",
+      "image_id": 373,
+      "annotation_count": 74,
+      "output": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\visualizations\\val2017_44000_4000_806_90_annotated.jpg"
+    },
+    {
+      "split": "val2017",
+      "source_filename": "44000_4000_968_2614.jpg",
+      "image_id": 113,
+      "annotation_count": 73,
+      "output": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\visualizations\\val2017_44000_4000_968_2614_annotated.jpg"
+    },
+    {
+      "split": "val2017",
+      "source_filename": "44000_4000_2304_815.jpg",
+      "image_id": 345,
+      "annotation_count": 67,
+      "output": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\visualizations\\val2017_44000_4000_2304_815_annotated.jpg"
+    }
+  ]
+}

@@ -624,6 +624,54 @@ function RiskPage({ datasets, sourceStatus, riskCounts, tableRows, search, setSe
         Derived screening score = weighted mean of available components: yield gap score (40%), nutrient low-count / measured-count (25%; requires at least 3 of 6 measurements), and DRIS limiting-nutrient count / 5 (15% when available). Available weights are renormalized per block. Yield gap scores: &lt;5%=20, 5–&lt;10%=40, 10–&lt;20%=60, 20–&lt;30%=75, ≥30%=90. Bands: low &lt;40, medium 40–&lt;70, high ≥70. Weather is repeated estate context and excluded. This is a screening analysis, not a validated agronomic risk model. Click a block for indicators, coverage and source years.
       </p>
 
+      {/* DECOUPLED MULTI-SOURCE EVIDENCE ARCHITECTURE */}
+      <Panel className="evidence-arch-panel">
+        <PanelHeading eyebrow="THREE INDEPENDENT EVIDENCE PILLARS" title="Decoupled Multi-Source Evidence Architecture" />
+        <div className="evidence-arch-grid">
+          <div className="pillar-card pillar-palm">
+            <div className="pillar-badge-strip">
+              <span className="pillar-tag">PILLAR 1</span>
+              <span className="status-tag available">Available</span>
+            </div>
+            <h4>Palm Agronomic Risk</h4>
+            <p className="pillar-desc">Operational block-level predictive modeling source. Combines yield deviation, foliar nutrients, and DRIS ratios.</p>
+            <div className="pillar-metrics">
+              <div><span>Scope:</span> <strong>42 Blocks (100%)</strong></div>
+              <div><span>History:</span> <strong>2012–2024 (13 yrs)</strong></div>
+              <div><span>Block Mapping:</span> <strong className="text-green">Available</strong></div>
+            </div>
+          </div>
+
+          <div className="pillar-card pillar-rgb">
+            <div className="pillar-badge-strip">
+              <span className="pillar-tag">PILLAR 2</span>
+              <span className="status-tag unmapped">Unmapped</span>
+            </div>
+            <h4>RGB Drone UAV (YOLO11n)</h4>
+            <p className="pillar-desc">External visual demonstration from MOPAD Site 2. High-precision crown detection (Healthy, Dead, Yellow, Small).</p>
+            <div className="pillar-metrics">
+              <div><span>Scope:</span> <strong>500 Image Crops</strong></div>
+              <div><span>Health Score:</span> <strong>75.8% mean</strong></div>
+              <div><span>Block Mapping:</span> <strong className="text-amber">Unavailable</strong></div>
+            </div>
+          </div>
+
+          <div className="pillar-card pillar-ms">
+            <div className="pillar-badge-strip">
+              <span className="pillar-tag">PILLAR 3</span>
+              <span className="status-tag unmapped">Unmapped</span>
+            </div>
+            <h4>Multispectral UAV (Altum)</h4>
+            <p className="pillar-desc">External spectral demonstration from MSUAV500K benchmark. Pure-canopy NDVI/NDRE physiological vigour.</p>
+            <div className="pillar-metrics">
+              <div><span>Scope:</span> <strong>34 GeoTIFF Tiles</strong></div>
+              <div><span>Canopy NDVI:</span> <strong>0.886 mean</strong></div>
+              <div><span>Block Mapping:</span> <strong className="text-amber">Unavailable</strong></div>
+            </div>
+          </div>
+        </div>
+      </Panel>
+
       <div className="overview-grid risk-visuals">
         <Panel>
           <PanelHeading eyebrow="SAVED MULTI-SOURCE OUTPUT" title="Highest block risk scores" />
@@ -845,17 +893,69 @@ function DiagnosticsPage({ blocks, selectedBlock, selectedBlockId, setSelectedBl
                 <div className="meta-spec"><span>Leaf sample</span><strong>{selectedNutrients?.Leaf_Sampling_Year ? `Historical sample · ${selectedNutrients.Leaf_Sampling_Year}` : "Not available"}</strong></div>
               </div>
 
-              {/* Right Column: Saved risk interpretation */}
-              <div className="block-recom-col">
-                <h4>Saved risk interpretation</h4>
-                {selectedMultiRisk ? <>
-                  <p>{selectedMultiRisk.Recommended_Action || "No saved action text is available."}</p>
-                  <p><strong>Contributors:</strong> {selectedMultiRisk.Main_Contributing_Indicators || "Not listed"}</p>
-                  <p><strong>Yield source year:</strong> {selectedMultiRisk.Latest_Observed_Year ?? "N/A"} · <strong>Leaf sample:</strong> {selectedMultiRisk.Leaf_Sampling_Year ?? "N/A"} · <strong>DRIS sample year:</strong> {selectedMultiRisk.DRIS_Sample_Year ?? "N/A"}</p>
-                  <p><strong>Data available:</strong> nutrients {selectedMultiRisk.Available_Nutrient_Count ?? "N/A"}/6; DRIS {selectedMultiRisk.DRIS_Risk_Component == null ? "unavailable" : "available"}; weather excluded (estate-level only).</p>
-                  <p><strong>Components / effective weights:</strong> yield {formatNumber(selectedMultiRisk.Yield_Risk_Component, 0)} ({formatNumber(selectedMultiRisk.Effective_Yield_Weight_pct, 1)}%); nutrients {formatNumber(selectedMultiRisk.Nutrient_Risk_Component, 1)} ({formatNumber(selectedMultiRisk.Effective_Nutrient_Weight_pct, 1)}%); DRIS {formatNumber(selectedMultiRisk.DRIS_Risk_Component, 1)} ({formatNumber(selectedMultiRisk.Effective_DRIS_Weight_pct, 1)}%).</p>
-                </> : <p>Multi-source risk output is unavailable for this block.</p>}
-                <p className="method-note">Saved analysis labels are not a field-verified treatment prescription.</p>
+              {/* Right Column: Standardized Block Risk & Evidence Availability */}
+              <div className="block-recom-col block-risk-card">
+                <div className="block-risk-header">
+                  <h4>Block Risk</h4>
+                  <span className={`risk-badge ${(selectedMultiRisk?.Multi_Source_Risk_Level || "UNKNOWN").toLowerCase()}`}>
+                    {selectedMultiRisk?.Multi_Source_Risk_Level || "UNKNOWN"}
+                  </span>
+                </div>
+                <div className="block-risk-summary-row">
+                  <div className="risk-metric-box">
+                    <span className="risk-metric-label">Risk Score</span>
+                    <strong className="risk-metric-num">
+                      {selectedMultiRisk ? formatNumber(selectedMultiRisk.Multi_Source_Risk_Score, 1) : "N/A"}
+                      <small> / 100</small>
+                    </strong>
+                  </div>
+                  <div className="risk-metric-box">
+                    <span className="risk-metric-label">Risk Level</span>
+                    <strong className={`risk-metric-level ${(selectedMultiRisk?.Multi_Source_Risk_Level || "UNKNOWN").toLowerCase()}`}>
+                      {selectedMultiRisk?.Multi_Source_Risk_Level || "N/A"}
+                    </strong>
+                  </div>
+                </div>
+
+                <div className="risk-sub-heading">Risk Components</div>
+                <div className="risk-components-mini-grid">
+                  <div className="comp-row">
+                    <span>Production</span>
+                    <strong>{selectedMultiRisk?.Yield_Risk_Component != null ? `${formatNumber(selectedMultiRisk.Yield_Risk_Component, 0)} / 100` : "Limited peer sample"}</strong>
+                  </div>
+                  <div className="comp-row">
+                    <span>Nutrient</span>
+                    <strong>{selectedMultiRisk?.Nutrient_Risk_Component != null ? `${formatNumber(selectedMultiRisk.Nutrient_Risk_Component, 1)} / 100` : "Insufficient data"}</strong>
+                  </div>
+                  <div className="comp-row">
+                    <span>Soil</span>
+                    <strong>{selectedSoil ? `Observed (${selectedSoil.Sample_Year})` : "Unavailable"}</strong>
+                  </div>
+                  <div className="comp-row">
+                    <span>Weather</span>
+                    <strong>Unavailable / Not integrated</strong>
+                  </div>
+                </div>
+
+                <div className="risk-sub-heading">Evidence Availability</div>
+                <div className="evidence-status-stack">
+                  <div className="evidence-pill pill-available">
+                    <span className="dot dot-green" />
+                    <span>Palm Agronomic: <strong>Available</strong></span>
+                  </div>
+                  <div className="evidence-pill pill-unmapped">
+                    <span className="dot dot-gray" />
+                    <span>RGB Drone: <strong>Unmapped</strong></span>
+                  </div>
+                  <div className="evidence-pill pill-unmapped">
+                    <span className="dot dot-gray" />
+                    <span>Multispectral: <strong>Unmapped</strong></span>
+                  </div>
+                </div>
+
+                <p className="method-note">
+                  * RGB Drone and Multispectral features are spatially unmapped demonstration modules and are NOT attributed to individual palm plantation blocks.
+                </p>
               </div>
             </div>
           </Panel>

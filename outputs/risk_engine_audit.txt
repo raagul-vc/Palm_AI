@@ -1,0 +1,135 @@
+================================================================================
+PALM AI MULTI-SOURCE RISK ENGINE AUDIT REPORT
+================================================================================
+Timestamp: 2026-10-03T15:26:00Z
+Auditors : Antigravity Engineering Pair Programming
+Status   : COMPLETE & VERIFIED
+
+--------------------------------------------------------------------------------
+1. EXECUTIVE SUMMARY
+--------------------------------------------------------------------------------
+An exhaustive code and data audit was conducted across all existing backend risk-
+related modules (`backend/multi_source_risk.py`, `backend/block_health.py`,
+`backend/nutrient_diagnostics.py`, `backend/dris_prescription.py`,
+`backend/weather_impact.py`, machine learning models, and API endpoints).
+
+Key Findings:
+1. Block Risk Score Determinism: The current risk engine is 100% deterministic.
+   Given identical inputs, output scores and risk levels are strictly reproducible.
+2. Data Leakage: Verified clean. In yield gap calculation, the evaluated block is
+   explicitly excluded from its peer cohort. In model validation, out-of-time splits
+   (2012-2022 train vs 2023-2024 test) are strictly enforced.
+3. Weather Evidence: Weather data in `data/Palm_AI_Master_FFB_Leaf_Soil_Weather.csv`
+   consists of estate-level weather station measurements repeated identically for all
+   42 blocks. It has ZERO block-level discriminatory power. The existing risk engine
+   correctly excludes weather from block risk calculations (`Weather_Risk_Component = NaN`).
+   Weather evidence must be explicitly marked as "Unavailable / Not integrated" for
+   block discrimination, and NO synthetic microclimate data may be fabricated.
+4. Soil Evidence: Soil observations are extremely sparse (only 7 out of 42 blocks
+   have soil sample events across 2017 and 2020; 96 rows out of 6,552). Blindly
+   imputing missing soil values is unscientific. Soil data is retained as qualitative
+   observed evidence where available and marked "Unavailable" where absent.
+5. RGB and Multispectral UAV Evidence: The integration audit conclusively proved zero
+   spatial/temporal overlap with Palm Plantation blocks. These datasets represent
+   independent demonstration modules and MUST NOT be fused into Palm block records.
+
+--------------------------------------------------------------------------------
+2. DETAILED AUDIT OF RISK MODULES
+--------------------------------------------------------------------------------
+
+A. BLOCK HEALTH & YIELD GAP (`backend/block_health.py`)
+- Purpose: Computes block-level agronomic yield gap relative to peer cohorts.
+- Input  : `data/Palm_AI_Master_FFB_Leaf_Soil_Weather.csv`
+- Output : `outputs/block_health_risk.csv`
+- Primary Formulas:
+  * Annual Yield = sum(Productivity_t_Ha) for Year == 2024 (latest year).
+  * Expected Yield = median yield of blocks with Plant_Age_Years within [age - 2, age + 2]
+    excluding the target block (minimum 3 peer blocks required).
+  * Productivity Deviation % = (Actual_Yield - Expected_Yield) / Expected_Yield * 100.
+  * Yield Gap % = max(0, -Productivity_Deviation_pct).
+- Risk Score Mapping:
+  * Yield Gap >= 30% -> Risk Score 90
+  * Yield Gap >= 20% -> Risk Score 75
+  * Yield Gap >= 10% -> Risk Score 60
+  * Yield Gap >= 5%  -> Risk Score 40
+  * Yield Gap < 5%   -> Risk Score 20
+- Risk Categories:
+  * HIGH   : Risk_Score >= 70
+  * MEDIUM : Risk_Score >= 40 and < 70
+  * LOW    : Risk_Score < 40
+- Limitations: Discontinuous stepwise score; age-only peer cohorting; assumes 2024
+  annual yield represents total production health.
+
+B. FOLIAR NUTRIENT DIAGNOSTICS (`backend/nutrient_diagnostics.py`)
+- Purpose: Evaluates leaf macro and micronutrient sufficiency.
+- Input  : `data/Palm_AI_Master_FFB_Leaf_Soil_Weather.csv` (Leaf_Data_Available == True)
+- Outputs: `outputs/block_nutrient_diagnostics.csv`, `outputs/nutrient_reference_ranges.csv`
+- Primary Formulas:
+  * Reference thresholds: Low = Q25, High = Q75 from empirical historical samples.
+  * Classification: value < Q25 -> LOW, value > Q75 -> HIGH, else NORMAL.
+  * Low_Nutrient_Count = sum of nutrients with LOW status.
+  * Nutrient_Risk_Component = (Low_Nutrient_Count / Available_Nutrient_Count) * 100
+    (set to NaN if Available_Nutrient_Count < 3).
+- Limitations: Quartile-based empirical thresholds rather than absolute agronomic
+  norms; Boron (B_ppm) is unmeasured in 11 blocks.
+
+C. DRIS NUTRITIONAL BALANCE (`backend/dris_prescription.py`)
+- Purpose: Diagnosis and Recommendation Integrated System nutrient ratio balance.
+- Inputs : `Palm_AI_Master_FFB_Leaf_Soil_Weather.csv`, `DRIS_Nutrient_Reference_3700.csv`,
+           `DRIS_Reference_Summary.csv`, `DRIS_IDW_Grid_3700.csv`
+- Outputs: `outputs/dris_prescription_analysis.csv`, `outputs/dris_index_reference_used.csv`
+- Primary Formulas:
+  * Standard Beaufils dual-ratio standard score calculation against high-yield population.
+  * Limiting nutrients: Nutrients with DRIS Index < 0.
+  * DRIS_Risk_Component = (min(5, count(limiting_nutrients)) / 5) * 100.
+- Limitations: Available for 31 of 42 blocks in the latest survey year.
+
+D. WEATHER IMPACT (`backend/weather_impact.py`)
+- Purpose: Assesses correlation and weather stress indicators.
+- Input  : `data/Palm_AI_Master_FFB_Leaf_Soil_Weather.csv`
+- Outputs: `outputs/block_weather_impact.csv`, `outputs/weather_productivity_correlation.csv`
+- Audit Verdict: EXCLUDED FROM BLOCK RISK SCORING. All blocks share identical weather
+  measurements (estate weather station). Weather cannot discriminate block risk.
+
+E. MULTI-SOURCE RISK AGGREGATION (`backend/multi_source_risk.py`)
+- Purpose: Aggregates available agronomic evidence pillars into a single score.
+- Base Component Weights:
+  * Yield Risk Component   : 0.40 (40%)
+  * Nutrient Risk Component: 0.25 (25%)
+  * DRIS Risk Component    : 0.15 (15%)
+  * Total Base Weight      : 0.80 (80%)
+- Dynamic Renormalization:
+  * For each block, valid_weight = sum(w_i for available components).
+  * Multi_Source_Risk_Score = sum(Component_i * w_i) / valid_weight.
+  * Normalized strictly to [0, 100].
+- Effective Weights Recorded per block:
+  * Full data (Yield + Nutrient + DRIS): Yield = 50.0%, Nutrient = 31.2%, DRIS = 18.8%.
+  * No DRIS (Yield + Nutrient only)    : Yield = 61.5%, Nutrient = 38.5%.
+- Risk Level Thresholds:
+  * HIGH   : Multi_Source_Risk_Score >= 70
+  * MEDIUM : Multi_Source_Risk_Score >= 40 and < 70
+  * LOW    : Multi_Source_Risk_Score < 40
+
+F. MACHINE LEARNING MODELS
+- Yield Regression Model: `models/yield_forecast_model.pkl` (RandomForestRegressor,
+  n_estimators=300, max_depth=18). Out-of-time test MAE = 0.297 t/ha, R2 = 0.570.
+- High-Production Classification Target: Professor requirement: Maximum FFB
+  production for each Block + Year is the High Production threshold.
+  Classes: High vs Not High.
+
+--------------------------------------------------------------------------------
+3. CANONICAL API ENDPOINT REQUIREMENTS
+--------------------------------------------------------------------------------
+Existing routes `/api/risk` and `/api/multi-source-risk` serve CSV rows with query filters.
+Standardization requires:
+1. `GET /api/risk/<Block_ID>`: Direct RESTful block lookup returning:
+   - Block identity (Block_ID, Division_ID, Year, Month)
+   - Production evidence (Productivity_t_Ha, FFB_Production_t, Productivity_deviation, High_Production_probability)
+   - Agronomic evidence (Plant_Age_Years, Palms_per_Ha, foliar nutrients, soil indicators, DRIS)
+   - Weather evidence (Status: "Unavailable / Not integrated", reason: "Estate-level repetition")
+   - Risk components (production_risk, nutrient_risk, soil_risk, weather_risk)
+   - Composite risk score (0-100) and risk level (HIGH, MEDIUM, LOW)
+   - Decoupled evidence availability flags:
+     { "palm": "available", "rgb_drone": "unmapped", "multispectral": "unmapped" }
+2. `GET /api/risk/summary`: Plantation-level risk distribution and summary statistics.
+================================================================================

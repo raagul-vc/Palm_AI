@@ -1,0 +1,527 @@
+{
+  "status": "COMPLETED",
+  "task": "RGB UAV object detection error analysis",
+  "checkpoint": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\models\\palm_yolo_best.pt",
+  "inference_device": "NVIDIA GeForce RTX 3050 Laptop GPU",
+  "inference_batch_size": 1,
+  "iou_threshold": 0.5,
+  "confidence_threshold": 0.25,
+  "confidence_floor": 0.001,
+  "total_validation_images": 500,
+  "total_ground_truth_objects": 32846,
+  "total_predictions": 43778,
+  "error_statistics": {
+    "total_true_positives": 32830,
+    "total_false_positives": 10948,
+    "total_false_negatives": 16,
+    "class_confusion_count": 12,
+    "unmatched_background_false_positives": 10936,
+    "unmatched_background_false_negatives": 4,
+    "low_confidence_detections_below_0_25": 36301
+  },
+  "class_wise_statistics": {
+    "Dead": {
+      "ground_truth": 61,
+      "true_positive": 61,
+      "false_positive": 22,
+      "false_negative": 0,
+      "incorrect_class_as_prediction": 0,
+      "incorrect_class_as_truth": 0,
+      "precision_at_threshold": 0.73494,
+      "recall_at_threshold": 1.0
+    },
+    "Healthy": {
+      "ground_truth": 24884,
+      "true_positive": 24878,
+      "false_positive": 9252,
+      "false_negative": 6,
+      "incorrect_class_as_prediction": 2,
+      "incorrect_class_as_truth": 6,
+      "precision_at_threshold": 0.728919,
+      "recall_at_threshold": 0.999759
+    },
+    "Grass": {
+      "ground_truth": 95,
+      "true_positive": 94,
+      "false_positive": 86,
+      "false_negative": 1,
+      "incorrect_class_as_prediction": 7,
+      "incorrect_class_as_truth": 1,
+      "precision_at_threshold": 0.522222,
+      "recall_at_threshold": 0.989474
+    },
+    "Small": {
+      "ground_truth": 7395,
+      "true_positive": 7387,
+      "false_positive": 1453,
+      "false_negative": 8,
+      "incorrect_class_as_prediction": 2,
+      "incorrect_class_as_truth": 4,
+      "precision_at_threshold": 0.835633,
+      "recall_at_threshold": 0.998918
+    },
+    "Yellow": {
+      "ground_truth": 411,
+      "true_positive": 410,
+      "false_positive": 135,
+      "false_negative": 1,
+      "incorrect_class_as_prediction": 1,
+      "incorrect_class_as_truth": 1,
+      "precision_at_threshold": 0.752294,
+      "recall_at_threshold": 0.997567
+    }
+  },
+  "class_confusion_matrix": {
+    "Dead": {
+      "Dead": 61,
+      "Healthy": 0,
+      "Grass": 0,
+      "Small": 0,
+      "Yellow": 0,
+      "background": 0
+    },
+    "Healthy": {
+      "Dead": 0,
+      "Healthy": 24878,
+      "Grass": 4,
+      "Small": 1,
+      "Yellow": 1,
+      "background": 0
+    },
+    "Grass": {
+      "Dead": 0,
+      "Healthy": 1,
+      "Grass": 94,
+      "Small": 0,
+      "Yellow": 0,
+      "background": 0
+    },
+    "Small": {
+      "Dead": 0,
+      "Healthy": 1,
+      "Grass": 3,
+      "Small": 7387,
+      "Yellow": 0,
+      "background": 4
+    },
+    "Yellow": {
+      "Dead": 0,
+      "Healthy": 0,
+      "Grass": 0,
+      "Small": 1,
+      "Yellow": 410,
+      "background": 0
+    },
+    "background": {
+      "Dead": 22,
+      "Healthy": 9250,
+      "Grass": 79,
+      "Small": 1451,
+      "Yellow": 134,
+      "background": 0
+    }
+  },
+  "class_confusion_pairs": [
+    {
+      "true_class": "Healthy",
+      "predicted_class": "Grass",
+      "count": 4
+    },
+    {
+      "true_class": "Small",
+      "predicted_class": "Grass",
+      "count": 3
+    },
+    {
+      "true_class": "Grass",
+      "predicted_class": "Healthy",
+      "count": 1
+    },
+    {
+      "true_class": "Yellow",
+      "predicted_class": "Small",
+      "count": 1
+    },
+    {
+      "true_class": "Small",
+      "predicted_class": "Healthy",
+      "count": 1
+    },
+    {
+      "true_class": "Healthy",
+      "predicted_class": "Small",
+      "count": 1
+    },
+    {
+      "true_class": "Healthy",
+      "predicted_class": "Yellow",
+      "count": 1
+    }
+  ],
+  "confidence_statistics": {
+    "all_predictions_at_or_above_0_001": {
+      "count": 80079,
+      "min": 0.001,
+      "max": 0.999863,
+      "mean": 0.479402,
+      "median": 0.540949,
+      "p25": 0.003812,
+      "p75": 0.933557
+    },
+    "bins": {
+      "0.001-0.25": 36301,
+      "0.250-0.50": 3197,
+      "0.500-0.75": 3345,
+      "0.750-1.00": 37236
+    },
+    "by_predicted_class": {
+      "Dead": {
+        "count": 541,
+        "min": 0.001001,
+        "max": 0.98992,
+        "mean": 0.144887,
+        "median": 0.003962,
+        "p25": 0.001806,
+        "p75": 0.021357
+      },
+      "Healthy": {
+        "count": 50859,
+        "min": 0.001,
+        "max": 0.988876,
+        "mean": 0.584277,
+        "median": 0.907162,
+        "p25": 0.020261,
+        "p75": 0.938835
+      },
+      "Grass": {
+        "count": 2003,
+        "min": 0.001,
+        "max": 0.999863,
+        "mean": 0.078777,
+        "median": 0.002503,
+        "p25": 0.001473,
+        "p75": 0.006936
+      },
+      "Small": {
+        "count": 24946,
+        "min": 0.001,
+        "max": 0.968938,
+        "mean": 0.318297,
+        "median": 0.009482,
+        "p25": 0.00208,
+        "p75": 0.892199
+      },
+      "Yellow": {
+        "count": 1730,
+        "min": 0.001001,
+        "max": 0.990429,
+        "mean": 0.287772,
+        "median": 0.00586,
+        "p25": 0.001909,
+        "p75": 0.899992
+      }
+    },
+    "low_confidence_below_0_25_by_class": {
+      "Dead": 458,
+      "Healthy": 16729,
+      "Grass": 1823,
+      "Small": 16106,
+      "Yellow": 1185
+    }
+  },
+  "official_validation_metrics": {
+    "precision": 0.959810468963059,
+    "recall": 0.9898831869672204,
+    "map50": 0.9799088598197855,
+    "map50_95": 0.888404005026808,
+    "per_class": {
+      "Dead": {
+        "precision": 0.9927565756785183,
+        "recall": 1.0,
+        "map50": 0.995,
+        "map50_95": 0.8862300861774124
+      },
+      "Healthy": {
+        "precision": 0.9958848658031152,
+        "recall": 0.9919850098384987,
+        "map50": 0.9948507027969534,
+        "map50_95": 0.9492337299886184
+      },
+      "Grass": {
+        "precision": 0.8318656375984209,
+        "recall": 0.9894736842105263,
+        "map50": 0.9211447393870308,
+        "map50_95": 0.7574539019446787
+      },
+      "Small": {
+        "precision": 0.9947475882610245,
+        "recall": 0.9825557809330628,
+        "map50": 0.994082889867975,
+        "map50_95": 0.9194452735384295
+      },
+      "Yellow": {
+        "precision": 0.9837976774742166,
+        "recall": 0.9854014598540146,
+        "map50": 0.9944659670469681,
+        "map50_95": 0.9296570334849011
+      }
+    }
+  },
+  "findings": {
+    "main_weaker_class": "Grass",
+    "main_confusion": {
+      "true_class": "Healthy",
+      "predicted_class": "Grass",
+      "count": 4
+    },
+    "false_positives_by_class": {
+      "Dead": 22,
+      "Healthy": 9252,
+      "Grass": 86,
+      "Small": 1453,
+      "Yellow": 135
+    },
+    "false_negatives_by_class": {
+      "Dead": 0,
+      "Healthy": 6,
+      "Grass": 1,
+      "Small": 8,
+      "Yellow": 1
+    }
+  },
+  "representative_examples": {
+    "false_positives": {
+      "observed_count": 10948,
+      "examples_saved": 4,
+      "status": "examples saved",
+      "files": [
+        "44000_16000_1013_87_fp_1.jpg",
+        "44000_16000_1027_1541_fp_2.jpg",
+        "44000_16000_1059_3696_fp_3.jpg",
+        "44000_16000_1060_351_fp_4.jpg"
+      ],
+      "examples": [
+        {
+          "pred_index": 71,
+          "nearest_gt_index": 4,
+          "confidence": 0.9026519060134888,
+          "nearest_iou": 0.005330469531804504,
+          "image_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\dataset_yolo\\images\\val\\44000_16000_1013_87.jpg",
+          "example_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_error_analysis\\false_positives\\44000_16000_1013_87_fp_1.jpg",
+          "image_filename": "44000_16000_1013_87.jpg",
+          "example_filename": "44000_16000_1013_87_fp_1.jpg",
+          "true_class": null,
+          "predicted_class": "Healthy"
+        },
+        {
+          "pred_index": 27,
+          "nearest_gt_index": 10,
+          "confidence": 0.9411342144012451,
+          "nearest_iou": 0.02253019136585088,
+          "image_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\dataset_yolo\\images\\val\\44000_16000_1027_1541.jpg",
+          "example_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_error_analysis\\false_positives\\44000_16000_1027_1541_fp_2.jpg",
+          "image_filename": "44000_16000_1027_1541.jpg",
+          "example_filename": "44000_16000_1027_1541_fp_2.jpg",
+          "true_class": null,
+          "predicted_class": "Healthy"
+        },
+        {
+          "pred_index": 67,
+          "nearest_gt_index": 0,
+          "confidence": 0.8897350430488586,
+          "nearest_iou": 0.0,
+          "image_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\dataset_yolo\\images\\val\\44000_16000_1059_3696.jpg",
+          "example_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_error_analysis\\false_positives\\44000_16000_1059_3696_fp_3.jpg",
+          "image_filename": "44000_16000_1059_3696.jpg",
+          "example_filename": "44000_16000_1059_3696_fp_3.jpg",
+          "true_class": null,
+          "predicted_class": "Small"
+        },
+        {
+          "pred_index": 72,
+          "nearest_gt_index": 0,
+          "confidence": 0.9010294675827026,
+          "nearest_iou": 0.0059973846836568435,
+          "image_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\dataset_yolo\\images\\val\\44000_16000_1060_351.jpg",
+          "example_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_error_analysis\\false_positives\\44000_16000_1060_351_fp_4.jpg",
+          "image_filename": "44000_16000_1060_351.jpg",
+          "example_filename": "44000_16000_1060_351_fp_4.jpg",
+          "true_class": null,
+          "predicted_class": "Healthy"
+        }
+      ]
+    },
+    "false_negatives": {
+      "observed_count": 16,
+      "examples_saved": 4,
+      "status": "examples saved",
+      "files": [
+        "44000_16000_244_102_fn_1.jpg",
+        "52000_20000_1020_3919_fn_2.jpg",
+        "52000_20000_710_2507_fn_3.jpg",
+        "52000_20000_873_3951_fn_4.jpg"
+      ],
+      "examples": [
+        {
+          "gt_index": 32,
+          "best_iou": 0.0,
+          "image_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\dataset_yolo\\images\\val\\44000_16000_244_102.jpg",
+          "example_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_error_analysis\\false_negatives\\44000_16000_244_102_fn_1.jpg",
+          "image_filename": "44000_16000_244_102.jpg",
+          "example_filename": "44000_16000_244_102_fn_1.jpg",
+          "true_class": "Small",
+          "predicted_class": null
+        },
+        {
+          "gt_index": 60,
+          "best_iou": 0.0,
+          "image_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\dataset_yolo\\images\\val\\52000_20000_1020_3919.jpg",
+          "example_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_error_analysis\\false_negatives\\52000_20000_1020_3919_fn_2.jpg",
+          "image_filename": "52000_20000_1020_3919.jpg",
+          "example_filename": "52000_20000_1020_3919_fn_2.jpg",
+          "true_class": "Small",
+          "predicted_class": null
+        },
+        {
+          "gt_index": 54,
+          "best_iou": 0.0,
+          "image_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\dataset_yolo\\images\\val\\52000_20000_710_2507.jpg",
+          "example_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_error_analysis\\false_negatives\\52000_20000_710_2507_fn_3.jpg",
+          "image_filename": "52000_20000_710_2507.jpg",
+          "example_filename": "52000_20000_710_2507_fn_3.jpg",
+          "true_class": "Small",
+          "predicted_class": null
+        },
+        {
+          "gt_index": 57,
+          "best_iou": 0.0,
+          "image_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\dataset_yolo\\images\\val\\52000_20000_873_3951.jpg",
+          "example_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_error_analysis\\false_negatives\\52000_20000_873_3951_fn_4.jpg",
+          "image_filename": "52000_20000_873_3951.jpg",
+          "example_filename": "52000_20000_873_3951_fn_4.jpg",
+          "true_class": "Small",
+          "predicted_class": null
+        }
+      ]
+    },
+    "class_confusions": {
+      "observed_count": 12,
+      "examples_saved": 4,
+      "status": "examples saved",
+      "files": [
+        "44000_16000_149_2457_confusion_1.jpg",
+        "44000_16000_191_2091_confusion_2.jpg",
+        "44000_16000_261_2302_confusion_3.jpg",
+        "44000_16000_4_486_confusion_4.jpg"
+      ],
+      "examples": [
+        {
+          "gt_index": 1,
+          "pred_index": 99,
+          "confidence": 0.6316229104995728,
+          "iou": 0.9254096299605193,
+          "image_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\dataset_yolo\\images\\val\\44000_16000_149_2457.jpg",
+          "example_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_error_analysis\\class_confusions\\44000_16000_149_2457_confusion_1.jpg",
+          "image_filename": "44000_16000_149_2457.jpg",
+          "example_filename": "44000_16000_149_2457_confusion_1.jpg",
+          "true_class": "Healthy",
+          "predicted_class": "Grass"
+        },
+        {
+          "gt_index": 36,
+          "pred_index": 92,
+          "confidence": 0.6942166090011597,
+          "iou": 0.9127906894629796,
+          "image_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\dataset_yolo\\images\\val\\44000_16000_191_2091.jpg",
+          "example_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_error_analysis\\class_confusions\\44000_16000_191_2091_confusion_2.jpg",
+          "image_filename": "44000_16000_191_2091.jpg",
+          "example_filename": "44000_16000_191_2091_confusion_2.jpg",
+          "true_class": "Healthy",
+          "predicted_class": "Grass"
+        },
+        {
+          "gt_index": 64,
+          "pred_index": 108,
+          "confidence": 0.40867888927459717,
+          "iou": 0.9214209864176072,
+          "image_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\dataset_yolo\\images\\val\\44000_16000_261_2302.jpg",
+          "example_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_error_analysis\\class_confusions\\44000_16000_261_2302_confusion_3.jpg",
+          "image_filename": "44000_16000_261_2302.jpg",
+          "example_filename": "44000_16000_261_2302_confusion_3.jpg",
+          "true_class": "Grass",
+          "predicted_class": "Healthy"
+        },
+        {
+          "gt_index": 5,
+          "pred_index": 85,
+          "confidence": 0.6634721755981445,
+          "iou": 0.7093817271643016,
+          "image_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\dataset_yolo\\images\\val\\44000_16000_4_486.jpg",
+          "example_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_error_analysis\\class_confusions\\44000_16000_4_486_confusion_4.jpg",
+          "image_filename": "44000_16000_4_486.jpg",
+          "example_filename": "44000_16000_4_486_confusion_4.jpg",
+          "true_class": "Yellow",
+          "predicted_class": "Small"
+        }
+      ]
+    },
+    "low_confidence": {
+      "observed_count": 36301,
+      "examples_saved": 4,
+      "status": "examples saved",
+      "files": [
+        "44000_16000_1013_87_lowconf_1.jpg",
+        "44000_16000_1027_1541_lowconf_2.jpg",
+        "44000_16000_1059_3696_lowconf_3.jpg",
+        "44000_16000_1060_351_lowconf_4.jpg"
+      ],
+      "examples": [
+        {
+          "pred_index": 107,
+          "confidence": 0.20451794564723969,
+          "image_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\dataset_yolo\\images\\val\\44000_16000_1013_87.jpg",
+          "example_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_error_analysis\\low_confidence\\44000_16000_1013_87_lowconf_1.jpg",
+          "image_filename": "44000_16000_1013_87.jpg",
+          "example_filename": "44000_16000_1013_87_lowconf_1.jpg",
+          "true_class": null,
+          "predicted_class": "Healthy"
+        },
+        {
+          "pred_index": 105,
+          "confidence": 0.22833490371704102,
+          "image_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\dataset_yolo\\images\\val\\44000_16000_1027_1541.jpg",
+          "example_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_error_analysis\\low_confidence\\44000_16000_1027_1541_lowconf_2.jpg",
+          "image_filename": "44000_16000_1027_1541.jpg",
+          "example_filename": "44000_16000_1027_1541_lowconf_2.jpg",
+          "true_class": null,
+          "predicted_class": "Healthy"
+        },
+        {
+          "pred_index": 92,
+          "confidence": 0.22472034394741058,
+          "image_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\dataset_yolo\\images\\val\\44000_16000_1059_3696.jpg",
+          "example_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_error_analysis\\low_confidence\\44000_16000_1059_3696_lowconf_3.jpg",
+          "image_filename": "44000_16000_1059_3696.jpg",
+          "example_filename": "44000_16000_1059_3696_lowconf_3.jpg",
+          "true_class": null,
+          "predicted_class": "Healthy"
+        },
+        {
+          "pred_index": 98,
+          "confidence": 0.22157423198223114,
+          "image_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\dataset_yolo\\images\\val\\44000_16000_1060_351.jpg",
+          "example_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\yolo_error_analysis\\low_confidence\\44000_16000_1060_351_lowconf_4.jpg",
+          "image_filename": "44000_16000_1060_351.jpg",
+          "example_filename": "44000_16000_1060_351_lowconf_4.jpg",
+          "true_class": null,
+          "predicted_class": "Healthy"
+        }
+      ]
+    }
+  },
+  "model_integrity": {
+    "retrained": false,
+    "checkpoint_modified": false,
+    "checkpoint_path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\models\\palm_yolo_best.pt"
+  }
+}

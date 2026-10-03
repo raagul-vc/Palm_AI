@@ -1,0 +1,4054 @@
+{
+  "B001": {
+    "Block_ID": "B001",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B001",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 10.657,
+      "FFB_Production_t": 202.487,
+      "Productivity_deviation": null,
+      "High_Production_threshold_t": 22.537,
+      "High_Production_probability": 0.75,
+      "High_Production_class": "High",
+      "peer_cohort_size": 1,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 24.0,
+      "Palms_per_Ha": 78.4,
+      "Area_Ha": 19.0,
+      "Plant_Status": "TM-Tua",
+      "Seed_Type": "PPKS",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2021,
+        "panel": {
+          "N_pct": 1.986,
+          "P_pct": 0.137,
+          "K_pct": 0.749,
+          "Ca_pct": 0.434,
+          "Mg_pct": 0.19,
+          "B_ppm": null
+        },
+        "low_nutrients": [
+          "N",
+          "P",
+          "K",
+          "Ca",
+          "Mg"
+        ],
+        "low_count": 5,
+        "high_count": 0,
+        "available_count": 5,
+        "data_status": "Partial nutrient panel (5 of 6 measured)",
+        "concern": "HIGH"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2021,
+        "limiting_nutrients": [
+          "Ca"
+        ],
+        "excess_nutrients": [
+          "Mg"
+        ],
+        "prescription": "Review relative nutrient balance for Ca | Review possible relative excess of Mg"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": null,
+      "nutrient_risk": 100.0,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 70.0,
+    "risk_level": "HIGH",
+    "effective_weights": {
+      "production_pct": 0.0,
+      "nutrient_pct": 62.5,
+      "dris_pct": 37.5,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "Nutrient imbalance",
+    "recommended_action": "Priority field inspection; review block-specific yield and nutrient indicators"
+  },
+  "B002": {
+    "Block_ID": "B002",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B002",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 9.484,
+      "FFB_Production_t": 227.629,
+      "Productivity_deviation": null,
+      "High_Production_threshold_t": 25.335,
+      "High_Production_probability": 0.75,
+      "High_Production_class": "High",
+      "peer_cohort_size": 1,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 24.0,
+      "Palms_per_Ha": 69.8,
+      "Area_Ha": 24.0,
+      "Plant_Status": "TM-Tua",
+      "Seed_Type": "PPKS",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2021,
+        "panel": {
+          "N_pct": 2.808,
+          "P_pct": 0.155,
+          "K_pct": 0.88,
+          "Ca_pct": 0.618,
+          "Mg_pct": 0.238,
+          "B_ppm": null
+        },
+        "low_nutrients": [],
+        "low_count": 0,
+        "high_count": 0,
+        "available_count": 5,
+        "data_status": "Partial nutrient panel (5 of 6 measured)",
+        "concern": "LOW"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2021,
+        "limiting_nutrients": [
+          "K"
+        ],
+        "excess_nutrients": [
+          "Mg"
+        ],
+        "prescription": "Review relative nutrient balance for K | Review possible relative excess of Mg"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": null,
+      "nutrient_risk": 0.0,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 7.5,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 0.0,
+      "nutrient_pct": 62.5,
+      "dris_pct": 37.5,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "No major contributing indicator",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B003": {
+    "Block_ID": "B003",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B003",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 14.512,
+      "FFB_Production_t": 261.195,
+      "Productivity_deviation": -7.68,
+      "High_Production_threshold_t": 29.071,
+      "High_Production_probability": 0.6,
+      "High_Production_class": "High",
+      "peer_cohort_size": 8,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 19.0,
+      "Palms_per_Ha": 106.8,
+      "Area_Ha": 18.0,
+      "Plant_Status": "TM-Tua",
+      "Seed_Type": "PPKS",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.923,
+          "P_pct": 0.15,
+          "K_pct": 1.086,
+          "Ca_pct": 0.865,
+          "Mg_pct": 0.274,
+          "B_ppm": null
+        },
+        "low_nutrients": [],
+        "low_count": 0,
+        "high_count": 2,
+        "available_count": 5,
+        "data_status": "Partial nutrient panel (5 of 6 measured)",
+        "concern": "LOW"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "Mg"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of Mg"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 40.0,
+      "nutrient_risk": 0.0,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 23.75,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "No major contributing indicator",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B004": {
+    "Block_ID": "B004",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B004",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 14.776,
+      "FFB_Production_t": 384.181,
+      "Productivity_deviation": -6.0,
+      "High_Production_threshold_t": 42.759,
+      "High_Production_probability": 0.6,
+      "High_Production_class": "High",
+      "peer_cohort_size": 8,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 19.0,
+      "Palms_per_Ha": 108.7,
+      "Area_Ha": 26.0,
+      "Plant_Status": "TM-Tua",
+      "Seed_Type": "PPKS",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.493,
+          "P_pct": 0.137,
+          "K_pct": 1.161,
+          "Ca_pct": 0.644,
+          "Mg_pct": 0.24,
+          "B_ppm": null
+        },
+        "low_nutrients": [
+          "P"
+        ],
+        "low_count": 1,
+        "high_count": 0,
+        "available_count": 5,
+        "data_status": "Partial nutrient panel (5 of 6 measured)",
+        "concern": "MEDIUM"
+      },
+      "soil_indicators": {
+        "status": "observed",
+        "sample_year": 2020,
+        "pH_H2O": 5.1,
+        "C_Organic_pct": 1.6,
+        "P_Available_ppm": 161.08,
+        "K_exch_me_100g": 1.0,
+        "Mg_exch_me_100g": 1.379,
+        "Base_Saturation_pct": 108.6,
+        "Sand_pct": 75.1,
+        "Clay_pct": 12.9,
+        "note": "Measured field sample from historical soil survey"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "Mg"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of Mg"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 40.0,
+      "nutrient_risk": 20.0,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 30.0,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "No major contributing indicator",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B005": {
+    "Block_ID": "B005",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B005",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 11.023,
+      "FFB_Production_t": 264.591,
+      "Productivity_deviation": -29.87,
+      "High_Production_threshold_t": 29.449,
+      "High_Production_probability": 0.25,
+      "High_Production_class": "Not High",
+      "peer_cohort_size": 8,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 19.0,
+      "Palms_per_Ha": 81.1,
+      "Area_Ha": 24.0,
+      "Plant_Status": "TM-Tua",
+      "Seed_Type": "PPKS/Sofc",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.443,
+          "P_pct": 0.142,
+          "K_pct": 0.933,
+          "Ca_pct": 0.755,
+          "Mg_pct": 0.191,
+          "B_ppm": null
+        },
+        "low_nutrients": [
+          "P",
+          "Mg"
+        ],
+        "low_count": 2,
+        "high_count": 1,
+        "available_count": 5,
+        "data_status": "Partial nutrient panel (5 of 6 measured)",
+        "concern": "MEDIUM"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "Ca"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of Ca"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 75.0,
+      "nutrient_risk": 40.0,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 53.75,
+    "risk_level": "MEDIUM",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "Yield risk; Nutrient imbalance",
+    "recommended_action": "Monitor block and review identified contributing indicators"
+  },
+  "B006": {
+    "Block_ID": "B006",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B006",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 14.894,
+      "FFB_Production_t": 372.359,
+      "Productivity_deviation": -5.25,
+      "High_Production_threshold_t": 41.443,
+      "High_Production_probability": 0.6,
+      "High_Production_class": "High",
+      "peer_cohort_size": 8,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 18.0,
+      "Palms_per_Ha": 109.6,
+      "Area_Ha": 25.0,
+      "Plant_Status": "TM-Tua",
+      "Seed_Type": "PPKS/Sofc",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.327,
+          "P_pct": 0.135,
+          "K_pct": 1.244,
+          "Ca_pct": 0.742,
+          "Mg_pct": 0.3,
+          "B_ppm": null
+        },
+        "low_nutrients": [
+          "N",
+          "P"
+        ],
+        "low_count": 2,
+        "high_count": 3,
+        "available_count": 5,
+        "data_status": "Partial nutrient panel (5 of 6 measured)",
+        "concern": "MEDIUM"
+      },
+      "soil_indicators": {
+        "status": "observed",
+        "sample_year": 2020,
+        "pH_H2O": 5.1,
+        "C_Organic_pct": 1.6,
+        "P_Available_ppm": 161.08,
+        "K_exch_me_100g": 1.0,
+        "Mg_exch_me_100g": 1.379,
+        "Base_Saturation_pct": 108.6,
+        "Sand_pct": 75.1,
+        "Clay_pct": 12.9,
+        "note": "Measured field sample from historical soil survey"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "Mg"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of Mg"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 40.0,
+      "nutrient_risk": 40.0,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 36.25,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "Nutrient imbalance",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B007": {
+    "Block_ID": "B007",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B007",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 18.291,
+      "FFB_Production_t": 438.949,
+      "Productivity_deviation": 21.91,
+      "High_Production_threshold_t": 48.855,
+      "High_Production_probability": 0.8,
+      "High_Production_class": "High",
+      "peer_cohort_size": 8,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 18.0,
+      "Palms_per_Ha": 134.6,
+      "Area_Ha": 24.0,
+      "Plant_Status": "TM-Tua",
+      "Seed_Type": "PPKS/Sofc",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.4,
+          "P_pct": 0.147,
+          "K_pct": 0.515,
+          "Ca_pct": 0.808,
+          "Mg_pct": 0.245,
+          "B_ppm": null
+        },
+        "low_nutrients": [
+          "N",
+          "P",
+          "K"
+        ],
+        "low_count": 3,
+        "high_count": 1,
+        "available_count": 5,
+        "data_status": "Partial nutrient panel (5 of 6 measured)",
+        "concern": "HIGH"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "K"
+        ],
+        "excess_nutrients": [
+          "Ca"
+        ],
+        "prescription": "Review relative nutrient balance for K | Review possible relative excess of Ca"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 20.0,
+      "nutrient_risk": 60.0,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 32.5,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "Nutrient imbalance",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B008": {
+    "Block_ID": "B008",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B008",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 15.114,
+      "FFB_Production_t": 332.541,
+      "Productivity_deviation": -3.17,
+      "High_Production_threshold_t": 37.012,
+      "High_Production_probability": 0.8,
+      "High_Production_class": "High",
+      "peer_cohort_size": 8,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 18.0,
+      "Palms_per_Ha": 111.2,
+      "Area_Ha": 22.0,
+      "Plant_Status": "TM-Tua",
+      "Seed_Type": "PPKS/Sofc",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.399,
+          "P_pct": 0.133,
+          "K_pct": 0.826,
+          "Ca_pct": 1.048,
+          "Mg_pct": 0.234,
+          "B_ppm": null
+        },
+        "low_nutrients": [
+          "N",
+          "P"
+        ],
+        "low_count": 2,
+        "high_count": 1,
+        "available_count": 5,
+        "data_status": "Partial nutrient panel (5 of 6 measured)",
+        "concern": "MEDIUM"
+      },
+      "soil_indicators": {
+        "status": "observed",
+        "sample_year": 2017,
+        "pH_H2O": 5.4,
+        "C_Organic_pct": 0.44,
+        "P_Available_ppm": 52.37,
+        "K_exch_me_100g": 0.77,
+        "Mg_exch_me_100g": 0.29,
+        "Base_Saturation_pct": 36.4,
+        "Sand_pct": 74.0,
+        "Clay_pct": 19.0,
+        "note": "Measured field sample from historical soil survey"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "Ca"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of Ca"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 20.0,
+      "nutrient_risk": 40.0,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 26.25,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "Nutrient imbalance",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B009": {
+    "Block_ID": "B009",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B009",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 16.906,
+      "FFB_Production_t": 253.583,
+      "Productivity_deviation": 12.68,
+      "High_Production_threshold_t": 28.224,
+      "High_Production_probability": 0.8,
+      "High_Production_class": "High",
+      "peer_cohort_size": 8,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 18.0,
+      "Palms_per_Ha": 124.4,
+      "Area_Ha": 15.0,
+      "Plant_Status": "TM-Tua",
+      "Seed_Type": "PPKS/Sofc",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.399,
+          "P_pct": 0.133,
+          "K_pct": 0.826,
+          "Ca_pct": 1.048,
+          "Mg_pct": 0.234,
+          "B_ppm": null
+        },
+        "low_nutrients": [
+          "N",
+          "P"
+        ],
+        "low_count": 2,
+        "high_count": 1,
+        "available_count": 5,
+        "data_status": "Partial nutrient panel (5 of 6 measured)",
+        "concern": "MEDIUM"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "Ca"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of Ca"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 20.0,
+      "nutrient_risk": 40.0,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 26.25,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "Nutrient imbalance",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B010": {
+    "Block_ID": "B010",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B010",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 17.145,
+      "FFB_Production_t": 428.62,
+      "Productivity_deviation": 14.27,
+      "High_Production_threshold_t": 47.705,
+      "High_Production_probability": 0.8,
+      "High_Production_class": "High",
+      "peer_cohort_size": 8,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 18.0,
+      "Palms_per_Ha": 126.2,
+      "Area_Ha": 25.0,
+      "Plant_Status": "TM-Tua",
+      "Seed_Type": "PPKS/Sofc",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.132,
+          "P_pct": 0.135,
+          "K_pct": 0.99,
+          "Ca_pct": 0.901,
+          "Mg_pct": 0.301,
+          "B_ppm": null
+        },
+        "low_nutrients": [
+          "N",
+          "P"
+        ],
+        "low_count": 2,
+        "high_count": 2,
+        "available_count": 5,
+        "data_status": "Partial nutrient panel (5 of 6 measured)",
+        "concern": "MEDIUM"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "Mg"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of Mg"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 20.0,
+      "nutrient_risk": 40.0,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 26.25,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "Nutrient imbalance",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B011": {
+    "Block_ID": "B011",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B011",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 16.323,
+      "FFB_Production_t": 571.313,
+      "Productivity_deviation": 8.79,
+      "High_Production_threshold_t": 63.587,
+      "High_Production_probability": 0.8,
+      "High_Production_class": "High",
+      "peer_cohort_size": 8,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 18.0,
+      "Palms_per_Ha": 120.1,
+      "Area_Ha": 35.0,
+      "Plant_Status": "TM-Tua",
+      "Seed_Type": "PPKS/Sofc",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.623,
+          "P_pct": 0.143,
+          "K_pct": 0.964,
+          "Ca_pct": 0.86,
+          "Mg_pct": 0.317,
+          "B_ppm": null
+        },
+        "low_nutrients": [
+          "P"
+        ],
+        "low_count": 1,
+        "high_count": 2,
+        "available_count": 5,
+        "data_status": "Partial nutrient panel (5 of 6 measured)",
+        "concern": "MEDIUM"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "Mg"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of Mg"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 20.0,
+      "nutrient_risk": 20.0,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 20.0,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "No major contributing indicator",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B012": {
+    "Block_ID": "B012",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B012",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 21.539,
+      "FFB_Production_t": 215.391,
+      "Productivity_deviation": 15.28,
+      "High_Production_threshold_t": 23.973,
+      "High_Production_probability": 0.8,
+      "High_Production_class": "High",
+      "peer_cohort_size": 19,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 12.0,
+      "Palms_per_Ha": 143.4,
+      "Area_Ha": 10.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "PPKS/Sofc",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.176,
+          "P_pct": 0.12,
+          "K_pct": 1.155,
+          "Ca_pct": 0.476,
+          "Mg_pct": 0.252,
+          "B_ppm": 5.6
+        },
+        "low_nutrients": [
+          "N",
+          "P",
+          "Ca",
+          "B"
+        ],
+        "low_count": 4,
+        "high_count": 0,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "HIGH"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "Mg"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of Mg"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 20.0,
+      "nutrient_risk": 66.7,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 34.58,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "Nutrient imbalance",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B013": {
+    "Block_ID": "B013",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B013",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 19.237,
+      "FFB_Production_t": 461.723,
+      "Productivity_deviation": 2.96,
+      "High_Production_threshold_t": 51.39,
+      "High_Production_probability": 0.8,
+      "High_Production_class": "High",
+      "peer_cohort_size": 19,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 12.0,
+      "Palms_per_Ha": 128.1,
+      "Area_Ha": 24.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "Lonsum",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.176,
+          "P_pct": 0.12,
+          "K_pct": 1.155,
+          "Ca_pct": 0.476,
+          "Mg_pct": 0.252,
+          "B_ppm": 5.6
+        },
+        "low_nutrients": [
+          "N",
+          "P",
+          "Ca",
+          "B"
+        ],
+        "low_count": 4,
+        "high_count": 0,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "HIGH"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "Mg"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of Mg"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 20.0,
+      "nutrient_risk": 66.7,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 34.58,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "Nutrient imbalance",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B014": {
+    "Block_ID": "B014",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B014",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 19.114,
+      "FFB_Production_t": 363.19,
+      "Productivity_deviation": 2.3,
+      "High_Production_threshold_t": 40.423,
+      "High_Production_probability": 0.8,
+      "High_Production_class": "High",
+      "peer_cohort_size": 19,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 12.0,
+      "Palms_per_Ha": 127.3,
+      "Area_Ha": 19.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "Lonsum",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.658,
+          "P_pct": 0.148,
+          "K_pct": 1.235,
+          "Ca_pct": 0.676,
+          "Mg_pct": 0.329,
+          "B_ppm": 13.72
+        },
+        "low_nutrients": [],
+        "low_count": 0,
+        "high_count": 2,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "LOW"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "Mg"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of Mg"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 20.0,
+      "nutrient_risk": 0.0,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 13.75,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "No major contributing indicator",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B015": {
+    "Block_ID": "B015",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B015",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 19.256,
+      "FFB_Production_t": 481.399,
+      "Productivity_deviation": 3.06,
+      "High_Production_threshold_t": 53.58,
+      "High_Production_probability": 0.8,
+      "High_Production_class": "High",
+      "peer_cohort_size": 19,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 12.0,
+      "Palms_per_Ha": 128.2,
+      "Area_Ha": 25.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "Lonsum",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.476,
+          "P_pct": 0.136,
+          "K_pct": 1.171,
+          "Ca_pct": 0.895,
+          "Mg_pct": 0.338,
+          "B_ppm": 13.05
+        },
+        "low_nutrients": [
+          "P"
+        ],
+        "low_count": 1,
+        "high_count": 3,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "MEDIUM"
+      },
+      "soil_indicators": {
+        "status": "observed",
+        "sample_year": 2017,
+        "pH_H2O": 4.9,
+        "C_Organic_pct": 0.65,
+        "P_Available_ppm": 60.38,
+        "K_exch_me_100g": 0.64,
+        "Mg_exch_me_100g": 0.48,
+        "Base_Saturation_pct": 35.1,
+        "Sand_pct": 66.0,
+        "Clay_pct": 17.0,
+        "note": "Measured field sample from historical soil survey"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "Mg"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of Mg"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 20.0,
+      "nutrient_risk": 16.7,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 18.96,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "No major contributing indicator",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B016": {
+    "Block_ID": "B016",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B016",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 19.518,
+      "FFB_Production_t": 370.851,
+      "Productivity_deviation": 4.46,
+      "High_Production_threshold_t": 41.276,
+      "High_Production_probability": 0.8,
+      "High_Production_class": "High",
+      "peer_cohort_size": 19,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 12.0,
+      "Palms_per_Ha": 129.9,
+      "Area_Ha": 19.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "PPKS/Sofc",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.474,
+          "P_pct": 0.138,
+          "K_pct": 1.14,
+          "Ca_pct": 0.967,
+          "Mg_pct": 0.345,
+          "B_ppm": 19.08
+        },
+        "low_nutrients": [
+          "P"
+        ],
+        "low_count": 1,
+        "high_count": 3,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "MEDIUM"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "Mg"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of Mg"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 20.0,
+      "nutrient_risk": 16.7,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 18.96,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "No major contributing indicator",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B017": {
+    "Block_ID": "B017",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B017",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 20.309,
+      "FFB_Production_t": 406.147,
+      "Productivity_deviation": 8.7,
+      "High_Production_threshold_t": 45.204,
+      "High_Production_probability": 0.8,
+      "High_Production_class": "High",
+      "peer_cohort_size": 19,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 12.0,
+      "Palms_per_Ha": 135.2,
+      "Area_Ha": 20.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "Lonsum",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.459,
+          "P_pct": 0.136,
+          "K_pct": 1.296,
+          "Ca_pct": 0.719,
+          "Mg_pct": 0.345,
+          "B_ppm": 12.3
+        },
+        "low_nutrients": [
+          "P"
+        ],
+        "low_count": 1,
+        "high_count": 2,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "MEDIUM"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "Mg"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of Mg"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 20.0,
+      "nutrient_risk": 16.7,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 18.96,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "No major contributing indicator",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B018": {
+    "Block_ID": "B018",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B018",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 19.664,
+      "FFB_Production_t": 275.322,
+      "Productivity_deviation": 5.25,
+      "High_Production_threshold_t": 30.643,
+      "High_Production_probability": 0.8,
+      "High_Production_class": "High",
+      "peer_cohort_size": 19,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 12.0,
+      "Palms_per_Ha": 130.9,
+      "Area_Ha": 14.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "Lonsum",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.459,
+          "P_pct": 0.136,
+          "K_pct": 1.296,
+          "Ca_pct": 0.719,
+          "Mg_pct": 0.345,
+          "B_ppm": 12.3
+        },
+        "low_nutrients": [
+          "P"
+        ],
+        "low_count": 1,
+        "high_count": 2,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "MEDIUM"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "Mg"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of Mg"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 20.0,
+      "nutrient_risk": 16.7,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 18.96,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "No major contributing indicator",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B019": {
+    "Block_ID": "B019",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B019",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 15.32,
+      "FFB_Production_t": 306.414,
+      "Productivity_deviation": -19.85,
+      "High_Production_threshold_t": 34.104,
+      "High_Production_probability": 0.4,
+      "High_Production_class": "Not High",
+      "peer_cohort_size": 19,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 12.0,
+      "Palms_per_Ha": 99.5,
+      "Area_Ha": 20.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "Lonsum",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.748,
+          "P_pct": 0.132,
+          "K_pct": 0.946,
+          "Ca_pct": 0.8,
+          "Mg_pct": 0.284,
+          "B_ppm": 7.95
+        },
+        "low_nutrients": [
+          "P",
+          "B"
+        ],
+        "low_count": 2,
+        "high_count": 1,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "MEDIUM"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "Mg"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of Mg"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 60.0,
+      "nutrient_risk": 33.3,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 44.17,
+    "risk_level": "MEDIUM",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "Yield risk",
+    "recommended_action": "Monitor block and review identified contributing indicators"
+  },
+  "B020": {
+    "Block_ID": "B020",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B020",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 17.792,
+      "FFB_Production_t": 391.428,
+      "Productivity_deviation": -6.92,
+      "High_Production_threshold_t": 43.566,
+      "High_Production_probability": 0.6,
+      "High_Production_class": "High",
+      "peer_cohort_size": 19,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 12.0,
+      "Palms_per_Ha": 118.5,
+      "Area_Ha": 22.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "Lonsum",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.507,
+          "P_pct": 0.128,
+          "K_pct": 1.045,
+          "Ca_pct": 0.831,
+          "Mg_pct": 0.269,
+          "B_ppm": 24.65
+        },
+        "low_nutrients": [
+          "P"
+        ],
+        "low_count": 1,
+        "high_count": 2,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "MEDIUM"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "Ca"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of Ca"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 40.0,
+      "nutrient_risk": 16.7,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 28.96,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "No major contributing indicator",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B021": {
+    "Block_ID": "B021",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B021",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 18.317,
+      "FFB_Production_t": 402.995,
+      "Productivity_deviation": -4.17,
+      "High_Production_threshold_t": 44.853,
+      "High_Production_probability": 0.8,
+      "High_Production_class": "High",
+      "peer_cohort_size": 19,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 12.0,
+      "Palms_per_Ha": 122.0,
+      "Area_Ha": 22.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "PPKS/Sofc",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.577,
+          "P_pct": 0.142,
+          "K_pct": 1.475,
+          "Ca_pct": 0.811,
+          "Mg_pct": 0.224,
+          "B_ppm": 16.64
+        },
+        "low_nutrients": [
+          "P"
+        ],
+        "low_count": 1,
+        "high_count": 3,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "MEDIUM"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "K"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of K"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 20.0,
+      "nutrient_risk": 16.7,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 18.96,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "No major contributing indicator",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B022": {
+    "Block_ID": "B022",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B022",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 18.684,
+      "FFB_Production_t": 523.157,
+      "Productivity_deviation": -2.25,
+      "High_Production_threshold_t": 58.227,
+      "High_Production_probability": 0.8,
+      "High_Production_class": "High",
+      "peer_cohort_size": 19,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 12.0,
+      "Palms_per_Ha": 124.4,
+      "Area_Ha": 28.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "PPKS/Sofc",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.064,
+          "P_pct": 0.147,
+          "K_pct": 0.513,
+          "Ca_pct": 1.35,
+          "Mg_pct": 0.247,
+          "B_ppm": 13.26
+        },
+        "low_nutrients": [
+          "N",
+          "K"
+        ],
+        "low_count": 2,
+        "high_count": 1,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "MEDIUM"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "K"
+        ],
+        "excess_nutrients": [
+          "Ca"
+        ],
+        "prescription": "Review relative nutrient balance for K | Review possible relative excess of Ca"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 20.0,
+      "nutrient_risk": 33.3,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 24.17,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "No major contributing indicator",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B023": {
+    "Block_ID": "B023",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B023",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 16.76,
+      "FFB_Production_t": 402.243,
+      "Productivity_deviation": -12.32,
+      "High_Production_threshold_t": 44.769,
+      "High_Production_probability": 0.4,
+      "High_Production_class": "Not High",
+      "peer_cohort_size": 19,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 11.0,
+      "Palms_per_Ha": 111.6,
+      "Area_Ha": 24.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "PPKS/Sofc",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.485,
+          "P_pct": 0.152,
+          "K_pct": 1.43,
+          "Ca_pct": 0.84,
+          "Mg_pct": 0.28,
+          "B_ppm": 12.72
+        },
+        "low_nutrients": [],
+        "low_count": 0,
+        "high_count": 2,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "LOW"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "K"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of K"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 60.0,
+      "nutrient_risk": 0.0,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 33.75,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "Yield risk",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B024": {
+    "Block_ID": "B024",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B024",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 17.522,
+      "FFB_Production_t": 402.995,
+      "Productivity_deviation": -8.33,
+      "High_Production_threshold_t": 44.853,
+      "High_Production_probability": 0.6,
+      "High_Production_class": "High",
+      "peer_cohort_size": 19,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 11.0,
+      "Palms_per_Ha": 116.7,
+      "Area_Ha": 23.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "PPKS/Sofc",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.638,
+          "P_pct": 0.147,
+          "K_pct": 0.977,
+          "Ca_pct": 0.867,
+          "Mg_pct": 0.21,
+          "B_ppm": 12.56
+        },
+        "low_nutrients": [],
+        "low_count": 0,
+        "high_count": 1,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "LOW"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "Ca"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of Ca"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 40.0,
+      "nutrient_risk": 0.0,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 23.75,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "No major contributing indicator",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B025": {
+    "Block_ID": "B025",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B025",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 21.56,
+      "FFB_Production_t": 517.447,
+      "Productivity_deviation": 15.39,
+      "High_Production_threshold_t": 57.592,
+      "High_Production_probability": 0.8,
+      "High_Production_class": "High",
+      "peer_cohort_size": 19,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 11.0,
+      "Palms_per_Ha": 143.5,
+      "Area_Ha": 24.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "PPKS/Sofc",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.628,
+          "P_pct": 0.151,
+          "K_pct": 1.099,
+          "Ca_pct": 0.634,
+          "Mg_pct": 0.143,
+          "B_ppm": 14.86
+        },
+        "low_nutrients": [
+          "Mg"
+        ],
+        "low_count": 1,
+        "high_count": 0,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "MEDIUM"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "Mg"
+        ],
+        "excess_nutrients": [
+          "K"
+        ],
+        "prescription": "Review relative nutrient balance for Mg | Review possible relative excess of K"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 20.0,
+      "nutrient_risk": 16.7,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 18.96,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "No major contributing indicator",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B026": {
+    "Block_ID": "B026",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B026",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 20.471,
+      "FFB_Production_t": 491.311,
+      "Productivity_deviation": 9.56,
+      "High_Production_threshold_t": 54.683,
+      "High_Production_probability": 0.8,
+      "High_Production_class": "High",
+      "peer_cohort_size": 19,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 11.0,
+      "Palms_per_Ha": 136.3,
+      "Area_Ha": 24.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "PPKS/Sofc",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.745,
+          "P_pct": 0.149,
+          "K_pct": 0.967,
+          "Ca_pct": 0.617,
+          "Mg_pct": 0.176,
+          "B_ppm": 15.38
+        },
+        "low_nutrients": [
+          "Mg"
+        ],
+        "low_count": 1,
+        "high_count": 1,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "MEDIUM"
+      },
+      "soil_indicators": {
+        "status": "observed",
+        "sample_year": 2017,
+        "pH_H2O": 5.5,
+        "C_Organic_pct": 1.01,
+        "P_Available_ppm": 103.67,
+        "K_exch_me_100g": 1.07,
+        "Mg_exch_me_100g": 0.64,
+        "Base_Saturation_pct": 32.9,
+        "Sand_pct": 72.0,
+        "Clay_pct": 17.0,
+        "note": "Measured field sample from historical soil survey"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "N"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of N"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 20.0,
+      "nutrient_risk": 16.7,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 18.96,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "No major contributing indicator",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B027": {
+    "Block_ID": "B027",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B027",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 19.774,
+      "FFB_Production_t": 494.318,
+      "Productivity_deviation": 5.83,
+      "High_Production_threshold_t": 55.017,
+      "High_Production_probability": 0.8,
+      "High_Production_class": "High",
+      "peer_cohort_size": 19,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 11.0,
+      "Palms_per_Ha": 131.6,
+      "Area_Ha": 25.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "PPKS/Sofc",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.693,
+          "P_pct": 0.143,
+          "K_pct": 1.052,
+          "Ca_pct": 0.596,
+          "Mg_pct": 0.205,
+          "B_ppm": 14.21
+        },
+        "low_nutrients": [
+          "P"
+        ],
+        "low_count": 1,
+        "high_count": 0,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "MEDIUM"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "Mg"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of Mg"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 20.0,
+      "nutrient_risk": 16.7,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 18.96,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "No major contributing indicator",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B028": {
+    "Block_ID": "B028",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B028",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 15.32,
+      "FFB_Production_t": 367.695,
+      "Productivity_deviation": -21.97,
+      "High_Production_threshold_t": 40.924,
+      "High_Production_probability": 0.25,
+      "High_Production_class": "Not High",
+      "peer_cohort_size": 30,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 10.0,
+      "Palms_per_Ha": 92.0,
+      "Area_Ha": 24.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "PPKS/Sofc",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.629,
+          "P_pct": 0.139,
+          "K_pct": 0.951,
+          "Ca_pct": 0.587,
+          "Mg_pct": 0.203,
+          "B_ppm": 14.15
+        },
+        "low_nutrients": [
+          "P"
+        ],
+        "low_count": 1,
+        "high_count": 0,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "MEDIUM"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "Mg"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of Mg"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 75.0,
+      "nutrient_risk": 16.7,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 46.46,
+    "risk_level": "MEDIUM",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "Yield risk",
+    "recommended_action": "Monitor block and review identified contributing indicators"
+  },
+  "B029": {
+    "Block_ID": "B029",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B029",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 15.32,
+      "FFB_Production_t": 306.414,
+      "Productivity_deviation": -21.97,
+      "High_Production_threshold_t": 34.104,
+      "High_Production_probability": 0.25,
+      "High_Production_class": "Not High",
+      "peer_cohort_size": 30,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 10.0,
+      "Palms_per_Ha": 97.7,
+      "Area_Ha": 20.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "PPKS/Sofc",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.665,
+          "P_pct": 0.148,
+          "K_pct": 1.082,
+          "Ca_pct": 0.607,
+          "Mg_pct": 0.211,
+          "B_ppm": 13.47
+        },
+        "low_nutrients": [],
+        "low_count": 0,
+        "high_count": 0,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "LOW"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "Mg"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of Mg"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 75.0,
+      "nutrient_risk": 0.0,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 41.25,
+    "risk_level": "MEDIUM",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "Yield risk",
+    "recommended_action": "Monitor block and review identified contributing indicators"
+  },
+  "B030": {
+    "Block_ID": "B030",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B030",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 15.32,
+      "FFB_Production_t": 367.695,
+      "Productivity_deviation": -21.97,
+      "High_Production_threshold_t": 40.924,
+      "High_Production_probability": 0.25,
+      "High_Production_class": "Not High",
+      "peer_cohort_size": 30,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 10.0,
+      "Palms_per_Ha": 55.4,
+      "Area_Ha": 24.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "PPKS/Sofc",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.762,
+          "P_pct": 0.151,
+          "K_pct": 1.017,
+          "Ca_pct": 0.583,
+          "Mg_pct": 0.175,
+          "B_ppm": 18.4
+        },
+        "low_nutrients": [
+          "Mg"
+        ],
+        "low_count": 1,
+        "high_count": 1,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "MEDIUM"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "N"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of N"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 75.0,
+      "nutrient_risk": 16.7,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 46.46,
+    "risk_level": "MEDIUM",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "Yield risk",
+    "recommended_action": "Monitor block and review identified contributing indicators"
+  },
+  "B031": {
+    "Block_ID": "B031",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B031",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 15.32,
+      "FFB_Production_t": 367.695,
+      "Productivity_deviation": -21.97,
+      "High_Production_threshold_t": 40.924,
+      "High_Production_probability": 0.25,
+      "High_Production_class": "Not High",
+      "peer_cohort_size": 30,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 10.0,
+      "Palms_per_Ha": 65.5,
+      "Area_Ha": 24.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "PPKS/Sofc",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 3.306,
+          "P_pct": 0.151,
+          "K_pct": 0.956,
+          "Ca_pct": 0.567,
+          "Mg_pct": 0.192,
+          "B_ppm": 16.28
+        },
+        "low_nutrients": [
+          "Mg"
+        ],
+        "low_count": 1,
+        "high_count": 2,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "MEDIUM"
+      },
+      "soil_indicators": {
+        "status": "observed",
+        "sample_year": 2020,
+        "pH_H2O": 5.6,
+        "C_Organic_pct": 2.1,
+        "P_Available_ppm": 55.59,
+        "K_exch_me_100g": 0.408,
+        "Mg_exch_me_100g": 0.785,
+        "Base_Saturation_pct": 86.7,
+        "Sand_pct": 79.1,
+        "Clay_pct": 8.9,
+        "note": "Measured field sample from historical soil survey"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "N"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of N"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 75.0,
+      "nutrient_risk": 16.7,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 46.46,
+    "risk_level": "MEDIUM",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "Yield risk",
+    "recommended_action": "Monitor block and review identified contributing indicators"
+  },
+  "B032": {
+    "Block_ID": "B032",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B032",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 21.449,
+      "FFB_Production_t": 321.735,
+      "Productivity_deviation": 5.63,
+      "High_Production_threshold_t": 35.809,
+      "High_Production_probability": 0.8,
+      "High_Production_class": "High",
+      "peer_cohort_size": 14,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 8.0,
+      "Palms_per_Ha": 142.8,
+      "Area_Ha": 15.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "PPKS",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.717,
+          "P_pct": 0.151,
+          "K_pct": 1.162,
+          "Ca_pct": 0.715,
+          "Mg_pct": 0.301,
+          "B_ppm": 12.97
+        },
+        "low_nutrients": [],
+        "low_count": 0,
+        "high_count": 1,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "LOW"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "Mg"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of Mg"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 20.0,
+      "nutrient_risk": 0.0,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 13.75,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "No major contributing indicator",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B033": {
+    "Block_ID": "B033",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B033",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 21.418,
+      "FFB_Production_t": 471.185,
+      "Productivity_deviation": 5.48,
+      "High_Production_threshold_t": 52.443,
+      "High_Production_probability": 0.8,
+      "High_Production_class": "High",
+      "peer_cohort_size": 14,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 8.0,
+      "Palms_per_Ha": 142.6,
+      "Area_Ha": 22.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "PPKS",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.717,
+          "P_pct": 0.151,
+          "K_pct": 1.162,
+          "Ca_pct": 0.715,
+          "Mg_pct": 0.301,
+          "B_ppm": 12.97
+        },
+        "low_nutrients": [],
+        "low_count": 0,
+        "high_count": 1,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "LOW"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "Mg"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of Mg"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 20.0,
+      "nutrient_risk": 0.0,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 13.75,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "No major contributing indicator",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B034": {
+    "Block_ID": "B034",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B034",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 20.802,
+      "FFB_Production_t": 499.272,
+      "Productivity_deviation": 2.44,
+      "High_Production_threshold_t": 55.569,
+      "High_Production_probability": 0.8,
+      "High_Production_class": "High",
+      "peer_cohort_size": 14,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 8.0,
+      "Palms_per_Ha": 138.5,
+      "Area_Ha": 24.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "PPKS",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.614,
+          "P_pct": 0.129,
+          "K_pct": 1.205,
+          "Ca_pct": 0.657,
+          "Mg_pct": 0.283,
+          "B_ppm": 7.18
+        },
+        "low_nutrients": [
+          "P",
+          "B"
+        ],
+        "low_count": 2,
+        "high_count": 1,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "MEDIUM"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "Mg"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of Mg"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 20.0,
+      "nutrient_risk": 33.3,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 24.17,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "No major contributing indicator",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B035": {
+    "Block_ID": "B035",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B035",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 19.998,
+      "FFB_Production_t": 399.989,
+      "Productivity_deviation": -3.3,
+      "High_Production_threshold_t": 44.519,
+      "High_Production_probability": 0.8,
+      "High_Production_class": "High",
+      "peer_cohort_size": 14,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 8.0,
+      "Palms_per_Ha": 133.2,
+      "Area_Ha": 20.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "PPKS",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.98,
+          "P_pct": 0.144,
+          "K_pct": 1.552,
+          "Ca_pct": 0.388,
+          "Mg_pct": 0.501,
+          "B_ppm": 18.53
+        },
+        "low_nutrients": [
+          "P",
+          "Ca"
+        ],
+        "low_count": 2,
+        "high_count": 4,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "MEDIUM"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "Ca"
+        ],
+        "excess_nutrients": [
+          "Mg"
+        ],
+        "prescription": "Review relative nutrient balance for Ca | Review possible relative excess of Mg"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 20.0,
+      "nutrient_risk": 33.3,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 24.17,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "No major contributing indicator",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B036": {
+    "Block_ID": "B036",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B036",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 18.733,
+      "FFB_Production_t": 262.253,
+      "Productivity_deviation": -9.42,
+      "High_Production_threshold_t": 29.189,
+      "High_Production_probability": 0.6,
+      "High_Production_class": "High",
+      "peer_cohort_size": 14,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 8.0,
+      "Palms_per_Ha": 124.7,
+      "Area_Ha": 14.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "PPKS",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.694,
+          "P_pct": 0.139,
+          "K_pct": 0.799,
+          "Ca_pct": 0.569,
+          "Mg_pct": 0.25,
+          "B_ppm": 24.38
+        },
+        "low_nutrients": [
+          "P",
+          "K"
+        ],
+        "low_count": 2,
+        "high_count": 1,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "MEDIUM"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "K"
+        ],
+        "excess_nutrients": [
+          "Mg"
+        ],
+        "prescription": "Review relative nutrient balance for K | Review possible relative excess of Mg"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 40.0,
+      "nutrient_risk": 33.3,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 34.17,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "No major contributing indicator",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B037": {
+    "Block_ID": "B037",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B037",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 21.134,
+      "FFB_Production_t": 507.235,
+      "Productivity_deviation": 4.08,
+      "High_Production_threshold_t": 56.455,
+      "High_Production_probability": 0.8,
+      "High_Production_class": "High",
+      "peer_cohort_size": 14,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 8.0,
+      "Palms_per_Ha": 140.7,
+      "Area_Ha": 24.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "PPKS",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.694,
+          "P_pct": 0.139,
+          "K_pct": 0.799,
+          "Ca_pct": 0.569,
+          "Mg_pct": 0.25,
+          "B_ppm": 24.38
+        },
+        "low_nutrients": [
+          "P",
+          "K"
+        ],
+        "low_count": 2,
+        "high_count": 1,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "MEDIUM"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "K"
+        ],
+        "excess_nutrients": [
+          "Mg"
+        ],
+        "prescription": "Review relative nutrient balance for K | Review possible relative excess of Mg"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 20.0,
+      "nutrient_risk": 33.3,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 24.17,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "No major contributing indicator",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B038": {
+    "Block_ID": "B038",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B038",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 21.137,
+      "FFB_Production_t": 465.026,
+      "Productivity_deviation": 4.09,
+      "High_Production_threshold_t": 51.757,
+      "High_Production_probability": 0.8,
+      "High_Production_class": "High",
+      "peer_cohort_size": 14,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 8.0,
+      "Palms_per_Ha": 140.7,
+      "Area_Ha": 22.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "PPKS",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.827,
+          "P_pct": 0.155,
+          "K_pct": 0.97,
+          "Ca_pct": 0.628,
+          "Mg_pct": 0.3,
+          "B_ppm": 26.13
+        },
+        "low_nutrients": [],
+        "low_count": 0,
+        "high_count": 2,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "LOW"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "Mg"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of Mg"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 20.0,
+      "nutrient_risk": 0.0,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 13.75,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "No major contributing indicator",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B039": {
+    "Block_ID": "B039",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B039",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 20.614,
+      "FFB_Production_t": 515.345,
+      "Productivity_deviation": 1.18,
+      "High_Production_threshold_t": 57.358,
+      "High_Production_probability": 0.8,
+      "High_Production_class": "High",
+      "peer_cohort_size": 14,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 8.0,
+      "Palms_per_Ha": 137.2,
+      "Area_Ha": 25.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "PPKS",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.586,
+          "P_pct": 0.148,
+          "K_pct": 1.051,
+          "Ca_pct": 0.505,
+          "Mg_pct": 0.293,
+          "B_ppm": 11.34
+        },
+        "low_nutrients": [
+          "Ca"
+        ],
+        "low_count": 1,
+        "high_count": 1,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "MEDIUM"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "Ca"
+        ],
+        "excess_nutrients": [
+          "Mg"
+        ],
+        "prescription": "Review relative nutrient balance for Ca | Review possible relative excess of Mg"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 20.0,
+      "nutrient_risk": 16.7,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 18.96,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "No major contributing indicator",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B040": {
+    "Block_ID": "B040",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B040",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 20.749,
+      "FFB_Production_t": 435.736,
+      "Productivity_deviation": 2.18,
+      "High_Production_threshold_t": 48.497,
+      "High_Production_probability": 0.8,
+      "High_Production_class": "High",
+      "peer_cohort_size": 14,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 8.0,
+      "Palms_per_Ha": 138.1,
+      "Area_Ha": 21.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "PPKS",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.391,
+          "P_pct": 0.142,
+          "K_pct": 1.659,
+          "Ca_pct": 0.929,
+          "Mg_pct": 0.419,
+          "B_ppm": 20.48
+        },
+        "low_nutrients": [
+          "N",
+          "P"
+        ],
+        "low_count": 2,
+        "high_count": 4,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "MEDIUM"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "Mg"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of Mg"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 20.0,
+      "nutrient_risk": 33.3,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 24.17,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "No major contributing indicator",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B041": {
+    "Block_ID": "B041",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B041",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 20.758,
+      "FFB_Production_t": 498.22,
+      "Productivity_deviation": 2.23,
+      "High_Production_threshold_t": 55.452,
+      "High_Production_probability": 0.8,
+      "High_Production_class": "High",
+      "peer_cohort_size": 14,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 8.0,
+      "Palms_per_Ha": 138.2,
+      "Area_Ha": 24.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "PPKS",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.42,
+          "P_pct": 0.141,
+          "K_pct": 1.265,
+          "Ca_pct": 0.671,
+          "Mg_pct": 0.362,
+          "B_ppm": 13.43
+        },
+        "low_nutrients": [
+          "P"
+        ],
+        "low_count": 1,
+        "high_count": 2,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "MEDIUM"
+      },
+      "soil_indicators": {
+        "status": "observed",
+        "sample_year": 2020,
+        "pH_H2O": 5.6,
+        "C_Organic_pct": 2.1,
+        "P_Available_ppm": 55.59,
+        "K_exch_me_100g": 0.408,
+        "Mg_exch_me_100g": 0.785,
+        "Base_Saturation_pct": 86.7,
+        "Sand_pct": 79.1,
+        "Clay_pct": 8.9,
+        "note": "Measured field sample from historical soil survey"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "Mg"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of Mg"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 20.0,
+      "nutrient_risk": 16.7,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 18.96,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "No major contributing indicator",
+    "recommended_action": "Continue routine monitoring"
+  },
+  "B042": {
+    "Block_ID": "B042",
+    "Division_ID": "Division_A",
+    "Year": 2024,
+    "Month": 12,
+    "identity": {
+      "Block_ID": "B042",
+      "Division_ID": "Division_A",
+      "Year": 2024,
+      "Month": 12
+    },
+    "production_evidence": {
+      "Productivity_t_Ha": 19.605,
+      "FFB_Production_t": 333.298,
+      "Productivity_deviation": -5.21,
+      "High_Production_threshold_t": 37.096,
+      "High_Production_probability": 0.6,
+      "High_Production_class": "High",
+      "peer_cohort_size": 14,
+      "target_definition": "Maximum FFB production for Block + Year represents the High Production threshold"
+    },
+    "agronomic_evidence": {
+      "Plant_Age_Years": 8.0,
+      "Palms_per_Ha": 130.5,
+      "Area_Ha": 17.0,
+      "Plant_Status": "TM-Utama",
+      "Seed_Type": "PPKS",
+      "leaf_nutrients": {
+        "status": "observed",
+        "sample_year": 2022,
+        "panel": {
+          "N_pct": 2.42,
+          "P_pct": 0.141,
+          "K_pct": 1.265,
+          "Ca_pct": 0.671,
+          "Mg_pct": 0.362,
+          "B_ppm": 13.43
+        },
+        "low_nutrients": [
+          "P"
+        ],
+        "low_count": 1,
+        "high_count": 2,
+        "available_count": 6,
+        "data_status": "Full nutrient panel (6 measured)",
+        "concern": "MEDIUM"
+      },
+      "soil_indicators": {
+        "status": "unavailable",
+        "sample_year": null,
+        "note": "Soil sampling not conducted for this block; sparse survey restricted to 7 blocks in estate"
+      },
+      "dris_indicators": {
+        "status": "observed",
+        "sample_year": 2022,
+        "limiting_nutrients": [
+          "P"
+        ],
+        "excess_nutrients": [
+          "Mg"
+        ],
+        "prescription": "Review relative nutrient balance for P | Review possible relative excess of Mg"
+      }
+    },
+    "weather_evidence": {
+      "status": "Unavailable / Not integrated",
+      "reason": "Estate-level weather station measurements repeat identically across all 42 blocks; offers zero block-level spatial discrimination.",
+      "block_discriminating": false,
+      "estate_annual_rainfall_mm": 281.09,
+      "estate_mean_temperature_c": 27.4
+    },
+    "risk_components": {
+      "production_risk": 40.0,
+      "nutrient_risk": 16.7,
+      "dris_risk": 20.0,
+      "soil_risk": null,
+      "weather_risk": null
+    },
+    "overall_risk_score": 28.96,
+    "risk_level": "LOW",
+    "effective_weights": {
+      "production_pct": 50.0,
+      "nutrient_pct": 31.2,
+      "dris_pct": 18.7,
+      "soil_pct": 0.0,
+      "weather_pct": 0.0
+    },
+    "evidence_status": {
+      "palm": "available",
+      "rgb_drone": "unmapped",
+      "multispectral": "unmapped"
+    },
+    "contributing_indicators": "No major contributing indicator",
+    "recommended_action": "Continue routine monitoring"
+  }
+}

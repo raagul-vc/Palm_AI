@@ -2,6 +2,78 @@
 
 Palm AI is a plantation intelligence dashboard built around the project’s integrated FFB, leaf, soil, and weather data, saved analysis outputs, and trained yield model.
 
+
+
+## Decoupled Multi-Source Evidence Architecture
+
+The project standardizes risk analysis around a scientifically defensible **Decoupled Multi-Source Evidence Architecture** organized into three independent evidence pillars:
+
+`	ext
++-----------------------------------------------------------------------------------+
+|               PALM AI MULTI-SOURCE EVIDENCE ARCHITECTURE                          |
++-----------------------------------------------------------------------------------+
+| PILLAR 1: PALM AGRONOMIC RISK | PILLAR 2: RGB DRONE UAV     | PILLAR 3: MULTISPECTRAL UAV |
+| (Core Operational Model)      | (Visual Crown Detection)    | (Canopy Vigour & NDRE)      |
++-------------------------------+-----------------------------+-----------------------------+
+| Level : Operational Block     | Level : Image Tile (1024x1024)| Level : GeoTIFF (512x512) |
+| Source: 42 Plantation Blocks  | Source: MOPAD Site 2        | Source: MSUAV500K Altum     |
+| Status: AVAILABLE             | Status: UNMAPPED            | Status: UNMAPPED            |
+| Role  : Core Block Risk Score | Role  : Visual Demonstration| Role  : Spectral Vigour Demo|
+| Mapping: Primary Key (Block_ID)| Mapping: UNAVAILABLE        | Mapping: UNAVAILABLE        |
++-----------------------------------------------------------------------------------+
+`
+
+### Pillar 1 — Palm Plantation Agronomic Risk (Core Model)
+- **Granularity & Scope**: Operational block-month data across 42 commercial oil palm blocks (B001–B044, Division A) spanning 2012–2024 (6,552 records).
+- **Core Risk Model**: This is the **ONLY** data source currently eligible for block-level predictive modeling.
+- **Risk Score Formula**: Deterministic composite weighted screening score:
+  * **Yield Risk Component (40% base weight)**: Based on annual yield gap against age-matched peer cohort medians (+/- 2 years). Mapped stepwise: <5% gap = 20, 5–<10% = 40, 10–<20% = 60, 20–<30% = 75, ≥30% = 90.
+  * **Foliar Nutrient Risk (25% base weight)**: Evaluates leaf macro and micronutrients (N, P, K, Ca, Mg, B) against empirical dataset quartiles (Q25/Q75). Calculated as (Low_Nutrient_Count / Available_Nutrient_Count) * 100 (requires at least 3 measured nutrients).
+  * **DRIS Imbalance Risk (15% base weight)**: Beaufils DRIS nutritional ratio indices; calculates limiting nutrients with negative indices: min(5, Limiting_Count) / 5 * 100.
+  * **Weight Renormalization**: Available weights are dynamically renormalized per block: Multi_Source_Risk_Score = sum(Component_i * Weight_i) / sum(Available_Weights). Strictly normalized to [0, 100].
+  * **Risk Levels**: HIGH (≥70), MEDIUM (40–<70), LOW (<40).
+- **High Production Target**: Adheres strictly to professor's definition: Maximum FFB production for each Block + Year represents the High Production threshold. Evaluated via peak monthly capacity and peer-relative probability.
+- **Weather Evidence Policy**: Weather observations in the master dataset are estate-wide station averages repeated identically for all 42 blocks. Weather offers **ZERO** spatial discrimination between blocks and is strictly excluded from block risk calculation (Weather_Risk_Component = null). It is reported as Unavailable / Not integrated for block discrimination. No synthetic microclimate data is fabricated.
+- **Soil Evidence Policy**: Soil observations are sparse (only 7 out of 42 blocks sampled in 2017/2020; 96 rows out of 6,552). Missing soil data is **NOT** blindly imputed. Soil properties are reported as observed field measurements where available and marked Unavailable for unsampled blocks.
+
+### Pillar 2 — RGB Drone UAV Module (Independent Demonstration)
+- **Source & Region**: MOPAD (Malaysian Oil Palm Aerial Dataset) Site 2.
+- **Model**: Custom-trained YOLO11n object detector (drone/models/palm_yolo_best.pt, 50 epochs, frozen).
+- **Performance**: Precision = 0.9598, Recall = 0.9899, mAP50 = 0.9799, mAP50-95 = 0.8884.
+- **Extracted Health Features**: Evaluated over 500 validation image crops:
+  * Mean Drone Health Score: 75.81%
+  * Healthy Palms: 75.81% mean
+  * Dead Palms: 0.53% mean
+  * Yellow/Chlorotic Palms: 1.23% mean
+  * Small Palms: 22.43% mean
+- **Mapping Status**: lock_mapping = unavailable. Features exist strictly at the image-canvas coordinate level.
+
+### Pillar 3 — Multispectral UAV Module (Independent Demonstration)
+- **Source & Region**: MSUAV500K Altum 5-band benchmark (Hullerbusch, Germany, Zenodo DOI: 10.5281/zenodo.16743974).
+- **Calibrated Bands**: Blue (475 nm), Green (560 nm), Red (668 nm), Red Edge (717 nm), NIR (842 nm).
+- **Extracted Health Features**: 43 quantitative features calculated across 34 GeoTIFF tiles:
+  * Pure-Canopy NDVI Mean: 0.8859
+  * Pure-Canopy NDRE Mean: 0.5069
+  * Pure-Canopy Cover: 93.62% mean
+  * Heterogeneity (Canopy NDVI CV): 0.1009
+  * Multispectral Health Score (MHS): 92.00 mean
+  * Vigour Strata: 30 High Vigour, 3 Moderate Vigour, 1 Background
+- **Mapping Status**: lock_mapping = unavailable. Research benchmark tiles have no geographical connection to the tropical plantation.
+
+### Why the Datasets Are NOT Merged
+A rigorous integration audit conclusively established that merging RGB or Multispectral records into Palm Plantation rows is scientifically indefensible:
+1. **Different Geography**: Palm AI operational data comes from a commercial plantation estate; MOPAD Site 2 comes from an unindexed Malaysian UAV research site; MSUAV500K comes from Hullerbusch, Germany.
+2. **Disjoint Spatial Keys**: Operational plantation data is indexed by Block_ID (B001–B044). The UAV imagery lacks block boundary shapefiles, georeferenced bounding boxes, and ground telemetry.
+3. **Disparate Temporalities**: Monthly operational records from 2012–2024 vs static research flight campaigns.
+4. **Data Falsification Prevention**: Forcing an artificial join by generating synthetic Block_IDs, GPS coordinates, or dates would constitute academic and engineering falsification.
+
+### Future Integration Requirements
+To legitimately fuse UAV imagery with block-level agronomic records, the estate must acquire:
+1. Georeferenced orthomosaics flown directly over the target Palm AI plantation blocks in a defined Coordinate Reference System (e.g. WGS84 / UTM).
+2. Official GIS boundary shapefiles or GeoJSON polygon layers defining the perimeter coordinates of blocks B001–B044.
+3. Synchronized flight timestamps aligned with monthly harvest and foliar sampling windows.
+4. Zonal polygon statistics (e.g. rasterstats) computing pure-canopy mean NDVI, NDRE, and YOLO crown counts per block boundary.
+
 ## Project layout
 
 - `data/` contains the master dataset, NASA POWER monthly weather, DRIS references, and field input data.

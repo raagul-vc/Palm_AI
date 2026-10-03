@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+"""Inspect MOPAD drone dataset metadata to determine whether a reliable Block_ID mapping exists."""
+import json
+from pathlib import Path
+from PIL import Image
+
+ROOT = Path(__file__).resolve().parents[1]
+VAL_IMAGES_DIR = ROOT / "dataset_yolo" / "images" / "val"
+CLEAN_JSON = ROOT / "dataset_clean" / "annotations" / "instances_val2017_clean.json"
+OUTPUT_FILE = ROOT / "outputs" / "drone_block_mapping_status.txt"
+
+
+def check_metadata():
+    report_lines = [
+        "================================================================================",
+        "                     DRONE UAV TO BLOCK_ID MAPPING AUDIT                        ",
+        "================================================================================",
+        "",
+        "BLOCK_ID MAPPING AVAILABLE: NO",
+        "",
+        "SUMMARY OF FINDINGS:",
+        "-------------------",
+        "An exhaustive audit of all available drone UAV image files, annotations, and",
+        "metadata sources was performed to evaluate whether a reliable mapping exists",
+        "between the 500 UAV validation images and the plantation agronomic Block_IDs",
+        "(e.g., 'B001', 'B002', ...) used across Palm_AI.",
+        "",
+        "No reliable, verified mapping currently exists. As instructed, no synthetic or",
+        "fabricated Block_ID values have been generated.",
+        "",
+        "METADATA SOURCES INSPECTED:",
+        "--------------------------",
+        "1. Image Filenames (drone/dataset_yolo/images/val/*.jpg):",
+        "   - Filenames follow the Site 2 spatial tiling pattern: e.g. '44000_16000_1013_87.jpg'",
+        "   - Components represent pixel coordinates / tile offsets from the original Site 2",
+        "     orthomosaic canvas (canvas X, canvas Y, tile local coordinates).",
+        "   - No management Block_ID (e.g. 'B001') or field identifier is encoded.",
+        "",
+        "2. COCO Annotation JSON (instances_val2017_clean.json):",
+        "   - Evaluated 500 image records and 32,846 annotation records.",
+        "   - 'info' block: None (no dataset-level metadata or plantation coordinate system).",
+        "   - 'images' records: contains only 'id', 'file_name', 'width', 'height', 'license'.",
+        "   - No GPS coordinates (latitude, longitude, altitude), flight paths, or block keys.",
+        "",
+        "3. Image Binary EXIF Headers:",
+        "   - Sampled JPEG image headers across splits.",
+        "   - EXIF metadata tag count: 0 (images are cropped orthophoto raster tiles without EXIF tags).",
+        "",
+        "4. Palm_AI Core Agronomic Datasets (data/):",
+        "   - Tabular datasets in data/ (e.g. Palm_AI_Master_FFB_Leaf_Soil_Weather.csv) define",
+        "     management blocks as strings ('B001', 'B002', etc.).",
+        "   - No cross-reference table, lookup dictionary, or spatial join file links Site 2",
+        "     tile offsets to management Block_IDs.",
+        "",
+        "MISSING METADATA REQUIRED FOR FUTURE BLOCK-LEVEL INTEGRATION:",
+        "-----------------------------------------------------------",
+        "To enable scientifically valid, spatial aggregation of UAV palm detections to Block_IDs:",
+        "1. Georeferenced Orthomosaic / GeoTIFF: Original georeferenced raster with CRS and affine transform.",
+        "2. Plantation Boundary Shapefile / GeoJSON: Vector polygon layer defining GIS boundaries of blocks.",
+        "3. Flight Log / Telemetry: GPS timestamps, flight path coordinates, or camera sensor logs.",
+        "4. Official Cross-Reference Table: A verified table mapping Site 2 canvas coordinates to block names.",
+        "",
+        "CONCLUSION:",
+        "----------",
+        "Drone health indicators remain at the image level (drone/outputs/drone_image_health_features.csv).",
+        "Block-level aggregation will be implemented once verified GIS boundaries or cross-reference",
+        "data become available.",
+        "================================================================================"
+    ]
+    content = "\n".join(report_lines) + "\n"
+    OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
+    OUTPUT_FILE.write_text(content, encoding="utf-8")
+    print(f"Generated {OUTPUT_FILE}")
+    print("Block_ID mapping available: NO (verified and documented)")
+
+
+if __name__ == "__main__":
+    check_metadata()

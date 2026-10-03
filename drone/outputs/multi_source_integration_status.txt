@@ -1,0 +1,66 @@
+================================================================================
+             PALM_AI: MULTI-SOURCE INTEGRATION AUDIT REPORT                     
+================================================================================
+
+AUDIT VERDICT:           ROW_LEVEL_FUSION_BLOCKED
+DIRECT FUSION POSSIBLE:  False
+
+SOURCE IDENTIFICATION & RESOLUTION AUDIT
+----------------------------------------
+1. Palm Plantation Agronomic Source (data/Palm_AI_Master_FFB_Leaf_Soil_Weather.csv):
+   - Resolution:         Operational Management Block (B001 - B044)
+   - Temporal Scale:     Monthly historical series (2012 - 2024)
+   - Primary Target:     Fresh Fruit Bunch (FFB) Productivity (t/Ha)
+   - Geospatial Keys:    Block_ID present; GIS boundary shapefile MISSING.
+
+2. RGB Drone Detection Source (drone/outputs/drone_image_health_features.csv):
+   - Resolution:         Image-level orthophoto canvas crops (1024x1024 px)
+   - Dataset Origin:     MOPAD Site 2, Peninsular Malaysia
+   - Temporal Scale:     Single flight campaign (exact timestamp omitted)
+   - Target / Labels:    5 YOLO classes (Healthy, Dead, Small, Yellow, Grass)
+   - Geospatial Keys:    Pixel canvas offsets only; Block_ID and GPS MISSING.
+
+3. Multispectral UAV Source (drone/multispectral/outputs/multispectral_tile_health_features.csv):
+   - Resolution:         Tile-level 5-band GeoTIFF chips (512x512 px)
+   - Dataset Origin:     MSUAV500K Benchmark (Hullerbusch, Germany)
+   - Temporal Scale:     Pretraining research campaign
+   - Spectral Bands:     Blue (475nm), Green (560nm), Red (668nm), RedEdge (717nm), NIR (842nm)
+   - Geospatial Keys:    Tile grid offsets only; Block_ID and GPS MISSING.
+
+IDENTIFIER AUDIT MATRIX
+-----------------------
+Source                         | Block_ID | GPS    | Date       | Common Key
+---------------------------------------------------------------------------
+Palm Plantation Agronomic      | YES (42  | NO (No | YES (Year  | NO        
+RGB Drone Detection (MOPAD)    | NO (Orth | NO (No | NO (Unspec | NO        
+Multispectral UAV (MSUAV500K)  | NO (Deci | NO (St | NO (Resear | NO        
+
+EVALUATION OF JOIN STRATEGIES
+-----------------------------
+  * 1. Exact Block_ID                   : IMPOSSIBLE - RGB and Multispectral sources lack Block_ID metadata.
+  * 2. Block_ID + Year                  : IMPOSSIBLE - Neither RGB nor Multispectral contains Block_ID or collection year.
+  * 3. GPS Spatial Intersection         : IMPOSSIBLE - No GPS latitude/longitude tags exist in any of the three sources.
+  * 4. GPS + Acquisition Date           : IMPOSSIBLE - Neither GPS coordinates nor specific flight dates exist.
+  * 5. CRS/Bounds Spatial Intersection  : IMPOSSIBLE - Disjoint geographic locations: Palm is Southeast Asian commercial estate, RGB is Peninsular Malaysia Site 2, Multispectral is Mecklenburg-Vorpommern, Germany. Zero spatial overlap.
+  * 6. Campaign + Date                  : IMPOSSIBLE - Independent flight campaigns conducted by separate organizations in different countries and years.
+  * 7. Filename-Derived Location        : IMPOSSIBLE - Filenames represent local canvas pixel coordinates only; no official cross-reference lookup exists.
+  * 8. Any Other Documented Identifier  : IMPOSSIBLE - No shared primary or secondary key exists across repositories.
+
+SCIENTIFIC INTEGRITY VERDICT & JUSTIFICATION
+--------------------------------------------
+Direct row-level concatenation or merging across the three sources is scientifically invalid and prohibited. The Palm Plantation records, RGB drone imagery, and Multispectral rasters lack a shared common key, lack GIS boundary polygons, and represent disjoint spatial locations. In accordance with strict scientific integrity rules, no synthetic Block_IDs or invented GPS coordinates have been fabricated. Each source remains an independent evidence layer.
+
+RECOMMENDED MULTI-SOURCE RISK ANALYSIS ARCHITECTURE
+---------------------------------------------------
+Direct row-level concatenation is strictly prohibited.
+Instead, the Palm_AI Multi-Source Risk Analysis engine operates via Decoupled Evidence Integration:
+  [1] Agronomic Evidence: Block-level FFB yield, DRIS nutritional indices, and soil health.
+  [2] RGB Drone Evidence: Crown-level mortality risk and visual foliar chlorosis rates.
+  [3] Multispectral Evidence: Canopy-level photosynthetic vigour (NDVI) and deep chlorophyll (NDRE).
+
+REQUIRED DATA TO UNLOCK FUTURE ROW-LEVEL / BLOCK-LEVEL SPATIAL FUSION:
+----------------------------------------------------------------------
+1. Plantation GIS Boundary Layer (Shapefile / GeoJSON in WGS84 / UTM).
+2. Georeferenced UAV Orthomosaics with embedded CRS and affine geotransforms.
+3. Flight telemetry logs with synchronized acquisition timestamps.
+================================================================================

@@ -1,0 +1,89 @@
+================================================================================
+             PALM_AI MULTISPECTRAL DATASET VERIFICATION & AUDIT REPORT          
+================================================================================
+
+STATUS:  MULTISPECTRAL_DATA_PRESENT_AND_VERIFIED
+MESSAGE: Successfully verified 34 genuine multispectral GeoTIFF files in C:\Users\iRaagul\OneDrive\Desktop\Palm_AI\drone\multispectral\data. All files contain genuine Red (668 nm), NIR (842 nm), and RedEdge (717 nm) calibrated bands. NDVI and NDRE vegetation index calculations are physically and scientifically feasible.
+
+LOCAL DATASET AUDIT & REJECTION LOG
+------------------------------------
+1. MOPAD Site 2 Drone Dataset (drone/dataset_yolo/):
+   - Format: 8-bit RGB JPEG (1024x1024)
+   - Bands: 3 bands ('R', 'G', 'B')
+   - Genuine Multispectral: NO
+   - Rejection Reason: Visible RGB only. Lacks Near-Infrared (NIR) and Red-Edge.
+
+2. Mendeley Data 'Oil Palm Tree Detection for Anomaly Identification' (Downloads):
+   - Source: DOI 10.17632/nh7d23dgnw.1 / Roboflow
+   - Format: 8-bit RGB JPEG (800x600)
+   - Bands: 3 bands ('R', 'G', 'B')
+   - Genuine Multispectral: NO
+   - Rejection Reason: Despite UAV flight using DJI Phantom 4 Multispectral,
+     the published Roboflow export contains ONLY 3-channel RGB JPEGs.
+     Raw NIR, Red-Edge, and radiometric calibration TIFFs were omitted.
+
+VERIFIED MSUAV500K MULTISPECTRAL DATA IN DRONE/MULTISPECTRAL/DATA/
+-----------------------------------------------------------------
+- Target Directory:   C:\Users\iRaagul\OneDrive\Desktop\Palm_AI\drone\multispectral\data
+- Total Raster Files: 34
+- Verified Files:     34
+- Format:             GeoTIFF (5-band stacked rasters)
+- Spatial Resolution: 512 x 512 pixels
+- Radiometric Depth:  8-bit calibrated surface reflectance
+
+VERIFIED SPECTRAL BAND ALLOCATION:
+  * Band 0 (Blue):     475 nm (Atmospheric scattering baseline)
+  * Band 1 (Green):    560 nm (Chlorophyll green peak reflectance)
+  * Band 2 (Red):      668 nm (Chlorophyll absorption - CRITICAL FOR NDVI)
+  * Band 3 (Red Edge): 717 nm (Chlorophyll transition - CRITICAL FOR NDRE)
+  * Band 4 (NIR):      842 nm (Leaf mesophyll reflectance - CRITICAL FOR NDVI/NDRE)
+
+SAMPLE VERIFIED TILES (FIRST 5):
+  - ALTUM_CAL_altum_beechforest_Hullerbusch_Orthomosaic-reflectance0-1_AltumMSI_1072_1031.tif (1,311,040 bytes)
+    Dimensions: 512x512 | Channels: 5 | Dtype: uint8
+      [0] Blue (475 nm): Min=0.0, Max=71.0, Mean=5.1152
+      [1] Green (560 nm): Min=0.0, Max=114.0, Mean=14.8916
+      [2] Red (668 nm): Min=0.0, Max=60.0, Mean=4.6054
+      [3] RedEdge (717 nm): Min=0.0, Max=185.0, Mean=30.3976
+      [4] NIR (842 nm): Min=0.0, Max=255.0, Mean=63.8031
+  - ALTUM_CAL_altum_beechforest_Hullerbusch_Orthomosaic-reflectance0-1_AltumMSI_1072_1543.tif (1,311,040 bytes)
+    Dimensions: 512x512 | Channels: 5 | Dtype: uint8
+      [0] Blue (475 nm): Min=0.0, Max=26.0, Mean=3.426
+      [1] Green (560 nm): Min=0.0, Max=67.0, Mean=12.7643
+      [2] Red (668 nm): Min=0.0, Max=43.0, Mean=4.847
+      [3] RedEdge (717 nm): Min=0.0, Max=157.0, Mean=39.8599
+      [4] NIR (842 nm): Min=0.0, Max=255.0, Mean=108.0733
+  - ALTUM_CAL_altum_beechforest_Hullerbusch_Orthomosaic-reflectance0-1_AltumMSI_1072_2055.tif (1,311,040 bytes)
+    Dimensions: 512x512 | Channels: 5 | Dtype: uint8
+      [0] Blue (475 nm): Min=0.0, Max=34.0, Mean=3.7298
+      [1] Green (560 nm): Min=0.0, Max=51.0, Mean=12.512
+      [2] Red (668 nm): Min=0.0, Max=48.0, Mean=5.2048
+      [3] RedEdge (717 nm): Min=0.0, Max=120.0, Mean=38.0238
+      [4] NIR (842 nm): Min=7.0, Max=255.0, Mean=104.4368
+  - ALTUM_CAL_altum_beechforest_Hullerbusch_Orthomosaic-reflectance0-1_AltumMSI_1072_2567.tif (1,311,040 bytes)
+    Dimensions: 512x512 | Channels: 5 | Dtype: uint8
+      [0] Blue (475 nm): Min=0.0, Max=25.0, Mean=3.3042
+      [1] Green (560 nm): Min=0.0, Max=56.0, Mean=10.0869
+      [2] Red (668 nm): Min=0.0, Max=42.0, Mean=4.403
+      [3] RedEdge (717 nm): Min=0.0, Max=129.0, Mean=32.2632
+      [4] NIR (842 nm): Min=2.0, Max=255.0, Mean=93.0755
+  - ALTUM_CAL_altum_beechforest_Hullerbusch_Orthomosaic-reflectance0-1_AltumMSI_1072_3079.tif (1,311,040 bytes)
+    Dimensions: 512x512 | Channels: 5 | Dtype: uint8
+      [0] Blue (475 nm): Min=0.0, Max=24.0, Mean=4.0397
+      [1] Green (560 nm): Min=0.0, Max=53.0, Mean=10.5847
+      [2] Red (668 nm): Min=0.0, Max=41.0, Mean=5.3652
+      [3] RedEdge (717 nm): Min=0.0, Max=141.0, Mean=34.8958
+      [4] NIR (842 nm): Min=0.0, Max=255.0, Mean=103.8946
+
+VEGETATION INDEX SCIENTIFIC FEASIBILITY:
+- Genuine Multispectral Data: PRESENT & VERIFIED
+- NDVI Feasibility:          FEASIBLE (Physical Red and NIR bands present)
+- NDRE Feasibility:          FEASIBLE (Physical RedEdge and NIR bands present)
+
+PROJECT INTEGRITY RULES ENFORCED:
+- DO NOT use RGB imagery as multispectral data: COMPLIANT (MOPAD rejected)
+- DO NOT invent or fabricate missing NIR/Red/RedEdge bands: COMPLIANT (No synthetic bands)
+- DO NOT calculate NDVI or NDRE yet: COMPLIANT (Calculations deferred to next task)
+- DO NOT train any model: COMPLIANT (Zero models trained)
+- DO NOT modify backend/ or frontend/: COMPLIANT (Workspace untouched outside drone/multispectral/)
+================================================================================

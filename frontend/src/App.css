@@ -363,3 +363,64 @@
   .block-history-chart { height: 255px; }
   .monthly-forecast-chart { margin-left: 0; margin-right: 0; }
 }
+
+/* =========================================================================
+   DECOUPLED MULTI-SOURCE EVIDENCE ARCHITECTURE & STANDARDIZED BLOCK RISK
+   ========================================================================= */
+
+.evidence-arch-panel { margin-bottom: 22px; }
+.evidence-arch-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 10px; }
+.pillar-card { background: #fdfdfd; border: 1px solid var(--border); border-radius: 10px; padding: 16px 14px; display: flex; flex-direction: column; gap: 8px; transition: transform .14s ease, box-shadow .14s ease; }
+.pillar-card:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,.04); }
+.pillar-card.pillar-palm { border-left: 4px solid #2d6e47; }
+.pillar-card.pillar-rgb { border-left: 4px solid #3b82f6; }
+.pillar-card.pillar-ms { border-left: 4px solid #8b5cf6; }
+
+.pillar-badge-strip { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.pillar-tag { font-size: 9px; font-weight: 800; letter-spacing: 1px; color: #6b7280; text-transform: uppercase; }
+.status-tag { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 12px; }
+.status-tag.available { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.status-tag.unmapped { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+
+.pillar-card h4 { font-size: 13px; font-weight: 700; color: #1e3526; margin: 0; }
+.pillar-desc { font-size: 11px; line-height: 1.45; color: #6b7280; margin: 0; flex: 1 1 auto; }
+.pillar-metrics { display: grid; gap: 4px; padding-top: 8px; border-top: 1px solid #f3f4f6; font-size: 11px; color: #4b5563; }
+.pillar-metrics div { display: flex; justify-content: space-between; align-items: center; }
+.pillar-metrics span { color: #829087; font-size: 10px; }
+.pillar-metrics strong { font-size: 11px; }
+
+/* Standardized Block Risk Card in Block Diagnostics */
+.block-risk-card { background: #fafdfa; border: 1px solid #dce8df; border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.block-risk-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e8eee9; padding-bottom: 8px; }
+.block-risk-header h4 { margin: 0; font-size: 13px; font-weight: 700; color: #1e3526; }
+
+.block-risk-summary-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #e5ebe6; text-align: center; }
+.risk-metric-box { display: flex; flex-direction: column; gap: 2px; }
+.risk-metric-label { font-size: 10px; font-weight: 600; color: #738278; text-transform: uppercase; letter-spacing: .5px; }
+.risk-metric-num { font-size: 20px; font-weight: 800; color: #1e3526; }
+.risk-metric-num small { font-size: 11px; font-weight: 500; color: #829087; }
+.risk-metric-level { font-size: 16px; font-weight: 800; padding: 2px 8px; border-radius: 6px; }
+.risk-metric-level.high { color: #c75242; }
+.risk-metric-level.medium { color: #c28a29; }
+.risk-metric-level.low { color: #34835c; }
+.risk-metric-level.unknown { color: #89958c; }
+
+.risk-sub-heading { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .8px; color: #526658; margin-top: 4px; }
+.risk-components-mini-grid { display: grid; gap: 5px; font-size: 11px; background: #fff; padding: 8px 10px; border-radius: 8px; border: 1px solid #e5ebe6; }
+.comp-row { display: flex; justify-content: space-between; align-items: center; }
+.comp-row span { color: #6a7b70; }
+.comp-row strong { color: #1e3526; }
+
+.evidence-status-stack { display: grid; gap: 5px; }
+.evidence-pill { display: flex; align-items: center; gap: 7px; padding: 5px 9px; border-radius: 6px; font-size: 11px; font-weight: 500; }
+.evidence-pill .dot { width: 7px; height: 7px; border-radius: 50%; flex: 0 0 auto; }
+.pill-available { background: #edf7ef; color: #22673d; border: 1px solid #d4ebd8; }
+.pill-available .dot-green { background: #22c55e; box-shadow: 0 0 0 2px rgba(34,197,94,.2); }
+.pill-unmapped { background: #fef9ed; color: #8c5d19; border: 1px solid #fae8c3; }
+.pill-unmapped .dot-gray { background: #eab308; box-shadow: 0 0 0 2px rgba(234,179,8,.2); }
+
+.evidence-isolation-note { font-size: 9px; line-height: 1.4; color: #85958a; margin: 2px 0 0; font-style: italic; }
+
+@media (max-width: 900px) {
+  .evidence-arch-grid { grid-template-columns: 1fr; }
+}

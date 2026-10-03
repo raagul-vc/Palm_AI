@@ -1,0 +1,37 @@
+YOLO DATASET VERIFICATION
+
+TRAIN
+Images: 1803
+Labels: 1803
+Objects: 118740
+Class distribution: {'Dead': 234, 'Healthy': 89958, 'Grass': 431, 'Small': 26644, 'Yellow': 1473}
+Invalid labels: 0
+Missing labels: 0
+Orphan labels: 0
+Wrong image dimensions: 0
+COCO conversion mismatches: 0
+Unreadable images: 0
+Status: PASS
+
+VAL
+Images: 500
+Labels: 500
+Objects: 32846
+Class distribution: {'Dead': 61, 'Healthy': 24884, 'Grass': 95, 'Small': 7395, 'Yellow': 411}
+Invalid labels: 0
+Missing labels: 0
+Orphan labels: 0
+Wrong image dimensions: 0
+COCO conversion mismatches: 0
+Unreadable images: 0
+Status: PASS
+
+COMBINED CLASS COUNTS
+Dead: 295
+Healthy: 114842
+Grass: 526
+Small: 34039
+Yellow: 1884
+
+OVERALL STATUS: PASS
+Model training: NOT STARTED

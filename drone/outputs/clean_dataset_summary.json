@@ -1,0 +1,124 @@
+{
+  "overall_status": "PASS",
+  "source_context": {
+    "train_source_image_records": 3999,
+    "locally_available_train_images": 1803,
+    "validation_source_image_records": 500,
+    "locally_available_validation_images": 500,
+    "preparation_note": "The source annotation file references 3,999 train images, while the locally available Site 2 train image folder contains 1,803 images. The clean dataset is therefore restricted to the 1,803 physically available images."
+  },
+  "splits": {
+    "train2017": {
+      "split": "train2017",
+      "annotation_file": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\dataset_clean\\annotations\\instances_train2017_clean.json",
+      "image_folder": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\dataset_clean\\train2017",
+      "image_count": 1803,
+      "annotation_count": 118740,
+      "category_count": 5,
+      "categories": [
+        {
+          "id": 1,
+          "name": "Dead"
+        },
+        {
+          "id": 2,
+          "name": "Healthy"
+        },
+        {
+          "id": 3,
+          "name": "Grass"
+        },
+        {
+          "id": 4,
+          "name": "Small"
+        },
+        {
+          "id": 5,
+          "name": "Yellow"
+        }
+      ],
+      "class_distribution": {
+        "Small": 26644,
+        "Healthy": 89958,
+        "Dead": 234,
+        "Grass": 431,
+        "Yellow": 1473
+      },
+      "actual_image_dimensions": {
+        "1024x1024": 1803
+      },
+      "missing_image_file_count": 0,
+      "missing_image_files": [],
+      "unreadable_image_count": 0,
+      "unreadable_images": [],
+      "image_dimension_mismatch_count": 0,
+      "image_dimension_mismatches": [],
+      "missing_image_reference_count": 0,
+      "invalid_bbox_count": 0,
+      "unknown_category_count": 0,
+      "duplicate_image_id_count": 0,
+      "duplicate_annotation_id_count": 0,
+      "duplicate_id_count": 0,
+      "duplicate_filename_count": 0,
+      "images_with_annotations": 1803,
+      "images_without_annotations": 0,
+      "status": "PASS"
+    },
+    "val2017": {
+      "split": "val2017",
+      "annotation_file": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\dataset_clean\\annotations\\instances_val2017_clean.json",
+      "image_folder": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\dataset_clean\\val2017",
+      "image_count": 500,
+      "annotation_count": 32846,
+      "category_count": 5,
+      "categories": [
+        {
+          "id": 1,
+          "name": "Dead"
+        },
+        {
+          "id": 2,
+          "name": "Healthy"
+        },
+        {
+          "id": 3,
+          "name": "Grass"
+        },
+        {
+          "id": 4,
+          "name": "Small"
+        },
+        {
+          "id": 5,
+          "name": "Yellow"
+        }
+      ],
+      "class_distribution": {
+        "Healthy": 24884,
+        "Yellow": 411,
+        "Small": 7395,
+        "Grass": 95,
+        "Dead": 61
+      },
+      "actual_image_dimensions": {
+        "1024x1024": 500
+      },
+      "missing_image_file_count": 0,
+      "missing_image_files": [],
+      "unreadable_image_count": 0,
+      "unreadable_images": [],
+      "image_dimension_mismatch_count": 0,
+      "image_dimension_mismatches": [],
+      "missing_image_reference_count": 0,
+      "invalid_bbox_count": 0,
+      "unknown_category_count": 0,
+      "duplicate_image_id_count": 0,
+      "duplicate_annotation_id_count": 0,
+      "duplicate_id_count": 0,
+      "duplicate_filename_count": 0,
+      "images_with_annotations": 500,
+      "images_without_annotations": 0,
+      "status": "PASS"
+    }
+  }
+}

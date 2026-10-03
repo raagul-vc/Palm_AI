@@ -1,0 +1,46 @@
+CLEAN DRONE COCO DATASET VERIFICATION
+
+TRAIN2017
+Image folder: C:\Users\iRaagul\OneDrive\Desktop\Palm_AI\drone\dataset_clean\train2017
+Annotation JSON: C:\Users\iRaagul\OneDrive\Desktop\Palm_AI\drone\dataset_clean\annotations\instances_train2017_clean.json
+Images: 1803
+Annotations: 118740
+Categories: [{'id': 1, 'name': 'Dead'}, {'id': 2, 'name': 'Healthy'}, {'id': 3, 'name': 'Grass'}, {'id': 4, 'name': 'Small'}, {'id': 5, 'name': 'Yellow'}]
+Class distribution: {'Small': 26644, 'Healthy': 89958, 'Dead': 234, 'Grass': 431, 'Yellow': 1473}
+Actual image dimensions: {'1024x1024': 1803}
+Missing image files: 0
+Unreadable images: 0
+Dimension mismatches: 0
+Missing image references: 0
+Invalid boxes: 0
+Unknown categories: 0
+Duplicate image IDs: 0
+Duplicate annotation IDs: 0
+Duplicate filenames: 0
+Images with annotations: 1803
+Images without annotations: 0
+Status: PASS
+
+VAL2017
+Image folder: C:\Users\iRaagul\OneDrive\Desktop\Palm_AI\drone\dataset_clean\val2017
+Annotation JSON: C:\Users\iRaagul\OneDrive\Desktop\Palm_AI\drone\dataset_clean\annotations\instances_val2017_clean.json
+Images: 500
+Annotations: 32846
+Categories: [{'id': 1, 'name': 'Dead'}, {'id': 2, 'name': 'Healthy'}, {'id': 3, 'name': 'Grass'}, {'id': 4, 'name': 'Small'}, {'id': 5, 'name': 'Yellow'}]
+Class distribution: {'Healthy': 24884, 'Yellow': 411, 'Small': 7395, 'Grass': 95, 'Dead': 61}
+Actual image dimensions: {'1024x1024': 500}
+Missing image files: 0
+Unreadable images: 0
+Dimension mismatches: 0
+Missing image references: 0
+Invalid boxes: 0
+Unknown categories: 0
+Duplicate image IDs: 0
+Duplicate annotation IDs: 0
+Duplicate filenames: 0
+Images with annotations: 500
+Images without annotations: 0
+Status: PASS
+
+OVERALL STATUS: PASS
+Model training: NOT STARTED

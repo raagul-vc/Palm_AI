@@ -1,0 +1,89 @@
+================================================================================
+                    YOLO11n VALIDATION ERROR ANALYSIS REPORT                    
+================================================================================
+
+CONFIGURATION & PROTOCOL
+- Checkpoint used:           C:\Users\iRaagul\OneDrive\Desktop\Palm_AI\drone\models\palm_yolo_best.pt
+- Inference device:          NVIDIA GeForce RTX 3050 Laptop GPU
+- Inference batch size:      1 (sequential memory-safe)
+- IoU threshold:             0.50
+- Confidence threshold:      0.25
+- Confidence floor:          0.001
+- Total validation images:   500
+- Total ground-truth objects:32846
+- Total predictions (>=0.25):43778
+
+OVERALL ERROR STATISTICS (at IoU >= 0.50, conf >= 0.25)
+- Total True Positives (TP): 32830
+- Total False Positives (FP):10948 (Unmatched: 10936, Confusion: 12)
+- Total False Negatives (FN):16 (Unmatched: 4, Confusion: 12)
+- Class confusion count:     12
+- Low-confidence detections: 36301 (< 0.25)
+
+CLASS-WISE STATISTICS (at IoU >= 0.50, conf >= 0.25)
+--------------------------------------------------------------------------------
+Class      | GT Objects | TP     | FP    | FN    | Precision | Recall  | InConf | OutConf
+--------------------------------------------------------------------------------
+Dead       | 61         | 61     | 22    | 0     | 0.7349    | 1.0000  | 0      | 0      
+Healthy    | 24884      | 24878  | 9252  | 6     | 0.7289    | 0.9998  | 2      | 6      
+Grass      | 95         | 94     | 86    | 1     | 0.5222    | 0.9895  | 7      | 1      
+Small      | 7395       | 7387   | 1453  | 8     | 0.8356    | 0.9989  | 2      | 4      
+Yellow     | 411        | 410    | 135   | 1     | 0.7523    | 0.9976  | 1      | 1      
+--------------------------------------------------------------------------------
+  * InConf = Incoming confusion (another class predicted as this class)
+  * OutConf = Outgoing confusion (this ground truth predicted as another class)
+
+CONFUSION MATRIX (Rows = Ground Truth, Columns = Predicted)
+True \ Pred  | Dead     | Healthy  | Grass    | Small    | Yellow   | Backgrnd
+------------------------------------------------------------------------------
+Dead         | 61       | 0        | 0        | 0        | 0        | 0       
+Healthy      | 0        | 24878    | 4        | 1        | 1        | 0       
+Grass        | 0        | 1        | 94       | 0        | 0        | 0       
+Small        | 0        | 1        | 3        | 7387     | 0        | 4       
+Yellow       | 0        | 0        | 0        | 1        | 410      | 0       
+background   | 22       | 9250     | 79       | 1451     | 134      | 0       
+
+CLASS CONFUSION PAIRS (True -> Predicted)
+- Healthy -> Grass: 4 occurrences
+- Small -> Grass: 3 occurrences
+- Grass -> Healthy: 1 occurrences
+- Yellow -> Small: 1 occurrences
+- Small -> Healthy: 1 occurrences
+- Healthy -> Small: 1 occurrences
+- Healthy -> Yellow: 1 occurrences
+
+CONFIDENCE STATISTICS (All detections >= 0.001)
+- Total detections: 80079
+- Mean:             0.4794
+- Median:           0.5409
+- Min / Max:        0.0010 / 0.9999
+- 25% / 75% Quant.: 0.0038 / 0.9336
+- Bins: 0.001-0.25: 36301, 0.250-0.50: 3197, 0.500-0.75: 3345, 0.750-1.00: 37236
+
+REPRESENTATIVE ERROR EXAMPLES
+- Category: false_positives (Observed: 10948, Saved: 4)
+    * File: 44000_16000_1013_87_fp_1.jpg (Source: 44000_16000_1013_87.jpg)
+    * File: 44000_16000_1027_1541_fp_2.jpg (Source: 44000_16000_1027_1541.jpg)
+    * File: 44000_16000_1059_3696_fp_3.jpg (Source: 44000_16000_1059_3696.jpg)
+    * File: 44000_16000_1060_351_fp_4.jpg (Source: 44000_16000_1060_351.jpg)
+- Category: false_negatives (Observed: 16, Saved: 4)
+    * File: 44000_16000_244_102_fn_1.jpg (Source: 44000_16000_244_102.jpg)
+    * File: 52000_20000_1020_3919_fn_2.jpg (Source: 52000_20000_1020_3919.jpg)
+    * File: 52000_20000_710_2507_fn_3.jpg (Source: 52000_20000_710_2507.jpg)
+    * File: 52000_20000_873_3951_fn_4.jpg (Source: 52000_20000_873_3951.jpg)
+- Category: class_confusions (Observed: 12, Saved: 4)
+    * File: 44000_16000_149_2457_confusion_1.jpg (Source: 44000_16000_149_2457.jpg)
+    * File: 44000_16000_191_2091_confusion_2.jpg (Source: 44000_16000_191_2091.jpg)
+    * File: 44000_16000_261_2302_confusion_3.jpg (Source: 44000_16000_261_2302.jpg)
+    * File: 44000_16000_4_486_confusion_4.jpg (Source: 44000_16000_4_486.jpg)
+- Category: low_confidence (Observed: 36301, Saved: 4)
+    * File: 44000_16000_1013_87_lowconf_1.jpg (Source: 44000_16000_1013_87.jpg)
+    * File: 44000_16000_1027_1541_lowconf_2.jpg (Source: 44000_16000_1027_1541.jpg)
+    * File: 44000_16000_1059_3696_lowconf_3.jpg (Source: 44000_16000_1059_3696.jpg)
+    * File: 44000_16000_1060_351_lowconf_4.jpg (Source: 44000_16000_1060_351.jpg)
+
+MODEL INTEGRITY
+- Model retrained:           NO
+- Existing checkpoint changed: NO
+- Checkpoint path:           C:\Users\iRaagul\OneDrive\Desktop\Palm_AI\drone\models\palm_yolo_best.pt
+================================================================================

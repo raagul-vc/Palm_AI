@@ -1,0 +1,73 @@
+{
+  "status": "CALCULATION_AND_VALIDATION_COMPLETE",
+  "dataset_name": "MSUAV500K Multispectral Benchmark (Zenodo DOI: 10.5281/zenodo.16743974)",
+  "sensor_platform": "MicaSense Altum UAV Multispectral",
+  "total_tiles_analyzed": 34,
+  "total_pixels_analyzed": 8912896,
+  "valid_pixels_analyzed": 8911531,
+  "band_configuration": {
+    "0": {
+      "name": "Blue",
+      "wavelength": "475 nm",
+      "role": "Atmospheric scattering baseline"
+    },
+    "1": {
+      "name": "Green",
+      "wavelength": "560 nm",
+      "role": "Chlorophyll green peak reflectance"
+    },
+    "2": {
+      "name": "Red",
+      "wavelength": "668 nm",
+      "role": "Chlorophyll absorption (NDVI red band)"
+    },
+    "3": {
+      "name": "RedEdge",
+      "wavelength": "717 nm",
+      "role": "Transition edge (NDRE red-edge band)"
+    },
+    "4": {
+      "name": "NIR",
+      "wavelength": "842 nm",
+      "role": "Cellular leaf structure reflectance (NIR band)"
+    }
+  },
+  "formulas_used": {
+    "NDVI": "(NIR - Red) / (NIR + Red) = (Band_4 - Band_2) / (Band_4 + Band_2)",
+    "NDRE": "(NIR - RedEdge) / (NIR + RedEdge) = (Band_4 - Band_3) / (Band_4 + Band_3)"
+  },
+  "aggregate_ndvi_statistics": {
+    "min_across_tiles": -1.0,
+    "max_across_tiles": 1.0,
+    "mean_of_means": 0.7958,
+    "std_of_means": 0.3581,
+    "median_of_medians": 0.9216,
+    "range": [
+      -1.0,
+      1.0
+    ]
+  },
+  "aggregate_ndre_statistics": {
+    "min_across_tiles": -1.0,
+    "max_across_tiles": 1.0,
+    "mean_of_means": 0.4792,
+    "std_of_means": 0.1655,
+    "median_of_medians": 0.5094,
+    "range": [
+      -1.0,
+      1.0
+    ]
+  },
+  "aggregate_canopy_breakdown": {
+    "mean_high_health_canopy_pct": 91.14,
+    "mean_moderate_health_canopy_pct": 2.3,
+    "mean_low_health_canopy_pct": 0.23,
+    "mean_non_vegetation_pct": 6.33
+  },
+  "validation_checks": {
+    "all_tiles_valid_range_minus1_to_plus1": true,
+    "zero_nan_or_inf_values": true,
+    "expected_vegetation_profile_confirmed": true,
+    "all_34_tiles_passed": true
+  }
+}

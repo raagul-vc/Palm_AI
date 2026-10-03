@@ -1,0 +1,50 @@
+DRONE DATASET FULL VERIFICATION
+
+TRAIN
+Annotation JSON: C:\Users\iRaagul\Downloads\instances_train2017.json
+Image folder: C:\Users\iRaagul\OneDrive\Documents\Airei\Plantation\train2017
+Images: 3999
+Annotations: 262811
+Classes: Dead, Healthy, Grass, Small, Yellow
+Resolution distribution (JSON): {'1024x1024': 3999}
+Annotation count by class: {'Small': 56893, 'Healthy': 201303, 'Yellow': 3103, 'Dead': 559, 'Grass': 953}
+Images per class: {'Dead': 378, 'Healthy': 3801, 'Grass': 338, 'Small': 3621, 'Yellow': 1820}
+Missing image files: 2196
+Missing filename examples: ['44000_16000_660_3128.jpg', '52000_20000_3421_3157.jpg', '44000_16000_1410_2794.jpg', '44000_16000_3184_2963.jpg', '52000_20000_3938_1847.jpg', '44000_4000_3255_277.jpg', '44000_16000_3338_2653.jpg', '44000_4000_3652_515.jpg', '44000_4000_3096_2669.jpg', '44000_16000_625_3693.jpg']
+Missing image references: 0
+Invalid boxes: 0
+Unknown categories: 0
+Duplicate image IDs: 0
+Duplicate annotation IDs: 0
+Duplicate filenames: 0
+Images with annotations: 3999
+Images without annotations: 0
+Annotations per image (min/median/mean/max): {'min': 1, 'max': 89, 'mean': 65.71917979494874, 'median': 69}
+Image dimension mismatches: 0
+Unreadable image files: 0
+
+VAL
+Annotation JSON: C:\Users\iRaagul\Downloads\instances_val2017.json
+Image folder: C:\Users\iRaagul\OneDrive\Documents\Airei\Plantation\val2017
+Images: 500
+Annotations: 32846
+Classes: Dead, Healthy, Grass, Small, Yellow
+Resolution distribution (JSON): {'1024x1024': 500}
+Annotation count by class: {'Healthy': 24884, 'Yellow': 411, 'Small': 7395, 'Grass': 95, 'Dead': 61}
+Images per class: {'Dead': 51, 'Healthy': 469, 'Grass': 44, 'Small': 458, 'Yellow': 234}
+Missing image files: 0
+Missing filename examples: []
+Missing image references: 0
+Invalid boxes: 0
+Unknown categories: 0
+Duplicate image IDs: 0
+Duplicate annotation IDs: 0
+Duplicate filenames: 0
+Images with annotations: 500
+Images without annotations: 0
+Annotations per image (min/median/mean/max): {'min': 1, 'max': 86, 'mean': 65.692, 'median': 68.0}
+Image dimension mismatches: 0
+Unreadable image files: 0
+
+OVERALL STATUS: FAIL
+Model training status: NOT STARTED

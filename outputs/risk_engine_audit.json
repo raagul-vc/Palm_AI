@@ -1,0 +1,203 @@
+{
+  "audit_metadata": {
+    "engine_name": "Palm AI Multi-Source Risk Engine",
+    "audit_timestamp": "2026-10-03T15:26:00Z",
+    "auditor": "Antigravity Engineering Pair Programming",
+    "overall_verdict": "DETERMINISTIC_OPERATIONAL_WITH_STANDARDIZATION_REQUIRED"
+  },
+  "modules_audited": {
+    "block_health": {
+      "file": "backend/block_health.py",
+      "purpose": "Calculates block-level agronomic yield gap and production risk score",
+      "inputs": ["data/Palm_AI_Master_FFB_Leaf_Soil_Weather.csv"],
+      "outputs": ["outputs/block_health_risk.csv"],
+      "formulas": {
+        "annual_yield": "sum(Productivity_t_Ha) for Year == latest_year (2024)",
+        "expected_yield": "median(peers with Plant_Age_Years in [age - 2, age + 2] and Block_ID != current_block, count >= 3)",
+        "productivity_deviation_pct": "(Actual_Yield_t_Ha - Expected_Yield_t_Ha) / Expected_Yield_t_Ha * 100",
+        "yield_gap_pct": "max(0, -Productivity_Deviation_pct)",
+        "risk_score_mapping": "gap >= 30% -> 90; gap >= 20% -> 75; gap >= 10% -> 60; gap >= 5% -> 40; gap < 5% -> 20"
+      },
+      "thresholds": {
+        "HIGH": "Risk_Score >= 70",
+        "MEDIUM": "Risk_Score >= 40 and < 70",
+        "LOW": "Risk_Score < 40",
+        "UNKNOWN": "isna(Risk_Score) (e.g. fewer than 3 age peers)"
+      },
+      "score_range": [20, 90],
+      "deterministic": true,
+      "data_leakage": false,
+      "limitations": [
+        "Stepwise discontinuous risk score (20, 40, 60, 75, 90) rather than continuous interpolation",
+        "Evaluates only annual yield for latest year (2024)",
+        "Peer cohort matching depends strictly on plant age (+/- 2 years) across 42 blocks"
+      ]
+    },
+    "nutrient_diagnostics": {
+      "file": "backend/nutrient_diagnostics.py",
+      "purpose": "Analyzes foliar macronutrients and micronutrients to detect nutrient deficiencies",
+      "inputs": ["data/Palm_AI_Master_FFB_Leaf_Soil_Weather.csv"],
+      "outputs": [
+        "outputs/block_nutrient_diagnostics.csv",
+        "outputs/nutrient_reference_ranges.csv"
+      ],
+      "formulas": {
+        "sampling_selection": "Latest valid Leaf_Sampling_Year per block where Leaf_Data_Available == True",
+        "reference_thresholds": "Low = Q25, High = Q75 of historical distinct block/sample-year observations",
+        "classification": "value < Q25 -> LOW; value > Q75 -> HIGH; else NORMAL",
+        "low_nutrient_count": "sum(status == LOW for available nutrients in [N, P, K, Ca, Mg, B])",
+        "nutrient_risk_component": "Low_Nutrient_Count / Available_Nutrient_Count * 100 (requires Available >= 3)"
+      },
+      "thresholds": {
+        "concern_HIGH": "Low_Nutrient_Count >= 3",
+        "concern_MEDIUM": "Low_Nutrient_Count >= 1 and < 3",
+        "concern_LOW": "Low_Nutrient_Count == 0",
+        "concern_LIMITED_DATA": "Available_Nutrient_Count < 3"
+      },
+      "score_range": [0, 100],
+      "deterministic": true,
+      "data_leakage": false,
+      "limitations": [
+        "Reference ranges are empirical sample quartiles (Q25/Q75) from the estate dataset, not absolute physiological standards",
+        "Boron (B_ppm) is unmeasured in 11 of 42 blocks (represented as NO_DATA)"
+      ]
+    },
+    "dris_prescription": {
+      "file": "backend/dris_prescription.py",
+      "purpose": "Computes DRIS nutritional balance indices and ranks limiting nutrients",
+      "inputs": [
+        "data/Palm_AI_Master_FFB_Leaf_Soil_Weather.csv",
+        "data/DRIS_Nutrient_Reference_3700.csv",
+        "data/DRIS_Reference_Summary.csv",
+        "data/DRIS_IDW_Grid_3700.csv"
+      ],
+      "outputs": [
+        "outputs/dris_prescription_analysis.csv",
+        "outputs/dris_index_reference_used.csv"
+      ],
+      "formulas": {
+        "dris_indices": "Beaufils dual-ratio standard score calculation against high-yield reference population",
+        "limiting_nutrients": "Nutrients with negative DRIS index (Index < 0)",
+        "dris_risk_component": "min(5, count(limiting_nutrients)) / 5 * 100"
+      },
+      "thresholds": {
+        "severe_limiting": "Index <= -10",
+        "moderate_limiting": "Index < 0 and > -10"
+      },
+      "score_range": [0, 100],
+      "deterministic": true,
+      "data_leakage": false,
+      "limitations": [
+        "Only 31 of 42 blocks have DRIS survey records available for latest year",
+        "Requires full 5 macronutrient panel (N, P, K, Ca, Mg)"
+      ]
+    },
+    "weather_impact": {
+      "file": "backend/weather_impact.py",
+      "purpose": "Evaluates correlation and dataset-level weather stress indicators",
+      "inputs": ["data/Palm_AI_Master_FFB_Leaf_Soil_Weather.csv"],
+      "outputs": [
+        "outputs/block_weather_impact.csv",
+        "outputs/weather_productivity_correlation.csv"
+      ],
+      "formulas": {
+        "weather_stress": "Observations in outer quartiles (< Q25 or > Q75) for 5 weather variables",
+        "stress_count": "Sum of extreme weather months in the year"
+      },
+      "findings": {
+        "block_level_variation": false,
+        "reason": "All 42 blocks contain identical repeated monthly weather measurements from an estate-wide weather station",
+        "discrimination_capability": "ZERO block-level risk discrimination power"
+      },
+      "status_in_risk_engine": "EXCLUDED from block-level scoring; marked as 'Unavailable / Not integrated' for block discrimination",
+      "deterministic": true,
+      "data_leakage": false,
+      "limitations": [
+        "Cannot distinguish microclimate variations between blocks without block-specific weather stations or IoT sensors"
+      ]
+    },
+    "soil_evidence": {
+      "file": "backend/api.py (/api/soil)",
+      "purpose": "Reports available soil chemical and physical properties",
+      "inputs": ["data/Palm_AI_Master_FFB_Leaf_Soil_Weather.csv"],
+      "findings": {
+        "total_master_rows": 6552,
+        "soil_positive_rows": 96,
+        "blocks_with_soil_data": 7,
+        "blocks_missing_soil_data": 35,
+        "sampling_years": [2017, 2020]
+      },
+      "handling_policy": "Sparse observations must NOT be blindly imputed or fabricated; reported as 'observed' where sampled, 'unavailable' for unsampled blocks",
+      "status_in_risk_engine": "Excluded from primary weighting to prevent biasing 35 unsampled blocks; reported as qualitative agronomic evidence"
+    },
+    "multi_source_risk": {
+      "file": "backend/multi_source_risk.py",
+      "purpose": "Aggregates independent evidence components into a composite block risk score",
+      "inputs": [
+        "outputs/block_health_risk.csv",
+        "outputs/block_nutrient_diagnostics.csv",
+        "outputs/dris_prescription_analysis.csv",
+        "outputs/block_weather_impact.csv"
+      ],
+      "outputs": ["outputs/multi_source_block_risk.csv"],
+      "base_weights": {
+        "Yield_Risk_Component": 0.40,
+        "Nutrient_Risk_Component": 0.25,
+        "DRIS_Risk_Component": 0.15
+      },
+      "weight_renormalization": "valid_weight = sum(w_i for available components); Multi_Source_Risk_Score = sum(Component_i * w_i) / valid_weight",
+      "score_bounds": [0, 100],
+      "risk_levels": {
+        "HIGH": "Multi_Source_Risk_Score >= 70",
+        "MEDIUM": "Multi_Source_Risk_Score >= 40 and < 70",
+        "LOW": "Multi_Source_Risk_Score < 40"
+      },
+      "deterministic": true,
+      "data_leakage": false,
+      "hardcoded_values": [
+        "Base weights (0.40, 0.25, 0.15) explicitly defined as design choice",
+        "Risk level cutoffs (40, 70) defined as management decision thresholds"
+      ]
+    },
+    "machine_learning_models": {
+      "yield_regression_model": {
+        "path": "models/yield_forecast_model.pkl",
+        "architecture": "RandomForestRegressor(n_estimators=300, max_depth=18)",
+        "features": ["Plant_Age_Years", "Palms_per_Ha", "Area_Ha", "Rainfall_mm_day", "Temperature_C", "Solar_Radiation_MJ_m2_day", "Seed_Type", "Plant_Status"],
+        "target": "Productivity_t_Ha",
+        "validation_strategy": "Out-of-time historical split (Train: 2012-2022, Test: 2023-2024)",
+        "test_mae": 0.297,
+        "test_r2": 0.570,
+        "status": "FROZEN (do not retrain)"
+      },
+      "high_production_classification": {
+        "rule": "Maximum FFB production for each Block + Year is the High Production threshold",
+        "classes": ["High", "Not High"],
+        "status": "Operationalized via monthly peak capacity ratio and peer-relative yield expectation"
+      }
+    }
+  },
+  "api_endpoints_audited": {
+    "/api/health": "Reports backend status and file presence",
+    "/api/risk": "Serves block_health_risk.csv, filters via ?block_id=",
+    "/api/multi-source-risk": "Serves multi_source_block_risk.csv, filters via ?block_id=",
+    "/api/nutrients": "Serves block_nutrient_diagnostics.csv",
+    "/api/weather": "Serves block_weather_impact.csv",
+    "/api/dris": "Serves dris_prescription_analysis.csv",
+    "/api/productivity": "Annual productivity by block",
+    "/api/harvest-production": "Observed monthly FFB production",
+    "/api/yield-forecast": "Serves yield_forecast_cache.csv",
+    "/api/soil": "Serves sparse soil observations (7 blocks)",
+    "needed_standardized_endpoints": [
+      "GET /api/risk/<Block_ID> (Canonical single-block risk object with decoupled evidence flags)",
+      "GET /api/risk/summary (Plantation-level risk score distribution and summary statistics)"
+    ]
+  },
+  "overall_audit_conclusion": {
+    "score_determinism": "VERIFIED (100% deterministic, no random seeds)",
+    "data_leakage": "VERIFIED (No target leakage; age peer comparison excludes current block)",
+    "weather_status": "UNAVAILABLE for block discrimination (estate repeated averages; excluded from score)",
+    "soil_status": "SPARSE (7 of 42 blocks; qualitative only, no blind imputation)",
+    "rgb_and_ms_status": "SPATIALLY UNMAPPED (zero spatial overlap; strictly decoupled from block records)"
+  }
+}

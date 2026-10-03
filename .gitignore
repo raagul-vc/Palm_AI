@@ -17,3 +17,12 @@ frontend/dist/
 .vscode/
 
 *.log
+
+# Raw UAV training datasets and training caches (exceeds recommended git size)
+drone/dataset_clean/
+drone/dataset_yolo/
+drone/.mplconfig/
+drone/.ultralytics/
+drone/runs/
+weights/
+yolo11n.pt

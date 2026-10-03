@@ -1,0 +1,62 @@
+{
+  "audit_timestamp": "2026-10-03T15:15:00Z",
+  "audit_objective": "Determine feasibility of integrating RGB Drone, Multispectral UAV, and Palm Plantation agronomic data into a unified Multi-Source Risk Model.",
+  "direct_fusion_possible": false,
+  "direct_fusion_verdict": "ROW_LEVEL_FUSION_BLOCKED",
+  "direct_fusion_reason": "No reliable common primary key, GIS boundary shapefile, GPS telemetry, or temporal alignment exists between the three sources. RGB and Multispectral data originate from different geographic regions (Malaysia Site 2 vs Germany Hullerbusch) and lack Block_IDs. Forcing a row-level join would constitute data falsification.",
+  "sources": {
+    "palm_plantation_agronomic": {
+      "source_name": "Palm Plantation Agronomic Dataset",
+      "observation_level": "Operational Block-Month",
+      "record_count": 6552,
+      "spatial_identity": "Block_ID (B001-B044, 42 unique operational management blocks across estate divisions)",
+      "temporal_identity": "Monthly series from 2012 to 2024 (13 years of historical continuous data)",
+      "target_availability": "YES (Productivity_t_Ha, FFB_Production_kg, High/Not-High production target)",
+      "feature_coverage": "Complete agronomic profile (Yield, Plant Age, Palms/Ha, Foliar Nutrients N/P/K/Ca/Mg/B, Soil Chemistry pH/CEC/P, Weather Radiation/Rain/Temp/RH)",
+      "readiness_status": "READY",
+      "readiness_summary": "Ready for core tabular predictive modeling and block-level agronomic risk scoring. The yield regression and high-production classification models are already successfully trained and validated on this source.",
+      "missing_requirements": "Geospatial GIS shapefile / GeoJSON polygons defining exact block boundary coordinates on the ground.",
+      "recommended_next_data": "Estate GIS boundary polygon layer (ESRI Shapefile or GeoJSON in EPSG:4326 / UTM)."
+    },
+    "rgb_drone_uav": {
+      "source_name": "RGB Drone Detection Module (YOLO11n)",
+      "observation_level": "Image-level Tile (1024x1024 orthophoto crop)",
+      "record_count": 500,
+      "spatial_identity": "Image canvas pixel coordinates (e.g., 44000_16000_1013_87), NO Block_ID",
+      "temporal_identity": "Single static flight campaign (unspecified exact flight date)",
+      "target_availability": "NO (No direct FFB yield measured at the 1024x1024 tile level)",
+      "feature_coverage": "High-accuracy object detection: 5 classes (Healthy, Dead, Small, Yellow, Grass), precision=0.960, recall=0.990, Drone Health Score",
+      "readiness_status": "FEATURE_READY_FOR_DECOUPLED_EVIDENCE",
+      "readiness_summary": "Feature extraction and quality validation are 100% complete at the image level. Block-level risk integration is BLOCKED until a verified spatial mapping or GIS shapefile connects MOPAD Site 2 canvas coordinates to plantation Block_IDs.",
+      "missing_requirements": "1. Site 2 georeferenced orthomosaic header with CRS and affine transform.\n2. Cross-reference lookup table linking tile offsets to plantation blocks.\n3. Flight telemetry logs with GPS timestamps.",
+      "recommended_next_data": "Georeferenced orthomosaic TIFF or spatial cross-reference lookup table for MOPAD Site 2."
+    },
+    "multispectral_uav": {
+      "source_name": "Multispectral UAV Module (MSUAV500K Altum)",
+      "observation_level": "Tile-level Chip (512x512 5-band GeoTIFF)",
+      "record_count": 34,
+      "spatial_identity": "Chip grid offsets (1072_1031), NO Block_ID",
+      "temporal_identity": "Research campaign benchmark",
+      "target_availability": "NO (No agricultural FFB harvest data)",
+      "feature_coverage": "43 quantitative vegetation-health features: pure-canopy masked NDVI, NDRE, canopy cover %, heterogeneity (CV), and Multispectral Health Score (MHS)",
+      "readiness_status": "FEATURE_READY_FOR_DECOUPLED_EVIDENCE",
+      "readiness_summary": "Multispectral index calculations and feature engineering are 100% complete and validated. Direct fusion into Palm_AI plantation risk is BLOCKED because the current multispectral data represents a benchmark campaign (Hullerbusch, Germany) disjoint from the tropical plantation.",
+      "missing_requirements": "Calibrated multispectral UAV imagery flown directly over the target Palm_AI plantation blocks (or equivalent tropical oil palm survey with known Block_IDs).",
+      "recommended_next_data": "Co-registered multispectral UAV survey tiles captured over target oil palm plantation blocks."
+    }
+  },
+  "multi_source_risk_architecture_recommendation": {
+    "immediate_architecture": "Decoupled Multi-Pillar Risk Dashboard. Present Palm Plantation Agronomic Risk (Block-level), RGB Drone Visual Canopy Health (Image-level), and Multispectral Physiological Vigour (Tile-level) as parallel, independent evidence layers.",
+    "prohibited_actions": [
+      "Do NOT force artificial row-level concatenation or merging.",
+      "Do NOT generate synthetic Block_IDs for RGB or Multispectral images.",
+      "Do NOT invent GPS coordinates for non-georeferenced images.",
+      "Do NOT claim NDVI or NDRE alone diagnoses specific pathogens (e.g. Ganoderma) or nutrient deficits."
+    ],
+    "future_fusion_prerequisites": [
+      "Acquisition of plantation GIS block boundary polygons (Shapefile/GeoJSON).",
+      "Acquisition of georeferenced UAV rasters matching the plantation coordinate reference system.",
+      "Zonal statistical aggregation (e.g., rasterstats / zonal mean) mapping UAV pixels into block polygons."
+    ]
+  }
+}

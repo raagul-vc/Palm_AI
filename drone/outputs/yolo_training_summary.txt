@@ -1,0 +1,26 @@
+YOLO11n DRONE RGB TRAINING AND VALIDATION
+
+Model: YOLO11n pretrained (yolo11n.pt)
+Device: NVIDIA GeForce RTX 3050 Laptop GPU
+Epochs completed: 50 / 50
+Batch size: 2
+Image size: 1024
+Training time (minutes): 101.05
+Precision: 0.959810
+Recall: 0.989883
+mAP50: 0.979909
+mAP50-95: 0.888404
+
+PER CLASS
+Dead: P=0.992757, R=1.000000, mAP50=0.995000, mAP50-95=0.886230
+Healthy: P=0.995885, R=0.991985, mAP50=0.994851, mAP50-95=0.949234
+Grass: P=0.831866, R=0.989474, mAP50=0.921145, mAP50-95=0.757454
+Small: P=0.994748, R=0.982556, mAP50=0.994083, mAP50-95=0.919445
+Yellow: P=0.983798, R=0.985401, mAP50=0.994466, mAP50-95=0.929657
+
+Best model: C:\Users\iRaagul\OneDrive\Desktop\Palm_AI\drone\models\palm_yolo_best.pt
+Confusion matrix: C:\Users\iRaagul\OneDrive\Desktop\Palm_AI\drone\outputs\yolo_evaluation\best_1024_val\confusion_matrix.png
+Curves: C:\Users\iRaagul\OneDrive\Desktop\Palm_AI\drone\outputs\yolo_evaluation\best_1024_val\BoxPR_curve.png, C:\Users\iRaagul\OneDrive\Desktop\Palm_AI\drone\outputs\yolo_evaluation\best_1024_val\BoxF1_curve.png, C:\Users\iRaagul\OneDrive\Desktop\Palm_AI\drone\outputs\yolo_evaluation\best_1024_val\BoxP_curve.png, C:\Users\iRaagul\OneDrive\Desktop\Palm_AI\drone\outputs\yolo_evaluation\best_1024_val\BoxR_curve.png
+Prediction directory: C:\Users\iRaagul\OneDrive\Desktop\Palm_AI\drone\outputs\yolo_predictions\val_samples
+Training: COMPLETED
+Evaluation: COMPLETED

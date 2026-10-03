@@ -1,0 +1,121 @@
+{
+  "status": "DIRECT_FUSION_NOT_FEASIBLE",
+  "verdict": "ROW_LEVEL_FUSION_BLOCKED",
+  "direct_fusion_possible": false,
+  "audit_evidence": {
+    "palm_plantation": {
+      "level": "Block-level monthly agronomic records",
+      "identifiers": [
+        "Block_ID (B001-B044)",
+        "Year (2012-2024)",
+        "Month (1-12)"
+      ],
+      "target": "Productivity_t_Ha (FFB yield)",
+      "gps": false,
+      "block_mapping": "Native operational primary key"
+    },
+    "rgb_drone": {
+      "level": "Image-level orthophoto canvas crops (1024x1024)",
+      "identifiers": [
+        "Image filename (44000_16000_...)",
+        "Tile canvas offsets"
+      ],
+      "target": null,
+      "gps": false,
+      "block_mapping": "NOT AVAILABLE (No GIS boundary polygon or lookup table)"
+    },
+    "multispectral_uav": {
+      "level": "Tile-level GeoTIFF chips (512x512)",
+      "identifiers": [
+        "Filename (ALTUM_CAL_altum_beechforest_...)",
+        "Chip grid offsets"
+      ],
+      "target": null,
+      "gps": false,
+      "block_mapping": "NOT AVAILABLE (Deciduous forest benchmark campaign; disjoint from plantation)"
+    }
+  },
+  "identifier_audit_table": [
+    {
+      "Source": "Palm Plantation Agronomic",
+      "Level": "Block-Month (Operational Management Block)",
+      "Block_ID": "YES (42 blocks: B001-B044)",
+      "GPS": "NO (No lat/lon columns, no shapefile)",
+      "Date": "YES (Year 2012-2024, Month 1-12)",
+      "Campaign": "YES (Estate Divisions: Division_A, B, etc.)",
+      "Coordinates": "NO (Tabular operational records only)",
+      "Common_Key_Found": "NO"
+    },
+    {
+      "Source": "RGB Drone Detection (MOPAD)",
+      "Level": "Image-level Tile (1024x1024 canvas crops)",
+      "Block_ID": "NO (Orthomosaic pixel canvas offsets only)",
+      "GPS": "NO (No EXIF GPS tags embedded)",
+      "Date": "NO (Unspecified flight timestamp)",
+      "Campaign": "YES (MOPAD Site 2, Peninsular Malaysia)",
+      "Coordinates": "Pixel grid offsets (e.g. 44000_16000)",
+      "Common_Key_Found": "NO"
+    },
+    {
+      "Source": "Multispectral UAV (MSUAV500K)",
+      "Level": "Tile-level Chip (512x512 5-band GeoTIFF)",
+      "Block_ID": "NO (Deciduous forest pretraining benchmark)",
+      "GPS": "NO (Standardized chip array, no GeoKeys)",
+      "Date": "NO (Research campaign benchmark)",
+      "Campaign": "YES (ICAERUS Hullerbusch, Germany)",
+      "Coordinates": "Tile grid offsets (e.g. 1072_1031)",
+      "Common_Key_Found": "NO"
+    }
+  ],
+  "join_strategy_evaluations": [
+    {
+      "strategy": "1. Exact Block_ID",
+      "feasible": false,
+      "reason": "RGB and Multispectral sources lack Block_ID metadata."
+    },
+    {
+      "strategy": "2. Block_ID + Year",
+      "feasible": false,
+      "reason": "Neither RGB nor Multispectral contains Block_ID or collection year."
+    },
+    {
+      "strategy": "3. GPS Spatial Intersection",
+      "feasible": false,
+      "reason": "No GPS latitude/longitude tags exist in any of the three sources."
+    },
+    {
+      "strategy": "4. GPS + Acquisition Date",
+      "feasible": false,
+      "reason": "Neither GPS coordinates nor specific flight dates exist."
+    },
+    {
+      "strategy": "5. CRS/Bounds Spatial Intersection",
+      "feasible": false,
+      "reason": "Disjoint geographic locations: Palm is Southeast Asian commercial estate, RGB is Peninsular Malaysia Site 2, Multispectral is Mecklenburg-Vorpommern, Germany. Zero spatial overlap."
+    },
+    {
+      "strategy": "6. Campaign + Date",
+      "feasible": false,
+      "reason": "Independent flight campaigns conducted by separate organizations in different countries and years."
+    },
+    {
+      "strategy": "7. Filename-Derived Location",
+      "feasible": false,
+      "reason": "Filenames represent local canvas pixel coordinates only; no official cross-reference lookup exists."
+    },
+    {
+      "strategy": "8. Any Other Documented Identifier",
+      "feasible": false,
+      "reason": "No shared primary or secondary key exists across repositories."
+    }
+  ],
+  "scientific_justification": "Direct row-level concatenation or merging across the three sources is scientifically invalid and prohibited. The Palm Plantation records, RGB drone imagery, and Multispectral rasters lack a shared common key, lack GIS boundary polygons, and represent disjoint spatial locations. In accordance with strict scientific integrity rules, no synthetic Block_IDs or invented GPS coordinates have been fabricated. Each source remains an independent evidence layer.",
+  "multi_source_risk_framework": {
+    "architectural_status": "Decoupled Evidence Integration",
+    "evidence_pillars": [
+      "1. Agronomic Evidence: Block-level yield potential, soil chemistry, foliar nutrients, and weather stress.",
+      "2. RGB Drone Evidence: Crown-level mortality, stunting, and visible chlorosis rates.",
+      "3. Multispectral Evidence: Canopy-level photosynthetic vigour (NDVI), deep chlorophyll status (NDRE), and spatial stand uniformity."
+    ]
+  }
+}

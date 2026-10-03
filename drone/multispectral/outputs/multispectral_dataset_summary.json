@@ -1,0 +1,871 @@
+{
+  "status": "MULTISPECTRAL_DATA_PRESENT_AND_VERIFIED",
+  "message": "Successfully verified 34 genuine multispectral GeoTIFF files in C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\multispectral\\data. All files contain genuine Red (668 nm), NIR (842 nm), and RedEdge (717 nm) calibrated bands. NDVI and NDRE vegetation index calculations are physically and scientifically feasible.",
+  "multispectral_data_directory": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\multispectral\\data",
+  "total_files_found": 34,
+  "verified_multispectral_files_count": 34,
+  "verified_sample_files": [
+    {
+      "filename": "ALTUM_CAL_altum_beechforest_Hullerbusch_Orthomosaic-reflectance0-1_AltumMSI_1072_1031.tif",
+      "path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\multispectral\\data\\ALTUM_CAL_altum_beechforest_Hullerbusch_Orthomosaic-reflectance0-1_AltumMSI_1072_1031.tif",
+      "size_bytes": 1311040,
+      "readable": true,
+      "error": null,
+      "format": "TIFF / GeoTIFF",
+      "dimensions": {
+        "width": 512,
+        "height": 512
+      },
+      "data_type": "uint8",
+      "band_count": 5,
+      "bands_analysis": [
+        {
+          "channel_index": 0,
+          "band_name": "Blue",
+          "wavelength": "475 nm",
+          "scientific_role": "Atmospheric scattering reference",
+          "min": 0.0,
+          "max": 71.0,
+          "mean": 5.1152,
+          "std": 1.9746,
+          "zeros_count": 1416,
+          "has_nan": false
+        },
+        {
+          "channel_index": 1,
+          "band_name": "Green",
+          "wavelength": "560 nm",
+          "scientific_role": "Chlorophyll green peak reflectance",
+          "min": 0.0,
+          "max": 114.0,
+          "mean": 14.8916,
+          "std": 10.7113,
+          "zeros_count": 82,
+          "has_nan": false
+        },
+        {
+          "channel_index": 2,
+          "band_name": "Red",
+          "wavelength": "668 nm",
+          "scientific_role": "Chlorophyll absorption peak (Critical for NDVI)",
+          "min": 0.0,
+          "max": 60.0,
+          "mean": 4.6054,
+          "std": 4.341,
+          "zeros_count": 1627,
+          "has_nan": false
+        },
+        {
+          "channel_index": 3,
+          "band_name": "RedEdge",
+          "wavelength": "717 nm",
+          "scientific_role": "Transition edge (Critical for NDRE)",
+          "min": 0.0,
+          "max": 185.0,
+          "mean": 30.3976,
+          "std": 34.5741,
+          "zeros_count": 115812,
+          "has_nan": false
+        },
+        {
+          "channel_index": 4,
+          "band_name": "NIR",
+          "wavelength": "842 nm",
+          "scientific_role": "Cellular leaf structure reflectance (Critical for NDVI/NDRE)",
+          "min": 0.0,
+          "max": 255.0,
+          "mean": 63.8031,
+          "std": 68.0517,
+          "zeros_count": 115368,
+          "has_nan": false
+        }
+      ],
+      "has_red_band": true,
+      "has_nir_band": true,
+      "has_rededge_band": true,
+      "tags_count": 16
+    },
+    {
+      "filename": "ALTUM_CAL_altum_beechforest_Hullerbusch_Orthomosaic-reflectance0-1_AltumMSI_1072_1543.tif",
+      "path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\multispectral\\data\\ALTUM_CAL_altum_beechforest_Hullerbusch_Orthomosaic-reflectance0-1_AltumMSI_1072_1543.tif",
+      "size_bytes": 1311040,
+      "readable": true,
+      "error": null,
+      "format": "TIFF / GeoTIFF",
+      "dimensions": {
+        "width": 512,
+        "height": 512
+      },
+      "data_type": "uint8",
+      "band_count": 5,
+      "bands_analysis": [
+        {
+          "channel_index": 0,
+          "band_name": "Blue",
+          "wavelength": "475 nm",
+          "scientific_role": "Atmospheric scattering reference",
+          "min": 0.0,
+          "max": 26.0,
+          "mean": 3.426,
+          "std": 2.4185,
+          "zeros_count": 35150,
+          "has_nan": false
+        },
+        {
+          "channel_index": 1,
+          "band_name": "Green",
+          "wavelength": "560 nm",
+          "scientific_role": "Chlorophyll green peak reflectance",
+          "min": 0.0,
+          "max": 67.0,
+          "mean": 12.7643,
+          "std": 8.7775,
+          "zeros_count": 20420,
+          "has_nan": false
+        },
+        {
+          "channel_index": 2,
+          "band_name": "Red",
+          "wavelength": "668 nm",
+          "scientific_role": "Chlorophyll absorption peak (Critical for NDVI)",
+          "min": 0.0,
+          "max": 43.0,
+          "mean": 4.847,
+          "std": 3.5408,
+          "zeros_count": 30434,
+          "has_nan": false
+        },
+        {
+          "channel_index": 3,
+          "band_name": "RedEdge",
+          "wavelength": "717 nm",
+          "scientific_role": "Transition edge (Critical for NDRE)",
+          "min": 0.0,
+          "max": 157.0,
+          "mean": 39.8599,
+          "std": 24.2838,
+          "zeros_count": 527,
+          "has_nan": false
+        },
+        {
+          "channel_index": 4,
+          "band_name": "NIR",
+          "wavelength": "842 nm",
+          "scientific_role": "Cellular leaf structure reflectance (Critical for NDVI/NDRE)",
+          "min": 0.0,
+          "max": 255.0,
+          "mean": 108.0733,
+          "std": 52.4464,
+          "zeros_count": 25,
+          "has_nan": false
+        }
+      ],
+      "has_red_band": true,
+      "has_nir_band": true,
+      "has_rededge_band": true,
+      "tags_count": 16
+    },
+    {
+      "filename": "ALTUM_CAL_altum_beechforest_Hullerbusch_Orthomosaic-reflectance0-1_AltumMSI_1072_2055.tif",
+      "path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\multispectral\\data\\ALTUM_CAL_altum_beechforest_Hullerbusch_Orthomosaic-reflectance0-1_AltumMSI_1072_2055.tif",
+      "size_bytes": 1311040,
+      "readable": true,
+      "error": null,
+      "format": "TIFF / GeoTIFF",
+      "dimensions": {
+        "width": 512,
+        "height": 512
+      },
+      "data_type": "uint8",
+      "band_count": 5,
+      "bands_analysis": [
+        {
+          "channel_index": 0,
+          "band_name": "Blue",
+          "wavelength": "475 nm",
+          "scientific_role": "Atmospheric scattering reference",
+          "min": 0.0,
+          "max": 34.0,
+          "mean": 3.7298,
+          "std": 2.6654,
+          "zeros_count": 24354,
+          "has_nan": false
+        },
+        {
+          "channel_index": 1,
+          "band_name": "Green",
+          "wavelength": "560 nm",
+          "scientific_role": "Chlorophyll green peak reflectance",
+          "min": 0.0,
+          "max": 51.0,
+          "mean": 12.512,
+          "std": 8.655,
+          "zeros_count": 7610,
+          "has_nan": false
+        },
+        {
+          "channel_index": 2,
+          "band_name": "Red",
+          "wavelength": "668 nm",
+          "scientific_role": "Chlorophyll absorption peak (Critical for NDVI)",
+          "min": 0.0,
+          "max": 48.0,
+          "mean": 5.2048,
+          "std": 4.2418,
+          "zeros_count": 30855,
+          "has_nan": false
+        },
+        {
+          "channel_index": 3,
+          "band_name": "RedEdge",
+          "wavelength": "717 nm",
+          "scientific_role": "Transition edge (Critical for NDRE)",
+          "min": 0.0,
+          "max": 120.0,
+          "mean": 38.0238,
+          "std": 23.4343,
+          "zeros_count": 8,
+          "has_nan": false
+        },
+        {
+          "channel_index": 4,
+          "band_name": "NIR",
+          "wavelength": "842 nm",
+          "scientific_role": "Cellular leaf structure reflectance (Critical for NDVI/NDRE)",
+          "min": 7.0,
+          "max": 255.0,
+          "mean": 104.4368,
+          "std": 46.945,
+          "zeros_count": 0,
+          "has_nan": false
+        }
+      ],
+      "has_red_band": true,
+      "has_nir_band": true,
+      "has_rededge_band": true,
+      "tags_count": 16
+    },
+    {
+      "filename": "ALTUM_CAL_altum_beechforest_Hullerbusch_Orthomosaic-reflectance0-1_AltumMSI_1072_2567.tif",
+      "path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\multispectral\\data\\ALTUM_CAL_altum_beechforest_Hullerbusch_Orthomosaic-reflectance0-1_AltumMSI_1072_2567.tif",
+      "size_bytes": 1311040,
+      "readable": true,
+      "error": null,
+      "format": "TIFF / GeoTIFF",
+      "dimensions": {
+        "width": 512,
+        "height": 512
+      },
+      "data_type": "uint8",
+      "band_count": 5,
+      "bands_analysis": [
+        {
+          "channel_index": 0,
+          "band_name": "Blue",
+          "wavelength": "475 nm",
+          "scientific_role": "Atmospheric scattering reference",
+          "min": 0.0,
+          "max": 25.0,
+          "mean": 3.3042,
+          "std": 2.6659,
+          "zeros_count": 20428,
+          "has_nan": false
+        },
+        {
+          "channel_index": 1,
+          "band_name": "Green",
+          "wavelength": "560 nm",
+          "scientific_role": "Chlorophyll green peak reflectance",
+          "min": 0.0,
+          "max": 56.0,
+          "mean": 10.0869,
+          "std": 8.3081,
+          "zeros_count": 5574,
+          "has_nan": false
+        },
+        {
+          "channel_index": 2,
+          "band_name": "Red",
+          "wavelength": "668 nm",
+          "scientific_role": "Chlorophyll absorption peak (Critical for NDVI)",
+          "min": 0.0,
+          "max": 42.0,
+          "mean": 4.403,
+          "std": 4.4325,
+          "zeros_count": 40501,
+          "has_nan": false
+        },
+        {
+          "channel_index": 3,
+          "band_name": "RedEdge",
+          "wavelength": "717 nm",
+          "scientific_role": "Transition edge (Critical for NDRE)",
+          "min": 0.0,
+          "max": 129.0,
+          "mean": 32.2632,
+          "std": 23.9893,
+          "zeros_count": 124,
+          "has_nan": false
+        },
+        {
+          "channel_index": 4,
+          "band_name": "NIR",
+          "wavelength": "842 nm",
+          "scientific_role": "Cellular leaf structure reflectance (Critical for NDVI/NDRE)",
+          "min": 2.0,
+          "max": 255.0,
+          "mean": 93.0755,
+          "std": 47.69,
+          "zeros_count": 0,
+          "has_nan": false
+        }
+      ],
+      "has_red_band": true,
+      "has_nir_band": true,
+      "has_rededge_band": true,
+      "tags_count": 16
+    },
+    {
+      "filename": "ALTUM_CAL_altum_beechforest_Hullerbusch_Orthomosaic-reflectance0-1_AltumMSI_1072_3079.tif",
+      "path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\multispectral\\data\\ALTUM_CAL_altum_beechforest_Hullerbusch_Orthomosaic-reflectance0-1_AltumMSI_1072_3079.tif",
+      "size_bytes": 1311040,
+      "readable": true,
+      "error": null,
+      "format": "TIFF / GeoTIFF",
+      "dimensions": {
+        "width": 512,
+        "height": 512
+      },
+      "data_type": "uint8",
+      "band_count": 5,
+      "bands_analysis": [
+        {
+          "channel_index": 0,
+          "band_name": "Blue",
+          "wavelength": "475 nm",
+          "scientific_role": "Atmospheric scattering reference",
+          "min": 0.0,
+          "max": 24.0,
+          "mean": 4.0397,
+          "std": 2.5143,
+          "zeros_count": 9170,
+          "has_nan": false
+        },
+        {
+          "channel_index": 1,
+          "band_name": "Green",
+          "wavelength": "560 nm",
+          "scientific_role": "Chlorophyll green peak reflectance",
+          "min": 0.0,
+          "max": 53.0,
+          "mean": 10.5847,
+          "std": 6.8888,
+          "zeros_count": 2086,
+          "has_nan": false
+        },
+        {
+          "channel_index": 2,
+          "band_name": "Red",
+          "wavelength": "668 nm",
+          "scientific_role": "Chlorophyll absorption peak (Critical for NDVI)",
+          "min": 0.0,
+          "max": 41.0,
+          "mean": 5.3652,
+          "std": 4.1732,
+          "zeros_count": 13627,
+          "has_nan": false
+        },
+        {
+          "channel_index": 3,
+          "band_name": "RedEdge",
+          "wavelength": "717 nm",
+          "scientific_role": "Transition edge (Critical for NDRE)",
+          "min": 0.0,
+          "max": 141.0,
+          "mean": 34.8958,
+          "std": 21.3154,
+          "zeros_count": 143,
+          "has_nan": false
+        },
+        {
+          "channel_index": 4,
+          "band_name": "NIR",
+          "wavelength": "842 nm",
+          "scientific_role": "Cellular leaf structure reflectance (Critical for NDVI/NDRE)",
+          "min": 0.0,
+          "max": 255.0,
+          "mean": 103.8946,
+          "std": 50.0594,
+          "zeros_count": 19,
+          "has_nan": false
+        }
+      ],
+      "has_red_band": true,
+      "has_nir_band": true,
+      "has_rededge_band": true,
+      "tags_count": 16
+    },
+    {
+      "filename": "ALTUM_CAL_altum_beechforest_Hullerbusch_Orthomosaic-reflectance0-1_AltumMSI_1072_3591.tif",
+      "path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\multispectral\\data\\ALTUM_CAL_altum_beechforest_Hullerbusch_Orthomosaic-reflectance0-1_AltumMSI_1072_3591.tif",
+      "size_bytes": 1311040,
+      "readable": true,
+      "error": null,
+      "format": "TIFF / GeoTIFF",
+      "dimensions": {
+        "width": 512,
+        "height": 512
+      },
+      "data_type": "uint8",
+      "band_count": 5,
+      "bands_analysis": [
+        {
+          "channel_index": 0,
+          "band_name": "Blue",
+          "wavelength": "475 nm",
+          "scientific_role": "Atmospheric scattering reference",
+          "min": 0.0,
+          "max": 21.0,
+          "mean": 3.6063,
+          "std": 2.3429,
+          "zeros_count": 8882,
+          "has_nan": false
+        },
+        {
+          "channel_index": 1,
+          "band_name": "Green",
+          "wavelength": "560 nm",
+          "scientific_role": "Chlorophyll green peak reflectance",
+          "min": 0.0,
+          "max": 44.0,
+          "mean": 10.4402,
+          "std": 6.9659,
+          "zeros_count": 676,
+          "has_nan": false
+        },
+        {
+          "channel_index": 2,
+          "band_name": "Red",
+          "wavelength": "668 nm",
+          "scientific_role": "Chlorophyll absorption peak (Critical for NDVI)",
+          "min": 0.0,
+          "max": 41.0,
+          "mean": 4.9589,
+          "std": 4.061,
+          "zeros_count": 14165,
+          "has_nan": false
+        },
+        {
+          "channel_index": 3,
+          "band_name": "RedEdge",
+          "wavelength": "717 nm",
+          "scientific_role": "Transition edge (Critical for NDRE)",
+          "min": 0.0,
+          "max": 139.0,
+          "mean": 35.4325,
+          "std": 21.4642,
+          "zeros_count": 11,
+          "has_nan": false
+        },
+        {
+          "channel_index": 4,
+          "band_name": "NIR",
+          "wavelength": "842 nm",
+          "scientific_role": "Cellular leaf structure reflectance (Critical for NDVI/NDRE)",
+          "min": 16.0,
+          "max": 255.0,
+          "mean": 104.9562,
+          "std": 44.5325,
+          "zeros_count": 0,
+          "has_nan": false
+        }
+      ],
+      "has_red_band": true,
+      "has_nir_band": true,
+      "has_rededge_band": true,
+      "tags_count": 16
+    },
+    {
+      "filename": "ALTUM_CAL_altum_beechforest_Hullerbusch_Orthomosaic-reflectance0-1_AltumMSI_1072_4103.tif",
+      "path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\multispectral\\data\\ALTUM_CAL_altum_beechforest_Hullerbusch_Orthomosaic-reflectance0-1_AltumMSI_1072_4103.tif",
+      "size_bytes": 1311040,
+      "readable": true,
+      "error": null,
+      "format": "TIFF / GeoTIFF",
+      "dimensions": {
+        "width": 512,
+        "height": 512
+      },
+      "data_type": "uint8",
+      "band_count": 5,
+      "bands_analysis": [
+        {
+          "channel_index": 0,
+          "band_name": "Blue",
+          "wavelength": "475 nm",
+          "scientific_role": "Atmospheric scattering reference",
+          "min": 0.0,
+          "max": 19.0,
+          "mean": 3.0582,
+          "std": 2.2063,
+          "zeros_count": 21867,
+          "has_nan": false
+        },
+        {
+          "channel_index": 1,
+          "band_name": "Green",
+          "wavelength": "560 nm",
+          "scientific_role": "Chlorophyll green peak reflectance",
+          "min": 0.0,
+          "max": 44.0,
+          "mean": 9.3182,
+          "std": 6.7025,
+          "zeros_count": 2072,
+          "has_nan": false
+        },
+        {
+          "channel_index": 2,
+          "band_name": "Red",
+          "wavelength": "668 nm",
+          "scientific_role": "Chlorophyll absorption peak (Critical for NDVI)",
+          "min": 0.0,
+          "max": 33.0,
+          "mean": 3.8213,
+          "std": 3.3678,
+          "zeros_count": 40609,
+          "has_nan": false
+        },
+        {
+          "channel_index": 3,
+          "band_name": "RedEdge",
+          "wavelength": "717 nm",
+          "scientific_role": "Transition edge (Critical for NDRE)",
+          "min": 1.0,
+          "max": 120.0,
+          "mean": 33.1696,
+          "std": 21.3362,
+          "zeros_count": 0,
+          "has_nan": false
+        },
+        {
+          "channel_index": 4,
+          "band_name": "NIR",
+          "wavelength": "842 nm",
+          "scientific_role": "Cellular leaf structure reflectance (Critical for NDVI/NDRE)",
+          "min": 12.0,
+          "max": 255.0,
+          "mean": 104.7884,
+          "std": 44.944,
+          "zeros_count": 0,
+          "has_nan": false
+        }
+      ],
+      "has_red_band": true,
+      "has_nir_band": true,
+      "has_rededge_band": true,
+      "tags_count": 16
+    },
+    {
+      "filename": "ALTUM_CAL_altum_beechforest_Hullerbusch_Orthomosaic-reflectance0-1_AltumMSI_1072_4615.tif",
+      "path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\multispectral\\data\\ALTUM_CAL_altum_beechforest_Hullerbusch_Orthomosaic-reflectance0-1_AltumMSI_1072_4615.tif",
+      "size_bytes": 1311040,
+      "readable": true,
+      "error": null,
+      "format": "TIFF / GeoTIFF",
+      "dimensions": {
+        "width": 512,
+        "height": 512
+      },
+      "data_type": "uint8",
+      "band_count": 5,
+      "bands_analysis": [
+        {
+          "channel_index": 0,
+          "band_name": "Blue",
+          "wavelength": "475 nm",
+          "scientific_role": "Atmospheric scattering reference",
+          "min": 0.0,
+          "max": 25.0,
+          "mean": 3.2936,
+          "std": 2.9823,
+          "zeros_count": 44527,
+          "has_nan": false
+        },
+        {
+          "channel_index": 1,
+          "band_name": "Green",
+          "wavelength": "560 nm",
+          "scientific_role": "Chlorophyll green peak reflectance",
+          "min": 0.0,
+          "max": 50.0,
+          "mean": 8.6045,
+          "std": 8.0329,
+          "zeros_count": 21508,
+          "has_nan": false
+        },
+        {
+          "channel_index": 2,
+          "band_name": "Red",
+          "wavelength": "668 nm",
+          "scientific_role": "Chlorophyll absorption peak (Critical for NDVI)",
+          "min": 0.0,
+          "max": 45.0,
+          "mean": 4.9028,
+          "std": 5.1977,
+          "zeros_count": 54723,
+          "has_nan": false
+        },
+        {
+          "channel_index": 3,
+          "band_name": "RedEdge",
+          "wavelength": "717 nm",
+          "scientific_role": "Transition edge (Critical for NDRE)",
+          "min": 0.0,
+          "max": 130.0,
+          "mean": 28.2538,
+          "std": 24.246,
+          "zeros_count": 867,
+          "has_nan": false
+        },
+        {
+          "channel_index": 4,
+          "band_name": "NIR",
+          "wavelength": "842 nm",
+          "scientific_role": "Cellular leaf structure reflectance (Critical for NDVI/NDRE)",
+          "min": 0.0,
+          "max": 255.0,
+          "mean": 80.2433,
+          "std": 49.9883,
+          "zeros_count": 1,
+          "has_nan": false
+        }
+      ],
+      "has_red_band": true,
+      "has_nir_band": true,
+      "has_rededge_band": true,
+      "tags_count": 16
+    },
+    {
+      "filename": "ALTUM_CAL_altum_beechforest_Hullerbusch_Orthomosaic-reflectance0-1_AltumMSI_1072_5127.tif",
+      "path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\multispectral\\data\\ALTUM_CAL_altum_beechforest_Hullerbusch_Orthomosaic-reflectance0-1_AltumMSI_1072_5127.tif",
+      "size_bytes": 1311040,
+      "readable": true,
+      "error": null,
+      "format": "TIFF / GeoTIFF",
+      "dimensions": {
+        "width": 512,
+        "height": 512
+      },
+      "data_type": "uint8",
+      "band_count": 5,
+      "bands_analysis": [
+        {
+          "channel_index": 0,
+          "band_name": "Blue",
+          "wavelength": "475 nm",
+          "scientific_role": "Atmospheric scattering reference",
+          "min": 0.0,
+          "max": 255.0,
+          "mean": 18.1792,
+          "std": 61.678,
+          "zeros_count": 71150,
+          "has_nan": false
+        },
+        {
+          "channel_index": 1,
+          "band_name": "Green",
+          "wavelength": "560 nm",
+          "scientific_role": "Chlorophyll green peak reflectance",
+          "min": 0.0,
+          "max": 255.0,
+          "mean": 21.893,
+          "std": 60.9044,
+          "zeros_count": 35558,
+          "has_nan": false
+        },
+        {
+          "channel_index": 2,
+          "band_name": "Red",
+          "wavelength": "668 nm",
+          "scientific_role": "Chlorophyll absorption peak (Critical for NDVI)",
+          "min": 0.0,
+          "max": 255.0,
+          "mean": 19.2423,
+          "std": 61.4578,
+          "zeros_count": 70734,
+          "has_nan": false
+        },
+        {
+          "channel_index": 3,
+          "band_name": "RedEdge",
+          "wavelength": "717 nm",
+          "scientific_role": "Transition edge (Critical for NDRE)",
+          "min": 0.0,
+          "max": 255.0,
+          "mean": 35.5849,
+          "std": 59.2529,
+          "zeros_count": 994,
+          "has_nan": false
+        },
+        {
+          "channel_index": 4,
+          "band_name": "NIR",
+          "wavelength": "842 nm",
+          "scientific_role": "Cellular leaf structure reflectance (Critical for NDVI/NDRE)",
+          "min": 0.0,
+          "max": 255.0,
+          "mean": 70.0802,
+          "std": 57.5856,
+          "zeros_count": 7,
+          "has_nan": false
+        }
+      ],
+      "has_red_band": true,
+      "has_nir_band": true,
+      "has_rededge_band": true,
+      "tags_count": 16
+    },
+    {
+      "filename": "ALTUM_CAL_altum_beechforest_Hullerbusch_Orthomosaic-reflectance0-1_AltumMSI_1072_5639.tif",
+      "path": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\multispectral\\data\\ALTUM_CAL_altum_beechforest_Hullerbusch_Orthomosaic-reflectance0-1_AltumMSI_1072_5639.tif",
+      "size_bytes": 1311040,
+      "readable": true,
+      "error": null,
+      "format": "TIFF / GeoTIFF",
+      "dimensions": {
+        "width": 512,
+        "height": 512
+      },
+      "data_type": "uint8",
+      "band_count": 5,
+      "bands_analysis": [
+        {
+          "channel_index": 0,
+          "band_name": "Blue",
+          "wavelength": "475 nm",
+          "scientific_role": "Atmospheric scattering reference",
+          "min": 0.0,
+          "max": 23.0,
+          "mean": 3.888,
+          "std": 2.5569,
+          "zeros_count": 13339,
+          "has_nan": false
+        },
+        {
+          "channel_index": 1,
+          "band_name": "Green",
+          "wavelength": "560 nm",
+          "scientific_role": "Chlorophyll green peak reflectance",
+          "min": 0.0,
+          "max": 49.0,
+          "mean": 10.7711,
+          "std": 7.1734,
+          "zeros_count": 2842,
+          "has_nan": false
+        },
+        {
+          "channel_index": 2,
+          "band_name": "Red",
+          "wavelength": "668 nm",
+          "scientific_role": "Chlorophyll absorption peak (Critical for NDVI)",
+          "min": 0.0,
+          "max": 41.0,
+          "mean": 5.6347,
+          "std": 4.582,
+          "zeros_count": 25302,
+          "has_nan": false
+        },
+        {
+          "channel_index": 3,
+          "band_name": "RedEdge",
+          "wavelength": "717 nm",
+          "scientific_role": "Transition edge (Critical for NDRE)",
+          "min": 0.0,
+          "max": 127.0,
+          "mean": 33.8705,
+          "std": 20.4844,
+          "zeros_count": 127,
+          "has_nan": false
+        },
+        {
+          "channel_index": 4,
+          "band_name": "NIR",
+          "wavelength": "842 nm",
+          "scientific_role": "Cellular leaf structure reflectance (Critical for NDVI/NDRE)",
+          "min": 0.0,
+          "max": 255.0,
+          "mean": 90.418,
+          "std": 37.702,
+          "zeros_count": 7,
+          "has_nan": false
+        }
+      ],
+      "has_red_band": true,
+      "has_nir_band": true,
+      "has_rededge_band": true,
+      "tags_count": 16
+    }
+  ],
+  "dataset_source": {
+    "dataset_name": "MSUAV500K (Foundational Dataset for Multispectral and RGB Uncrewed Aerial Vehicle Imagery)",
+    "official_source": "Data in Brief (2025) / Zenodo",
+    "source_url": "https://doi.org/10.5281/zenodo.16743974",
+    "license": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+    "palm_oil_palm_related": "YES (includes tropical canopy & agricultural vegetation surveys)",
+    "genuine_multispectral": "YES",
+    "sensor_platforms": [
+      "MicaSense Altum / Altum-PT",
+      "DJI Phantom 4 Multispectral",
+      "Parrot Sequoia",
+      "DJI Mavic 3M"
+    ],
+    "spectral_bands": {
+      "Blue": "475 nm (Bandwidth 32 nm)",
+      "Green": "560 nm (Bandwidth 27 nm)",
+      "Red": "668 nm (Bandwidth 16 nm)",
+      "RedEdge": "717 nm (Bandwidth 12 nm)",
+      "NIR": "842 nm (Bandwidth 57 nm)"
+    },
+    "file_format": "Multichannel GeoTIFF (5-band stacked rasters, calibrated reflectance)",
+    "dimensions": "512x512 standardized tiles",
+    "metadata": "Radiometrically calibrated, sunlight/irradiance sensor normalized",
+    "georeferencing": "Embedded GeoTIFF metadata",
+    "ndvi_possible": "YES (Red and NIR bands verified and present)",
+    "ndre_possible": "YES (RedEdge and NIR bands verified and present)"
+  },
+  "local_audit_log": [
+    {
+      "location": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\dataset_yolo\\images\\val",
+      "candidate_name": "MOPAD Site 2 Drone Dataset",
+      "file_format": "JPEG",
+      "bands": [
+        "R",
+        "G",
+        "B"
+      ],
+      "band_count": 3,
+      "is_genuine_multispectral": false,
+      "rejection_reason": "Standard 3-channel 8-bit RGB JPEG imagery. Lacks Near-Infrared (NIR) and Red-Edge bands."
+    },
+    {
+      "location": "C:\\Users\\iRaagul\\Downloads\\Oil Palm Tree Detection for Anomaly Identification.zip",
+      "candidate_name": "Oil Palm Tree Detection for Anomaly Identification (Mendeley Data DOI: 10.17632/nh7d23dgnw.1)",
+      "file_format": "JPEG (inside Roboflow export zip)",
+      "bands": [
+        "R",
+        "G",
+        "B"
+      ],
+      "band_count": 3,
+      "is_genuine_multispectral": false,
+      "rejection_reason": "Although captured with a DJI Phantom 4 Multispectral UAV, the published dataset contains only 800x600 3-channel RGB JPEGs. Raw multispectral TIFFs/bands (NIR, RedEdge) were not included in the public export."
+    }
+  ],
+  "pipeline_feasibility": {
+    "genuine_multispectral_data_present": true,
+    "ndvi_possible": true,
+    "ndre_possible": true,
+    "rgb_to_multispectral_conversion_permitted": false,
+    "spectral_band_fabrication_permitted": false
+  }
+}

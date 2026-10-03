@@ -1,0 +1,82 @@
+{
+  "task": "Drone RGB UAV Health Feature Extraction",
+  "model_checkpoint": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\models\\palm_yolo_best.pt",
+  "inference_device": "CPU",
+  "confidence_threshold": 0.25,
+  "number_of_images_processed": 500,
+  "total_detections": 43779,
+  "total_palm_detections": 43599,
+  "counts": {
+    "healthy": 34130,
+    "dead": 83,
+    "small": 8841,
+    "yellow": 545,
+    "grass": 180
+  },
+  "health_percentages": {
+    "overall_healthy_percentage": 78.2816,
+    "overall_dead_percentage": 0.1904,
+    "overall_small_percentage": 20.278,
+    "overall_yellow_percentage": 1.25,
+    "overall_stress_percentage": 21.528,
+    "overall_non_healthy_palm_percentage": 21.7184
+  },
+  "drone_health_score": {
+    "formula": "Healthy % = (Healthy / Palm detections) * 100",
+    "average": 75.8055,
+    "median": 89.1889,
+    "nature": "Model-derived image-level indicator (not a scientifically validated agricultural index)"
+  },
+  "confidence_statistics": {
+    "overall": {
+      "count": 43779,
+      "mean": 0.8612,
+      "median": 0.9315,
+      "min": 0.2501,
+      "max": 0.9999,
+      "std": 0.1636
+    },
+    "per_class": {
+      "Healthy": {
+        "count": 34130,
+        "mean": 0.8578,
+        "median": 0.9344,
+        "min": 0.2501,
+        "max": 0.9888
+      },
+      "Small": {
+        "count": 8841,
+        "mean": 0.8735,
+        "median": 0.9152,
+        "min": 0.2505,
+        "max": 0.9689
+      },
+      "Yellow": {
+        "count": 545,
+        "mean": 0.8891,
+        "median": 0.9449,
+        "min": 0.2605,
+        "max": 0.9904
+      },
+      "Grass": {
+        "count": 180,
+        "mean": 0.7931,
+        "median": 0.9124,
+        "min": 0.254,
+        "max": 0.9999
+      },
+      "Dead": {
+        "count": 83,
+        "mean": 0.881,
+        "median": 0.9321,
+        "min": 0.2993,
+        "max": 0.9899
+      }
+    }
+  },
+  "division_safety_convention": "If palm_detections == 0, health percentages and health score are set to 0.0",
+  "block_id_mapping": {
+    "available": false,
+    "status_file": "C:\\Users\\iRaagul\\OneDrive\\Desktop\\Palm_AI\\drone\\outputs\\drone_block_mapping_status.txt"
+  }
+}

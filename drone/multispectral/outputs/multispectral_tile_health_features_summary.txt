@@ -1,0 +1,41 @@
+================================================================================
+        PALM_AI: TILE-LEVEL MULTISPECTRAL VEGETATION-HEALTH FEATURE SUMMARY      
+================================================================================
+
+STATUS:                 MULTISPECTRAL_HEALTH_FEATURES_EXTRACTED
+DATASET:                MSUAV500K Multispectral Benchmark (Zenodo DOI: 10.5281/zenodo.16743974)
+TOTAL TILES ANALYZED:   34 tiles
+TOTAL FEATURES PER TILE:43 quantitative features
+CANOPY NDVI THRESHOLD:  >= 0.3
+
+DATASET-WIDE MULTISPECTRAL HEALTH METRICS
+-----------------------------------------
+- Mean Health Score (MHS):       92.0 / 100
+- Median Health Score (MHS):     96.64 / 100
+- Score Standard Deviation:      13.9
+- Score Range:                   [29.74, 99.52]
+- Mean Canopy Cover Percentage:  93.62%
+- Mean Canopy NDVI (Vegetated):  0.8977
+- Mean Canopy NDRE (Vegetated):  0.5129
+- Mean Canopy Uniformity Score:  90.48 / 100
+
+TILE VIGOUR CATEGORY DISTRIBUTION
+---------------------------------
+  * High Vigour Canopy                 : 30 tiles ( 88.2%)
+  * Moderate Vigour Canopy             :  3 tiles (  8.8%)
+  * Non-Canopy / Water / Background    :  1 tiles (  2.9%)
+
+FEATURE DICTIONARY & DESIGN RATIONALE
+-------------------------------------
+1. Canopy Cover & Land Strata: Distinguishes true photosynthetic canopy (NDVI >= 0.3)
+   from bare ground, inter-row cover, deep shadows, and water bodies.
+2. Canopy-Masked NDVI: Measures active chlorophyll absorption without background attenuation.
+3. Canopy-Masked NDRE: Uses Red Edge (717 nm) to assess deep-canopy chlorophyll density and nitrogen
+   sensitivity without the saturation limitations of standard NDVI.
+4. Spatial Uniformity & CV: Measures spatial canopy dispersion (std/mean); patchy stands exhibit high CV.
+5. Composite Multispectral Health Score (MHS): Scaled index combining vigour, density, and uniformity.
+
+MANDATORY SCIENTIFIC & AGRONOMIC INTEGRITY DISCLAIMER
+-----------------------------------------------------
+Multispectral vegetation indices (NDVI, NDRE) quantify optical surface reflectance and canopy absorption properties. While they reliably detect anomalies in chlorophyll content, biomass density, and photosynthetic activity, they do NOT indicate specific biological or chemical etiologies. Depressed index values can be caused by drought stress, nitrogen deficiency, vascular root rot (Ganoderma), pest herbivory (Bagworm), soil compaction, or physical pruning. Diagnostic attribution requires in-situ agronomist inspection, leaf tissue laboratory analysis, or soil sampling.
+================================================================================
