@@ -1,0 +1,174 @@
+{
+  "verification_timestamp": "2026-10-03T15:55:00+05:30",
+  "project_name": "Palm_AI",
+  "repository": "https://github.com/raagul-vc/Palm_AI.git",
+  "branch": "main",
+  "git_commit": "c52ba0b",
+  "previous_commit": "9f4e17a",
+  "local_tests": {
+    "backend_pytest": {
+      "total_tests": 26,
+      "passed": 26,
+      "failed": 0,
+      "warnings": 0,
+      "duration_seconds": 8.09,
+      "test_modules": [
+        "tests/test_data_integrity.py",
+        "tests/test_risk_engine.py"
+      ],
+      "status": "PASSED"
+    },
+    "frontend_lint": {
+      "tool": "oxlint",
+      "files_checked": 3,
+      "rules_applied": 104,
+      "warnings": 0,
+      "errors": 0,
+      "duration_ms": 161,
+      "status": "PASSED"
+    },
+    "frontend_build": {
+      "tool": "vite v8.3.0",
+      "status": "PASSED",
+      "build_duration_seconds": 1.16,
+      "artifacts": {
+        "html": "dist/index.html (0.59 kB)",
+        "css": "dist/assets/index-peUpv_FA.css (28.73 kB)",
+        "js": "dist/assets/index-3aNJC1qS.js (713.73 kB)"
+      }
+    }
+  },
+  "local_api_verification": {
+    "server": "Flask / Gunicorn (http://127.0.0.1:5000)",
+    "endpoints_tested": {
+      "/api/health": {
+        "status_code": 200,
+        "response_status": "online"
+      },
+      "/api/risk/summary": {
+        "status_code": 200,
+        "total_blocks": 42,
+        "risk_counts": {
+          "HIGH": 1,
+          "MEDIUM": 6,
+          "LOW": 35
+        },
+        "score_statistics": {
+          "mean": 19.34,
+          "min": 7.5,
+          "max": 70.0
+        }
+      },
+      "/api/risk/B001": {
+        "status_code": 200,
+        "Block_ID": "B001",
+        "overall_risk_score": 70.0,
+        "risk_level": "HIGH",
+        "production_probability": 0.75,
+        "evidence_status": {
+          "palm": "available",
+          "rgb_drone": "unmapped",
+          "multispectral": "unmapped"
+        }
+      },
+      "/api/risk/B005": {
+        "status_code": 200,
+        "Block_ID": "B005",
+        "overall_risk_score": 53.75,
+        "risk_level": "MEDIUM",
+        "production_probability": 0.40,
+        "evidence_status": {
+          "palm": "available",
+          "rgb_drone": "unmapped",
+          "multispectral": "unmapped"
+        }
+      },
+      "/api/risk/B044": {
+        "status_code": 404,
+        "error": "Block 'B044' not found in plantation records"
+      },
+      "/api/risk/invalid": {
+        "status_code": 404,
+        "error": "Block 'invalid' not found in plantation records"
+      },
+      "/api/evidence-registry": {
+        "status_code": 200,
+        "evidence_pillars": [
+          "palm_agronomic",
+          "rgb_drone",
+          "multispectral"
+        ]
+      },
+      "/api/risk?block_id=B005": {
+        "status_code": 200,
+        "matched_rows": 1,
+        "Block_ID": "B005"
+      },
+      "/api/multi-source-risk?block_id=B005": {
+        "status_code": 200,
+        "matched_rows": 1,
+        "Block_ID": "B005"
+      }
+    },
+    "block_isolation_verified": true,
+    "evidence_isolation_verified": true
+  },
+  "local_frontend_verification": {
+    "test_environment": "Headless Chrome DevTools Protocol",
+    "dashboard_loaded": true,
+    "title": "Palm AI | Plantation Intelligence",
+    "risk_page": {
+      "rendered": true,
+      "evidence_arch_panel": true,
+      "pillars": [
+        "Palm Agronomic Risk",
+        "RGB Drone UAV (YOLO11n)",
+        "Multispectral UAV (Altum)"
+      ]
+    },
+    "block_selection_reactivity": {
+      "verified": true,
+      "first_row_bug_absent": true,
+      "tested_blocks": {
+        "B001": { "score": "70.0 / 100", "level": "HIGH" },
+        "B005": { "score": "53.8 / 100", "level": "MEDIUM" },
+        "B002": { "score": "7.5 / 100", "level": "LOW" }
+      }
+    },
+    "evidence_status_badges": {
+      "palm_agronomic": "Available",
+      "rgb_drone": "Unmapped",
+      "multispectral": "Unmapped"
+    }
+  },
+  "deployment_readiness_audit": {
+    "docker_installed_locally": false,
+    "docker_note": "Docker CLI not installed on local Windows environment; remote multi-stage Docker build configured via render.yaml",
+    "render_config_valid": true,
+    "render_service_name": "palm-ai",
+    "render_file": "render.yaml",
+    "dockerfile": "Dockerfile",
+    "requirements_file": "requirements.txt",
+    "hardcoded_localhost_urls": false,
+    "secrets_exposed": false,
+    "git_remote_status": "Clean, pushed to origin/main (c52ba0b)"
+  },
+  "production_deployment_status": {
+    "git_pushed": true,
+    "remote_url": "https://github.com/raagul-vc/Palm_AI.git",
+    "render_live_url": "https://palm-ai.onrender.com",
+    "render_probe_status": "HTTP 404 (Not Found)",
+    "render_status_summary": "DEPLOYMENT BLOCKED / PENDING REMOTE SERVICE INITIALIZATION",
+    "blocker_details": "Render Blueprint is configured in render.yaml and latest code is pushed to GitHub, but the web service has not yet been provisioned/connected in the Render dashboard or assigned a live subdomain. Manual blueprint trigger or service setup on dashboard.render.com is required."
+  },
+  "scientific_checks": {
+    "pillar_1_palm_agronomic": "Operational block-level risk evidence (42 blocks, B001-B042)",
+    "pillar_2_rgb_drone": "Image-level visual evidence from MOPAD Site 2 (Unmapped to blocks)",
+    "pillar_3_multispectral": "Tile-level spectral evidence from MSUAV500K Hullerbusch (Unmapped to blocks)",
+    "no_false_spatial_fusion": true,
+    "no_synthetic_block_ids": true,
+    "no_synthetic_gps": true,
+    "no_synthetic_weather": true,
+    "bounded_scores": "All risk scores strictly bounded 0-100"
+  }
+}

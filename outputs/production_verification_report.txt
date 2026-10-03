@@ -1,0 +1,148 @@
+================================================================================
+PALM AI: PRODUCTION DEPLOYMENT & END-TO-END VERIFICATION REPORT
+================================================================================
+Date/Time: 2026-10-03T15:55:00+05:30
+Repository: https://github.com/raagul-vc/Palm_AI.git
+Branch: main
+Commit Hash: c52ba0b (following 9f4e17a)
+Commit Message: "Finalize multi-source risk engine and production deployment"
+
+--------------------------------------------------------------------------------
+1. LOCAL TESTS
+--------------------------------------------------------------------------------
+Backend Test Suite (pytest):
+  - Total Tests: 26
+  - Passed: 26
+  - Failed: 0
+  - Errors: 0
+  - Warnings: 0
+  - Duration: 8.09 seconds
+  - Coverage:
+      * tests/test_data_integrity.py (11 tests passed)
+      * tests/test_risk_engine.py (15 tests passed)
+
+Frontend Linter (oxlint):
+  - Files checked: 3
+  - Rules: 104
+  - Errors: 0
+  - Warnings: 0
+  - Status: PASSED (161 ms)
+
+Frontend Production Build (Vite v8.3.0):
+  - Status: PASSED (1.16 seconds)
+  - Bundled Assets:
+      * dist/index.html (0.59 kB)
+      * dist/assets/index-peUpv_FA.css (28.73 kB)
+      * dist/assets/index-3aNJC1qS.js (713.73 kB)
+  - Hardcoded localhost URLs in frontend bundle: 0 found (uses relative '/api')
+
+--------------------------------------------------------------------------------
+2. LOCAL API ENDPOINT VERIFICATION (Flask / Gunicorn on port 5000)
+--------------------------------------------------------------------------------
+GET /api/health
+  - Status: 200 OK
+  - Message: 'Palm AI API is running'
+  - Sources online: dris, master_observations, multi_source_risk, nutrients, risk, weather, yield_model
+
+GET /api/risk/summary
+  - Status: 200 OK
+  - Total Blocks: 42
+  - Risk Level Distribution: HIGH: 1, MEDIUM: 6, LOW: 35
+  - Score Statistics: Mean: 19.34, Min: 7.50, Max: 70.00
+
+GET /api/risk/B001
+  - Status: 200 OK
+  - Block_ID: B001
+  - Risk Score: 70.0 / 100
+  - Risk Level: HIGH
+  - Evidence Status: Palm: 'available', RGB Drone: 'unmapped', Multispectral: 'unmapped'
+  - Components: Nutrient Risk = 100.0, DRIS Risk = 20.0, Production Risk = None
+
+GET /api/risk/B005
+  - Status: 200 OK
+  - Block_ID: B005
+  - Risk Score: 53.75 / 100
+  - Risk Level: MEDIUM
+  - Evidence Status: Palm: 'available', RGB Drone: 'unmapped', Multispectral: 'unmapped'
+  - Components: Production Risk = 75.0, Nutrient Risk = 40.0, DRIS Risk = 20.0
+
+GET /api/risk/B044 (Unmapped/Invalid Block)
+  - Status: 404 Not Found
+  - Error: "Block 'B044' not found in plantation records"
+
+GET /api/risk/invalid
+  - Status: 404 Not Found
+  - Error: "Block 'invalid' not found in plantation records"
+
+GET /api/evidence-registry
+  - Status: 200 OK
+  - Architecture: "Decoupled Multi-Source Evidence Architecture"
+  - Pillars:
+      * Palm Agronomic: Scope = 42 blocks, Block Mapping = Available
+      * RGB Drone UAV: Scope = 500 image crops, Block Mapping = Unavailable
+      * Multispectral UAV: Scope = 34 GeoTIFF tiles, Block Mapping = Unavailable
+
+GET /api/risk?block_id=B005
+  - Status: 200 OK
+  - Rows returned: 1 (exact block matching confirmed)
+
+GET /api/multi-source-risk?block_id=B005
+  - Status: 200 OK
+  - Rows returned: 1 (exact block matching confirmed)
+
+--------------------------------------------------------------------------------
+3. HEADLESS BROWSER E2E FRONTEND VERIFICATION
+--------------------------------------------------------------------------------
+Browser: Headless Google Chrome via DevTools Protocol
+  - Dashboard: Successfully loaded ("Palm AI | Plantation Intelligence")
+  - Navigation: All 5 sections accessible (Overview, Risk Analysis, Block Diagnostics, Weather Data, Productivity)
+  - Decoupled Evidence Architecture:
+      * Evidence Architecture banner rendered with 3 independent pillar cards
+      * Badges: Palm = Available, RGB Drone = Unmapped, Multispectral = Unmapped
+  - Block Diagnostics Selection & Dynamic Reactivity:
+      * B001: Risk Score = 70.0 / 100, Level = HIGH
+      * B005: Risk Score = 53.8 / 100, Level = MEDIUM
+      * B002: Risk Score = 7.5 / 100, Level = LOW
+      * Dynamic state update verified: Values change dynamically per block
+      * "First-row / global-data" freeze bug: CONFIRMED ABSENT
+
+--------------------------------------------------------------------------------
+4. DEPLOYMENT READINESS & PRODUCTION CONFIGURATION AUDIT
+--------------------------------------------------------------------------------
+  - Docker Local Status: Docker CLI is not installed on this local Windows workstation.
+  - Multi-stage Dockerfile: Configured with Node.js 22 alpine build stage + Python 3.13 slim runtime.
+  - Render Configuration (render.yaml): Validated (Service: 'palm-ai', Runtime: Docker, Port: 10000, Healthcheck: /api/health).
+  - Python Dependencies (requirements.txt): Fully pinned (Flask, flask-cors, gunicorn, joblib, numpy, pandas, scikit-learn).
+  - Frozen ML Models:
+      * models/yield_forecast_model.pkl (MD5: a686eb1102d48343dcd3fb136210e11e) — UNTOUCHED
+      * drone/models/palm_yolo_best.pt (MD5: 505196bbc9a1eafca800909cf5fbd8d4) — UNTOUCHED
+  - SPA Fallback: Configured in backend/api.py to serve frontend/dist/index.html for client-side routing.
+  - API Fallback: Unknown /api/* paths return clean JSON 404 errors.
+  - Secrets & Credentials: Zero committed API keys, tokens, or local virtual environments.
+
+--------------------------------------------------------------------------------
+5. GITHUB & RENDER DEPLOYMENT STATUS
+--------------------------------------------------------------------------------
+  - Git Commit: c52ba0b ("Fix pytest fixture discovery for live probe helper")
+  - Prior Commit: 9f4e17a ("Finalize multi-source risk engine and production deployment")
+  - Git Push: Successfully pushed to https://github.com/raagul-vc/Palm_AI.git (branch 'main').
+  - Render Production Probe:
+      * Probed https://palm-ai.onrender.com -> HTTP 404 (Not Found).
+      * The repository raagul-vc/Palm_AI is pushed and ready, but the web service has not yet been provisioned or linked in the Render user console (dashboard.render.com).
+  - Final Deployment Status:
+      * Codebase, tests, build, and Git sync: 100% COMPLETE & VERIFIED.
+      * Live remote hosting: DEPLOYMENT BLOCKED pending remote Render service creation/webhook activation by the repository owner in dashboard.render.com.
+
+================================================================================
+SCIENTIFIC INTEGRITY VERIFICATION SUMMARY
+================================================================================
+  [X] Palm Plantation: Operational block-level risk evidence (42 blocks).
+  [X] RGB Drone: Independent image-level visual evidence (MOPAD Site 2, unmapped).
+  [X] Multispectral: Independent tile-level spectral evidence (MSUAV500K, unmapped).
+  [X] ZERO synthetic Block_IDs fabricated.
+  [X] ZERO synthetic GPS coordinates fabricated.
+  [X] ZERO synthetic weather features fabricated.
+  [X] Weather marked as unintegrated for block discrimination (estate-wide repeat).
+  [X] Maximum FFB production per Block + Year used as High Production threshold.
+  [X] Overall risk score bounded in [0, 100].
+================================================================================
