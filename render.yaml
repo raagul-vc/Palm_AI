@@ -1,6 +1,7 @@
 services:
   - type: web
     name: palm-ai
+    plan: free
     runtime: docker
     rootDir: .
     dockerfilePath: ./Dockerfile
