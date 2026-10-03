@@ -19,4 +19,4 @@ COPY outputs/ ./outputs/
 COPY --from=frontend-build /app/frontend/dist ./frontend/dist
 USER appuser
 EXPOSE 10000
-CMD ["sh", "-c", "exec gunicorn backend.api:app --bind 0.0.0.0:${PORT:-10000} --workers ${WEB_CONCURRENCY:-2}"]
+CMD ["python", "-m", "gunicorn", "backend.api:app", "--bind", "0.0.0.0:10000", "--workers", "2"]
