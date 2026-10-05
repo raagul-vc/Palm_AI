@@ -11,3 +11,9 @@
 frontend/dist/
 .pytest_cache/
 .mypy_cache/
+drone/dataset_clean/
+drone/dataset_yolo/
+drone/.mplconfig/
+drone/.ultralytics/
+drone/runs/
+*.pkl

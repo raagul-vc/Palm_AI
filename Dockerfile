@@ -16,6 +16,7 @@ COPY backend/ ./backend/
 COPY data/ ./data/
 COPY models/ ./models/
 COPY outputs/ ./outputs/
+COPY drone/ ./drone/
 COPY --from=frontend-build /app/frontend/dist ./frontend/dist
 USER appuser
 EXPOSE 10000
