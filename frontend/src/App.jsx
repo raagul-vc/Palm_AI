@@ -183,6 +183,21 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!sidebarOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setSidebarOpen(false);
+      }
+    };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [sidebarOpen]);
+
   const loadSources = useCallback(async () => {
     setSourceStatus(Object.fromEntries(Object.keys(sourcePaths).map((key) => [key, "loading"])));
     const requests = Object.entries(sourcePaths).map(async ([key, path]) => {
@@ -343,7 +358,7 @@ function App() {
       <main className="main">
         {/* Top Header Bar */}
         <header className="topbar">
-          <button className="icon-button menu-toggle" onClick={() => setSidebarOpen(true)} aria-label="Open navigation"><Menu size={20} /></button>
+          <button className="icon-button menu-toggle" onClick={() => setSidebarOpen(true)} aria-label="Open navigation" aria-expanded={sidebarOpen}><Menu size={20} /></button>
           <div className="breadcrumb">
             <span>Estate intelligence</span>
             <span className="crumb-separator">/</span>

@@ -20,12 +20,12 @@
 }
 
 * { box-sizing: border-box; }
-html { min-width: 320px; scroll-behavior: smooth; }
-body { margin: 0; min-width: 320px; min-height: 100vh; }
+html { min-width: 320px; scroll-behavior: smooth; overflow-x: hidden; }
+body { margin: 0; min-width: 320px; min-height: 100vh; overflow-x: hidden; }
 button, input, select { font: inherit; }
 button { color: inherit; }
 a { color: inherit; }
-#root { min-height: 100vh; width: 100%; }
+#root { min-height: 100vh; width: 100%; overflow-x: hidden; }
 h1, h2, h3, p { margin: 0; }
 h1, h2, h3 { font-family: 'Segoe UI', system-ui, sans-serif; color: var(--text); }
 button:focus-visible, input:focus-visible, select:focus-visible, tr:focus-visible { outline: 3px solid rgba(69, 141, 97, .35); outline-offset: 2px; }
