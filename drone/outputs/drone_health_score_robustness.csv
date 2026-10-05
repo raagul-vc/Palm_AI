@@ -1,0 +1,6 @@
+confidence_threshold,mean_absolute_difference,median_absolute_difference,max_absolute_difference,pearson_correlation,spearman_correlation,category_change_count,category_change_percentage,high_health_count,moderate_health_count,low_health_count
+0.25,0.0,0.0,0.0,1.0,1.0,0,0.0,328,73,99
+0.4,0.577,0.2378,14.2857,0.999358,0.997888,6,1.2,327,71,102
+0.5,0.9085,0.4875,16.6667,0.998627,0.996849,10,2.0,324,73,103
+0.6,1.2478,0.6531,20.8333,0.997682,0.99505,18,3.6,322,71,107
+0.75,1.6904,0.8933,37.5,0.995827,0.990319,22,4.4,320,73,107

@@ -231,9 +231,130 @@ The **Drone Health Score** is a transparent, bounded $[0, 100]$ indicator repres
   5. `drone_health_score_distribution.png`: Distribution of Drone Health Scores across all 500 images.
 - **Reproducible Scripts**:
   - `scripts/extract_drone_health_features.py`: Batch-1 sequential feature extraction.
+  - `scripts/validate_drone_health.py`: Comprehensive threshold validation and sensitivity analysis.
   - `scripts/check_drone_block_mapping.py`: Block_ID mapping audit script.
   - `scripts/audit_multi_source_integration.py`: Multi-source integration and risk readiness audit script.
   - `scripts/verify_integration_artifacts.py`: Data quality check script for integration artifacts.
+
+---
+
+## Drone Health Score Validation
+
+A comprehensive validation and sensitivity analysis was conducted on the frozen YOLO11n checkpoint (`models/palm_yolo_best.pt`) across all **500 validation images** (32,846 ground-truth annotations). The analysis audited feature consistency, quantified cross-threshold stability, analyzed detection confidence profiles, and identified statistical quality and density outliers using transparent statistical rules.
+
+> **Important Operational Disclaimer:**  
+> **"Drone Health Score is a model-derived image-level indicator and is not a validated disease diagnosis."**  
+> RGB imagery captures phenotypic crown morphology and foliar coloration (such as chlorosis or crown stunting); it does not perform clinical pathology or detect pre-visual infection (e.g., basal stem rot caused by *Ganoderma boninense*) without multispectral/hyperspectral infrared channels.
+
+### 1. Health Score Formula & Audit Verification
+
+$$\text{Drone Health Score} = \text{Healthy Palm \%} = \frac{\text{Healthy Palm Detections}}{\text{Total Palm Detections}} \times 100$$
+
+- **Palm Classes Included:** Healthy (Class 1), Dead (Class 0), Small (Class 3), Yellow (Class 4).
+- **Excluded Ground Cover:** Grass (Class 2) is strictly excluded from palm denominators and health scores.
+- **Division Safety Rule:** If an image contains 0 palm detections, all percentages and health scores are recorded as `0.0`.
+- **Data Quality Audit Results:**
+  - 500 validation images inspected in `drone_image_health_features.csv`.
+  - Zero NaN or Infinite values across all health and percentage columns.
+  - 100% mathematical consistency: $\text{Healthy \%} + \text{Non-Healthy Palm \%} = 100.00\%$ and $\text{Total Detections} = \text{Palms} + \text{Grass}$.
+  - Zero-palm detection images: **0** (all 500 validation images possess at least one detected palm).
+  - Score bounds: All scores fall strictly within $[0.00\%, 99.09\%]$.
+
+### 2. Confidence Threshold Robustness Experiment
+
+Inference was evaluated across five confidence thresholds ($\tau \in \{0.25, 0.40, 0.50, 0.60, 0.75\}$) using sequential batch size 1:
+
+| Conf Threshold | Total Detections | Palm Detections | Healthy % | Dead % | Small % | Yellow % | Grass % | Mean Health Score | Median Health Score | Zero-Palm Images |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **0.25 (Base)** | 43,779 | 43,599 | 78.28% | 0.19% | 20.28% | 1.25% | 0.41% | **75.81%** | **89.19%** | **0** |
+| **0.40** | 41,891 | 41,731 | 77.93% | 0.19% | 20.63% | 1.25% | 0.38% | **75.54%** | **89.27%** | **0** |
+| **0.50** | 40,586 | 40,436 | 77.54% | 0.20% | 20.99% | 1.28% | 0.37% | **75.26%** | **88.89%** | **0** |
+| **0.60** | 39,217 | 39,077 | 77.16% | 0.20% | 21.36% | 1.29% | 0.36% | **75.01%** | **88.83%** | **0** |
+| **0.75** | 37,240 | 37,115 | 76.77% | 0.20% | 21.73% | 1.30% | 0.34% | **74.69%** | **88.59%** | **0** |
+
+*Output artifact:* [outputs/drone_health_threshold_validation.csv](outputs/drone_health_threshold_validation.csv)
+
+### 3. Score Stability & Categorical Robustness
+
+Comparing image-level health scores from each elevated threshold against the operational baseline ($\tau = 0.25$):
+
+| Threshold Comparison | Mean Abs Difference | Median Abs Difference | Pearson Correlation ($r$) | Spearman Rank ($\rho$) | Category Shift Count | Category Shift % | High / Mod / Low Distribution |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **conf=0.25 (Base)** | 0.00% | 0.00% | 1.0000 | 1.0000 | 0 / 500 | 0.0% | 328 / 73 / 99 |
+| **conf=0.40 vs 0.25** | 0.58% | 0.24% | 0.9994 | 0.9979 | 6 / 500 | **1.2%** | 327 / 71 / 102 |
+| **conf=0.50 vs 0.25** | 0.91% | 0.49% | 0.9986 | 0.9968 | 10 / 500 | **2.0%** | 324 / 73 / 103 |
+| **conf=0.60 vs 0.25** | 1.25% | 0.65% | 0.9977 | 0.9950 | 18 / 500 | **3.6%** | 322 / 71 / 107 |
+| **conf=0.75 vs 0.25** | 1.69% | 0.89% | 0.9958 | 0.9903 | 22 / 500 | **4.4%** | 320 / 73 / 107 |
+
+*Project Analysis Categories:*
+- **HIGH:** Health Score $\ge 80\%$
+- **MODERATE:** $60\% \le \text{Health Score} < 80\%$
+- **LOW:** $\text{Health Score} < 60\%$
+*(These categories are operational project indicators, NOT agronomically or clinically validated disease classifications).*
+
+*Key Finding:* Across all 500 images, 98.8% of tiles maintain identical categories between conf=0.25 and conf=0.40. Even at conf=0.75, Pearson correlation remains exceptionally high at $r = 0.9958$.
+
+*Output artifact:* [outputs/drone_health_score_robustness.csv](outputs/drone_health_score_robustness.csv)
+
+### 4. Image Quality & Detection Coverage Outliers
+
+Outliers were identified using transparent statistical rules (Tukey's fences: $Q_1 - 1.5 \times \text{IQR}$, $Q_3 + 1.5 \times \text{IQR}$ and tail quantiles) on the 500 validation images:
+
+- **Zero-Detection Images:** **0** images with 0 palm detections.
+- **Low-Detection Images (< 50 palms):** **17** images (3.4%). These represent plantation boundary tiles, road cuts, or edge blocks with partial canopy coverage (e.g. `44000_16000_3345_454.jpg` with only 3 palms).
+- **Detection-Density Outliers ($\ge 107$ palms):** **15** images (3.0%). Represent dense, mature stands with crown overlap (> 97.5th percentile).
+- **Statistical Low Health Outliers (Score < 28.34%):** **59** images (11.8%). Driven primarily by juvenile or replanted blocks where crowns are classified as Small, not Healthy. Exactly 22 images exhibit 0% health score because all detected palms are Small/immature crowns.
+- **Statistical High Non-Healthy Outliers (> 71.66%):** **59** images (11.8%).
+
+*Outlier Integrity Policy:* **These images are strictly characterized as low-detection images, detection-density outliers, or statistical health outliers. They are NOT diagnosed tree disease.**
+
+*Output artifact:* [outputs/drone_health_outlier_images.csv](outputs/drone_health_outlier_images.csv)
+
+### 5. Detection Confidence Statistics
+
+Confidence distributions across all detections at baseline threshold $\tau = 0.25$:
+
+| Class Name | Detection Count | Mean Conf | Median Conf | P10 | P25 | P75 | P90 | Min Conf | Max Conf | Std Dev |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Healthy** | 34,130 | 0.8578 | **0.9344** | 0.5539 | 0.9040 | 0.9427 | 0.9490 | 0.2501 | 0.9888 | 0.1718 |
+| **Dead** | 83 | 0.8810 | **0.9321** | 0.7532 | 0.8764 | 0.9574 | 0.9710 | 0.2993 | 0.9899 | 0.1429 |
+| **Small** | 8,841 | 0.8735 | **0.9152** | 0.7845 | 0.8825 | 0.9308 | 0.9404 | 0.2505 | 0.9689 | 0.1249 |
+| **Yellow** | 545 | 0.8891 | **0.9449** | 0.7021 | 0.9181 | 0.9561 | 0.9666 | 0.2605 | 0.9904 | 0.1515 |
+| **Grass** | 180 | 0.7931 | **0.9124** | 0.3892 | 0.6488 | 0.9600 | 0.9781 | 0.2540 | 0.9999 | 0.2265 |
+
+*Key Finding:* Detection confidence is uniformly high across all classes, with medians exceeding 0.91 for all five classes. Dead palms exhibit high median confidence (0.9321) and P10 (0.7532).
+
+*Output artifact:* [outputs/drone_detection_confidence_summary.csv](outputs/drone_detection_confidence_summary.csv)
+
+### 6. Recommended Operational Confidence Threshold
+
+**Retained Recommendation: $\tau = 0.25$ (Operational Baseline)**
+
+- **Empirical Evidence:** The threshold sensitivity experiment confirms that the Drone Health Score is remarkably stable across thresholds. Elevating threshold from 0.25 to 0.40 results in a negligible mean score difference of only 0.58 percentage points, an almost perfect Pearson correlation ($r = 0.9994$), and 98.8% categorical consistency.
+- **Sensitivity Preservation:** Setting threshold higher (e.g. 0.50 or 0.60) discards valid small palms and chlorotic yellow crowns without improving diagnostic reliability.
+- **Conclusion:** Confidence 0.25 is retained as the operational standard.
+
+### 7. Limitations & Why Block_ID Integration is Unavailable
+
+1. **RGB Phenotypic Limitation:** RGB imagery provides structural morphology and visible discoloration, but lacks near-infrared (NIR) and red-edge spectral bands. Physiological stress (such as *Ganoderma* basal stem rot) cannot be diagnosed from RGB alone.
+2. **Replant Sensitivity:** Replanted blocks (such as the `52000_20000` tile series) register a 0% Drone Health Score under the current formula because immature palms are classified as Small, despite being alive and healthy.
+3. **Block_ID Spatial Mapping Unavailable:** The MOPAD Site 2 benchmark tiles use image canvas pixel coordinates (`x_y_...`) rather than real-world georeferenced orthomosaics with CRS and plantation management Block_IDs (`B001`–`B044`). In strict compliance with data integrity policies, **no synthetic Block_IDs or artificial GPS coordinates were fabricated**. Drone health remains an independent, image-level evidence stream.
+
+### 8. Validation Artifacts & Visualizations
+
+- **Threshold Validation Table**: [outputs/drone_health_threshold_validation.csv](outputs/drone_health_threshold_validation.csv)
+- **Score Robustness Table**: [outputs/drone_health_score_robustness.csv](outputs/drone_health_score_robustness.csv)
+- **Quality & Density Outlier Table**: [outputs/drone_health_outlier_images.csv](outputs/drone_health_outlier_images.csv)
+- **Detection Confidence Summary**: [outputs/drone_detection_confidence_summary.csv](outputs/drone_detection_confidence_summary.csv)
+- **Full Validation Report (JSON)**: [outputs/drone_health_validation_report.json](outputs/drone_health_validation_report.json)
+- **Full Validation Report (TXT)**: [outputs/drone_health_validation_report.txt](outputs/drone_health_validation_report.txt)
+- **Validation Visualizations** (`outputs/drone_health_validation/`):
+  1. `1_health_score_by_confidence_threshold.png`: Boxplots and mean/median score trajectory across thresholds.
+  2. `2_health_score_correlation_across_thresholds.png`: Scatter plots and linear regressions vs operational baseline.
+  3. `3_healthy_pct_by_confidence_threshold.png`: Aggregate vs image-level Healthy % across thresholds.
+  4. `4_non_healthy_pct_by_confidence_threshold.png`: Breakdown of Small, Yellow, and Dead palms across thresholds.
+  5. `5_distribution_of_health_score_changes.png`: Histograms of score shifts ($\Delta = \text{Score}_{\tau} - \text{Score}_{0.25}$).
+  6. `6_detection_count_vs_health_score.png`: Scatter plot identifying density and health outlier clusters.
 
 ---
 

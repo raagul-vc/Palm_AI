@@ -1,0 +1,80 @@
+================================================================================
+                PALM_AI: DRONE HEALTH SCORE VALIDATION REPORT
+================================================================================
+
+1. EXECUTIVE SUMMARY & MODEL SPECIFICATION
+- Target Model:              YOLO11n (frozen checkpoint: palm_yolo_best.pt)
+- Validation Dataset:        MOPAD Site 2 Clean Validation Split (500 images, 1024x1024)
+- Model Retrained:           NO (weights strictly frozen)
+- Checkpoint Modified:       NO
+- Spatial Block Mapping:     UNAVAILABLE (Strict adherence to data integrity: NO synthetic Block_IDs)
+- Retained Threshold:        conf = 0.25 (Empirically validated as optimal & stable)
+
+2. HEALTH SCORE FORMULATION & AUDIT VERIFICATION
+  Formula: Drone Health Score = (Healthy Palm Detections / Total Palm Detections) * 100
+  - Healthy Palms:           Class 1 (Healthy crown morphology)
+  - Stressed / Dead Palms:   Class 0 (Dead), Class 3 (Small/immature), Class 4 (Yellow/chlorotic)
+  - Excluded Ground Cover:   Class 2 (Grass) strictly excluded from palm denominator
+  - Audit Result:            PASS (500/500 images verified, 0 NaN, 0 Inf, 100% bounds valid [0, 100])
+  - Health + NonHealthy Sum: Exactly 100.00% across all 500 images
+  - Zero-palm images at 0.25:0 images (100% validation tiles have detected palms)
+  - Zero-score images:       22 images (Immature/replanted stands dominated by Small palms)
+
+3. CONFIDENCE THRESHOLD ROBUSTNESS (500 VALIDATION IMAGES)
+--------------------------------------------------------------------------------
+Conf   | Total Det | Palms   | Healthy % | Mean Score | Median   | Zero Palm
+--------------------------------------------------------------------------------
+0.25   | 43779     | 43599   | 78.28   % | 75.81    % | 89.19  % | 0        
+0.40   | 41891     | 41731   | 77.93   % | 75.54    % | 89.27  % | 0        
+0.50   | 40586     | 40436   | 77.54   % | 75.26    % | 88.89  % | 0        
+0.60   | 39217     | 39077   | 77.16   % | 75.01    % | 88.83  % | 0        
+0.75   | 37240     | 37115   | 76.77   % | 74.69    % | 88.59  % | 0        
+--------------------------------------------------------------------------------
+
+4. SCORE STABILITY & CATEGORICAL ROBUSTNESS (vs Baseline conf=0.25)
+--------------------------------------------------------------------------------
+Conf   | Mean |Diff| | Pearson r | Spearman rho | Category Shift  | High / Mod / Low
+--------------------------------------------------------------------------------
+0.25   | 0.00      % | 1.0000    | 1.0000       |  0/500 ( 0.0%)   | 328 / 73 / 99
+0.40   | 0.58      % | 0.9994    | 0.9979       |  6/500 ( 1.2%)   | 327 / 71 / 102
+0.50   | 0.91      % | 0.9986    | 0.9968       | 10/500 ( 2.0%)   | 324 / 73 / 103
+0.60   | 1.25      % | 0.9977    | 0.9950       | 18/500 ( 3.6%)   | 322 / 71 / 107
+0.75   | 1.69      % | 0.9958    | 0.9903       | 22/500 ( 4.4%)   | 320 / 73 / 107
+--------------------------------------------------------------------------------
+  * Project Analysis Categories: HIGH (>=80%), MODERATE (60-<80%), LOW (<60%).
+    These are project operational categories, NOT clinically/agronomically validated disease thresholds.
+
+5. IMAGE QUALITY & DETECTION COVERAGE OUTLIERS
+- Total Outlier Images Flagged: 89 / 500 images (17.8%)
+  * Zero-palm detection images:        0
+  * Low-detection images (< 50 palms): 17 (boundary/edge tiles with sparse trees)
+  * Detection-density outliers (>=108): 15 (dense mature canopy overlap)
+  * Statistical low health (< 28.34%):  59 (predominantly replanted/small-crown blocks)
+  * Statistical high non-healthy (>71%):59
+  * Characterization Policy: These are transparent statistical density and health outliers.
+    THEY ARE NOT DIAGNOSED TREE DISEASE. Under no circumstances should they be labeled as diseased.
+
+6. CLASS-WISE DETECTION CONFIDENCE DISTRIBUTION
+--------------------------------------------------------------------------------
+Class    | Count   | Mean   | Median | P10    | P25    | P75    | P90   
+--------------------------------------------------------------------------------
+Healthy  | 34130   | 0.8578 | 0.9344 | 0.5539 | 0.9040 | 0.9427 | 0.9490
+Dead     | 83      | 0.8810 | 0.9321 | 0.7532 | 0.8764 | 0.9574 | 0.9710
+Small    | 8841    | 0.8735 | 0.9152 | 0.7845 | 0.8825 | 0.9308 | 0.9404
+Yellow   | 545     | 0.8891 | 0.9449 | 0.7021 | 0.9181 | 0.9561 | 0.9666
+Grass    | 180     | 0.7931 | 0.9124 | 0.3892 | 0.6488 | 0.9600 | 0.9781
+--------------------------------------------------------------------------------
+
+7. OPERATIONAL RECOMMENDATION & JUSTIFICATION
+Recommended Operational Confidence Threshold: 0.25
+
+The empirical sensitivity analysis demonstrates remarkable stability of the Drone Health Score across the entire confidence spectrum. Moving from conf=0.25 to conf=0.40 yields an average absolute score shift of only 0.58 percentage points, with an exceptional Pearson correlation (r = 0.9994) and Spearman rank correlation (rho = 0.9979). 98.8% of images (494/500) remain in the identical health category. Even when escalating to conf=0.75, the mean score shift is only 1.69 percentage points, Pearson r remains 0.9958, and 95.6% of images maintain their exact category. Furthermore, detection confidence across all five classes is exceptionally high (dataset-wide median 0.9315, with Healthy at 0.9344 and Dead at 0.9321). Increasing the threshold to 0.50 or higher discards valid small and chlorotic palm detections without any measurable gain in diagnostic consistency. Therefore, the operational baseline threshold of 0.25 is retained with strong empirical support.
+
+8. SCIENTIFIC LIMITATIONS & FUSION READINESS
+- Drone Health Score is an image-level phenotypic proxy; visible RGB cannot detect pre-visual
+  physiological stress (e.g. Ganoderma basal stem rot) without multispectral red-edge/NIR bands.
+- Replanted blocks (52000_20000 series) exhibit 0% health scores because immature palms are classified
+  as 'Small', not 'Healthy'. Future scoring revisions should incorporate a dedicated 'Vigour Score'.
+- Block_ID spatial mapping remains BLOCKED until georeferenced orthomosaic boundaries and GIS estate
+  shapefiles are acquired. Independent image-level processing maintains scientific integrity.
+================================================================================

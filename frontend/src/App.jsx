@@ -1,15 +1,18 @@
-﻿import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Activity, AlertTriangle,
+  Activity, AlertTriangle, Camera,
   ChevronDown, CloudSun, Database, FlaskConical,
-  LayoutDashboard, Leaf, Menu, RefreshCw,
-  Search, Sprout, TrendingUp, Wind, X,
+  Layers, LayoutDashboard, Leaf, Menu, RefreshCw,
+  Search, Sprout, TrendingUp, Wind, Workflow, X,
 } from "lucide-react";
 import {
   Bar, BarChart, CartesianGrid, Cell, Legend,
   Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip,
   XAxis, YAxis,
 } from "recharts";
+import DroneHealthPage from "./DroneHealthPage";
+import MultispectralHealthPage from "./MultispectralHealthPage";
+import MultiSourceEvidencePage from "./MultiSourceEvidencePage";
 import "./App.css";
 
 const API_BASE = "/api";
@@ -20,6 +23,9 @@ const sections = [
   { id: "block-diagnostics", label: "Block Diagnostics", icon: FlaskConical, title: "Block Diagnostics", description: "Review observations and saved analysis for one selected block." },
   { id: "weather-impact", label: "Weather Data", icon: CloudSun, title: "Weather Data and Association", description: "Explore the available block weather summaries and observed weather–productivity correlations." },
   { id: "productivity", label: "Productivity", icon: TrendingUp, title: "Productivity and Analysis", description: "Review observed productivity, saved forecast outputs, nutrient data, age curves and validation outputs." },
+  { id: "drone-health", label: "Drone Health", icon: Camera, title: "Drone Health Analysis", description: "Validated RGB UAV palm health indicators, confidence threshold robustness, and statistical outlier profiles." },
+  { id: "multispectral-health", label: "Multispectral", icon: Layers, title: "Multispectral Health Analysis", description: "Calibrated 5-band UAV vegetation indices (NDVI, NDRE), canopy vigour tiers, and spectral tile health indicators." },
+  { id: "multi-source-evidence", label: "Evidence Integration", icon: Workflow, title: "Multi-Source Evidence Integration", description: "Independent agronomic, RGB UAV, and multispectral evidence — validated without fabricated spatial linkage." },
 ];
 
 const productivityTabs = [
@@ -71,6 +77,17 @@ const sourcePaths = {
   soil: "/soil",
   dataQuality: "/data-quality",
   nutrientReference: "/nutrient-reference",
+  droneSummary: "/drone/summary",
+  droneValidation: "/drone/validation",
+  droneOutliers: "/drone/outliers",
+  droneImages: "/drone/images",
+  droneVisualizations: "/drone/visualizations",
+  multispectralSummary: "/multispectral/summary",
+  multispectralTiles: "/multispectral/tiles",
+  multispectralIndices: "/multispectral/indices",
+  multispectralVisualizations: "/multispectral/visualizations",
+  multiSourceSummary: "/multi-source/summary",
+  multiSourceEvidence: "/multi-source/evidence",
 };
 
 const emptyDatasets = {
@@ -78,6 +95,9 @@ const emptyDatasets = {
   weather: [], weatherCorrelation: [], monthlyWeather: [], productivity: [], production: [],
   harvestProduction: [], forecast: [], ageSeed: [], seasonality: [], soil: [], dataQuality: null,
   modelMetrics: [], yearlyValidation: [], featureImportance: [],
+  droneSummary: null, droneValidation: null, droneOutliers: null, droneImages: [], droneVisualizations: [],
+  multispectralSummary: null, multispectralTiles: [], multispectralIndices: [], multispectralVisualizations: [],
+  multiSourceSummary: null, multiSourceEvidence: null,
 };
 
 function initialSection() {
@@ -180,6 +200,22 @@ function App() {
           const { data: result, available } = await fetchPayload(path);
           setDatasets((cur) => ({ ...cur, dataQuality: result }));
           setSourceStatus((cur) => ({ ...cur, [key]: available && result.findings?.length ? "ready" : "empty" }));
+        } else if (key === "droneVisualizations") {
+          const { data: result, available } = await fetchPayload(path);
+          setDatasets((cur) => ({ ...cur, droneVisualizations: result?.visualizations || [] }));
+          setSourceStatus((cur) => ({ ...cur, [key]: available && result?.visualizations?.length ? "ready" : "empty" }));
+        } else if (key === "multispectralVisualizations") {
+          const { data: result, available } = await fetchPayload(path);
+          setDatasets((cur) => ({ ...cur, multispectralVisualizations: result || [] }));
+          setSourceStatus((cur) => ({ ...cur, [key]: available && result?.length ? "ready" : "empty" }));
+        } else if (key === "multispectralSummary" || key === "multiSourceSummary" || key === "multiSourceEvidence") {
+          const { data: result, available } = await fetchPayload(path);
+          setDatasets((cur) => ({ ...cur, [key]: result }));
+          setSourceStatus((cur) => ({ ...cur, [key]: available && result ? "ready" : "empty" }));
+        } else if (key === "droneSummary" || key === "droneValidation" || key === "droneOutliers") {
+          const { data: result, available } = await fetchPayload(path);
+          setDatasets((cur) => ({ ...cur, [key]: result }));
+          setSourceStatus((cur) => ({ ...cur, [key]: available && result ? "ready" : "empty" }));
         } else {
           const { rows, available } = await fetchRecords(path);
           setDatasets((cur) => ({ ...cur, [key]: rows }));
@@ -314,9 +350,31 @@ function App() {
             <strong>{currentSection.label}</strong>
           </div>
           <div className="topbar-meta">
-            <span className="estate-badge">{datasets.risk.length || "N/A"} blocks</span>
-            <span className="estate-badge">{datasets.risk.length ? formatNumber(datasets.risk.reduce((sum, r) => sum + (numberOrNull(r.Area_Ha) || 0), 0), 0) : "N/A"} ha</span>
-            <span className="estate-badge">{datasets.risk.length ? formatNumber(datasets.risk.reduce((sum, r) => sum + (numberOrNull(r.Productive_Palms) || 0), 0), 0) : "N/A"} palms</span>
+            {activeSection === "multi-source-evidence" ? (
+              <>
+                <span className="estate-badge">3 Evidence Pillars</span>
+                <span className="estate-badge">Decoupled Architecture</span>
+                <span className="estate-badge unmapped-pill">Spatial Fusion: Unavailable</span>
+              </>
+            ) : activeSection === "multispectral-health" ? (
+              <>
+                <span className="estate-badge">34 5-band tiles</span>
+                <span className="estate-badge">8.91M pixels</span>
+                <span className="estate-badge unmapped-pill">Block Mapping: Unavailable</span>
+              </>
+            ) : activeSection === "drone-health" ? (
+              <>
+                <span className="estate-badge">500 UAV images</span>
+                <span className="estate-badge">43,599 palms</span>
+                <span className="estate-badge unmapped-pill">Block Mapping: Unavailable</span>
+              </>
+            ) : (
+              <>
+                <span className="estate-badge">{datasets.risk.length || "N/A"} blocks</span>
+                <span className="estate-badge">{datasets.risk.length ? formatNumber(datasets.risk.reduce((sum, r) => sum + (numberOrNull(r.Area_Ha) || 0), 0), 0) : "N/A"} ha</span>
+                <span className="estate-badge">{datasets.risk.length ? formatNumber(datasets.risk.reduce((sum, r) => sum + (numberOrNull(r.Productive_Palms) || 0), 0), 0) : "N/A"} palms</span>
+              </>
+            )}
             <div className={`api-indicator ${unavailableSources.length ? "warning" : ""}`}>
               <span className="api-dot" />
               <span>{isLoading ? "Loading dataset…" : unavailableSources.length ? "Partial source data" : "Source dataset loaded"}</span>
@@ -330,12 +388,32 @@ function App() {
           <section className="page-heading">
             <div>
               <p className="eyebrow">AI PLANTATION INTELLIGENCE</p>
-              <h1>Division A · Oil palm estate</h1>
+              <h1>
+                {activeSection === "multi-source-evidence"
+                  ? "Multi-Source Evidence Integration"
+                  : activeSection === "multispectral-health"
+                  ? "Multispectral UAV Survey · 5-Band Reflectance"
+                  : activeSection === "drone-health"
+                  ? "RGB UAV Survey · Health Validation"
+                  : "Division A · Oil palm estate"}
+              </h1>
               <p className="subtitle">{currentSection.description}</p>
             </div>
             <div className="heading-meta">
               <span className="meta-icon"><Database size={16} /></span>
-              <span>Observed records: {datasets.dataQuality?.period_start ?? "N/A"}–{datasets.dataQuality?.period_end ?? "N/A"}<br /><strong>Source dataset loaded · saved analyses shown separately</strong></span>
+              {activeSection === "multi-source-evidence" ? (
+              <>
+                <span className="estate-badge">3 Evidence Pillars</span>
+                <span className="estate-badge">Decoupled Architecture</span>
+                <span className="estate-badge unmapped-pill">Spatial Fusion: Unavailable</span>
+              </>
+            ) : activeSection === "multispectral-health" ? (
+                <span>Sensor: MicaSense Altum (Blue, Green, Red, RedEdge, NIR)<br /><strong>Standalone Spectral Evidence · Decoupled from Block Risk</strong></span>
+              ) : activeSection === "drone-health" ? (
+                <span>Baseline Conf: 0.25 · Recommended: 0.25<br /><strong>Standalone Image Evidence · Decoupled from Block Risk</strong></span>
+              ) : (
+                <span>Observed records: {datasets.dataQuality?.period_start ?? "N/A"}–{datasets.dataQuality?.period_end ?? "N/A"}<br /><strong>Source dataset loaded · saved analyses shown separately</strong></span>
+              )}
             </div>
           </section>
 
@@ -408,6 +486,34 @@ function App() {
               selectBlock={selectBlock}
               selectedBlockId={currentBlockId}
               setSelectedBlockId={setSelectedBlockId}
+            />
+          )}
+
+          {/* SECTION 6: DRONE HEALTH ANALYSIS */}
+          {activeSection === "drone-health" && (
+            <DroneHealthPage
+              datasets={datasets}
+              sourceStatus={sourceStatus}
+              loadSources={loadSources}
+            />
+          )}
+
+          {/* SECTION 7: MULTISPECTRAL HEALTH ANALYSIS */}
+          {activeSection === "multispectral-health" && (
+            <MultispectralHealthPage
+              datasets={datasets}
+              sourceStatus={sourceStatus}
+              loadSources={loadSources}
+            />
+          )}
+
+          {/* SECTION 8: MULTI-SOURCE EVIDENCE INTEGRATION */}
+          {activeSection === "multi-source-evidence" && (
+            <MultiSourceEvidencePage
+              datasets={datasets}
+              sourceStatus={sourceStatus}
+              loadSources={loadSources}
+              navigate={navigate}
             />
           )}
 

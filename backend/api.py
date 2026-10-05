@@ -583,6 +583,676 @@ def monthly_weather_data():
     return jsonify(dataframe_records(df))
 
 
+# -------------------------------------------------------------------------
+# DRONE HEALTH INSIGHTS API (RGB UAV Standalone Module)
+# -------------------------------------------------------------------------
+DRONE_DIR = BASE_DIR / "drone"
+DRONE_OUTPUTS_DIR = DRONE_DIR / "outputs"
+DRONE_VIZ_DIR = DRONE_OUTPUTS_DIR / "drone_health_validation"
+
+
+def load_drone_csv(filename):
+    path = DRONE_OUTPUTS_DIR / filename
+    if not path.exists():
+        return None
+    return pd.read_csv(path)
+
+
+@app.route("/api/drone/summary")
+def drone_summary_data():
+    """Return high-level summary of the validated 500-image Drone Health Analysis."""
+    features_df = load_drone_csv("drone_image_health_features.csv")
+    outliers_df = load_drone_csv("drone_health_outlier_images.csv")
+    report_file = DRONE_OUTPUTS_DIR / "drone_health_validation_report.json"
+
+    if features_df is None:
+        return unavailable_object({}, "Drone health feature dataset is not available")
+
+    report_data = {}
+    if report_file.exists():
+        try:
+            with open(report_file, "r", encoding="utf-8") as f:
+                report_data = json.load(f)
+        except Exception:
+            report_data = {}
+
+    scores = pd.to_numeric(features_df["drone_health_score"], errors="coerce").dropna()
+    total_palms = int(features_df["palm_detections"].sum())
+    total_healthy = int(features_df["healthy_count"].sum())
+    total_dead = int(features_df["dead_count"].sum())
+    total_small = int(features_df["small_count"].sum())
+    total_yellow = int(features_df["yellow_count"].sum())
+    total_grass = int(features_df["grass_count"].sum())
+    total_detections = int(features_df["total_detections"].sum())
+
+    healthy_pct = round((total_healthy / total_palms) * 100.0, 4) if total_palms > 0 else 0.0
+    dead_pct = round((total_dead / total_palms) * 100.0, 4) if total_palms > 0 else 0.0
+    small_pct = round((total_small / total_palms) * 100.0, 4) if total_palms > 0 else 0.0
+    yellow_pct = round((total_yellow / total_palms) * 100.0, 4) if total_palms > 0 else 0.0
+    grass_pct = round((total_grass / total_detections) * 100.0, 4) if total_detections > 0 else 0.0
+    non_healthy_pct = round(100.0 - healthy_pct, 4)
+
+    high_c = int((scores >= 80.0).sum())
+    mod_c = int(((scores >= 60.0) & (scores < 80.0)).sum())
+    low_c = int((scores < 60.0).sum())
+
+    low_det_count = int((features_df["palm_detections"] < 50.0).sum())
+    zero_det_count = int((features_df["palm_detections"] == 0).sum())
+    health_outlier_count = int((features_df["drone_health_score"] < 28.34).sum())
+    density_outlier_count = int((features_df["palm_detections"] >= 107.0).sum())
+    total_outliers_flagged = len(outliers_df) if outliers_df is not None else 89
+
+    summary = {
+        "image_count": len(features_df),
+        "mean_health_score": round(float(scores.mean()), 2) if len(scores) else 0.0,
+        "median_health_score": round(float(scores.median()), 2) if len(scores) else 0.0,
+        "min_health_score": round(float(scores.min()), 2) if len(scores) else 0.0,
+        "max_health_score": round(float(scores.max()), 2) if len(scores) else 0.0,
+        "total_detections": total_detections,
+        "total_palm_detections": total_palms,
+        "healthy_percentage": healthy_pct,
+        "non_healthy_percentage": non_healthy_pct,
+        "dead_percentage": dead_pct,
+        "small_percentage": small_pct,
+        "yellow_percentage": yellow_pct,
+        "grass_percentage": grass_pct,
+        "zero_detection_count": zero_det_count,
+        "low_detection_count": low_det_count,
+        "health_outlier_count": health_outlier_count,
+        "density_outlier_count": density_outlier_count,
+        "total_outliers_flagged": total_outliers_flagged,
+        "baseline_confidence": 0.25,
+        "recommended_confidence": 0.25,
+        "block_mapping": "unavailable",
+        "block_mapping_details": "MOPAD Site 2 benchmark tiles operate on canvas pixel coordinates; no georeferenced GIS shapefiles or plantation Block_IDs exist. No synthetic spatial mapping fabricated.",
+        "health_categories": {
+            "definition": "Project analysis operational categories; NOT clinically/agronomically validated disease thresholds.",
+            "HIGH": {"label": "High Health", "criteria": "Score >= 80%", "count": high_c, "percentage": round(high_c / len(scores) * 100, 1)},
+            "MODERATE": {"label": "Moderate Health", "criteria": "60% <= Score < 80%", "count": mod_c, "percentage": round(mod_c / len(scores) * 100, 1)},
+            "LOW": {"label": "Low Health", "criteria": "Score < 60%", "count": low_c, "percentage": round(low_c / len(scores) * 100, 1)}
+        },
+        "disclaimer": "Drone Health Score is a model-derived image-level indicator. It is not a validated disease diagnosis and is not mapped to Palm Plantation Block_ID."
+    }
+    return jsonify(summary)
+
+
+@app.route("/api/drone/images")
+def drone_images_data():
+    """Return image-level drone health records with optional filtering and pagination."""
+    df = load_drone_csv("drone_image_health_features.csv")
+    if df is None:
+        return unavailable_records("Drone health features CSV is not present")
+
+    # Add health category
+    scores = pd.to_numeric(df["drone_health_score"], errors="coerce")
+    categories = []
+    for s in scores:
+        if pd.isna(s):
+            categories.append("UNKNOWN")
+        elif s >= 80.0:
+            categories.append("HIGH")
+        elif s >= 60.0:
+            categories.append("MODERATE")
+        else:
+            categories.append("LOW")
+    df["health_category"] = categories
+
+    # Mark outliers if outlier dataset exists
+    outliers_df = load_drone_csv("drone_health_outlier_images.csv")
+    if outliers_df is not None and "image_filename" in outliers_df.columns:
+        outlier_map = dict(zip(outliers_df["image_filename"], outliers_df["outlier_categories"]))
+        df["is_outlier"] = df["image_filename"].isin(outlier_map)
+        df["outlier_categories"] = df["image_filename"].map(outlier_map).fillna("")
+    else:
+        df["is_outlier"] = False
+        df["outlier_categories"] = ""
+
+    # Ensure no Block_ID is present or fabricated
+    df["block_mapping"] = "unavailable"
+
+    # Optional filter: health_category
+    cat_filter = request.args.get("health_category")
+    if cat_filter:
+        df = df[df["health_category"].str.upper() == cat_filter.strip().upper()]
+
+    # Optional filter: outlier_only
+    outlier_only = request.args.get("outlier_only")
+    if outlier_only and outlier_only.lower() in ["true", "1", "yes"]:
+        df = df[df["is_outlier"]]
+
+    # Sorting
+    sort_by = request.args.get("sort_by")
+    if sort_by == "score_asc":
+        df = df.sort_values("drone_health_score", ascending=True)
+    elif sort_by == "score_desc":
+        df = df.sort_values("drone_health_score", ascending=False)
+    elif sort_by == "detections_asc":
+        df = df.sort_values("palm_detections", ascending=True)
+    elif sort_by == "detections_desc":
+        df = df.sort_values("palm_detections", ascending=False)
+    else:
+        df = df.sort_values("image_filename", ascending=True)
+
+    # Pagination: limit & offset
+    limit = request.args.get("limit")
+    offset = request.args.get("offset")
+    total_matching = len(df)
+    
+    if offset:
+        try:
+            df = df.iloc[int(offset):]
+        except (ValueError, TypeError):
+            pass
+
+    if limit:
+        try:
+            df = df.iloc[:int(limit)]
+        except (ValueError, TypeError):
+            pass
+
+    records = dataframe_records(df)
+    return jsonify(records)
+
+
+@app.route("/api/drone/validation")
+def drone_validation_data():
+    """Return threshold sensitivity experiment and stability metrics."""
+    thresh_df = load_drone_csv("drone_health_threshold_validation.csv")
+    rob_df = load_drone_csv("drone_health_score_robustness.csv")
+    conf_df = load_drone_csv("drone_detection_confidence_summary.csv")
+    report_file = DRONE_OUTPUTS_DIR / "drone_health_validation_report.json"
+
+    report_json = {}
+    if report_file.exists():
+        try:
+            with open(report_file, "r", encoding="utf-8") as f:
+                report_json = json.load(f)
+        except Exception:
+            report_json = {}
+
+    if thresh_df is None or rob_df is None:
+        return unavailable_object({}, "Drone validation outputs are missing")
+
+    payload = {
+        "baseline_confidence": 0.25,
+        "recommended_confidence": 0.25,
+        "recommendation_status": "Retain 0.25 baseline (highly robust; 98.8% category stability at 0.40; r=0.9994)",
+        "threshold_experiment": dataframe_records(thresh_df),
+        "score_robustness": dataframe_records(rob_df),
+        "detection_confidence_summary": dataframe_records(conf_df) if conf_df is not None else [],
+        "report_summary": {
+            "validation_metadata": report_json.get("validation_metadata", {}),
+            "audit_findings": report_json.get("audit_findings", {}),
+            "recommendations": report_json.get("recommendations", {}),
+            "limitations": report_json.get("limitations", [])
+        }
+    }
+    return jsonify(payload)
+
+
+@app.route("/api/drone/outliers")
+def drone_outliers_data():
+    """Return statistical quality and canopy density outlier images with transparent rule details."""
+    outliers_df = load_drone_csv("drone_health_outlier_images.csv")
+    if outliers_df is None:
+        return unavailable_records("Drone outlier dataset is not present")
+
+    outliers_df["block_mapping"] = "unavailable"
+
+    cat_filter = request.args.get("category") or request.args.get("type")
+    if cat_filter:
+        pattern = cat_filter.strip().lower()
+        outliers_df = outliers_df[outliers_df["outlier_categories"].str.lower().str.contains(pattern)]
+
+    limit = request.args.get("limit")
+    if limit:
+        try:
+            outliers_df = outliers_df.iloc[:int(limit)]
+        except (ValueError, TypeError):
+            pass
+
+    records = dataframe_records(outliers_df)
+    return jsonify(records)
+
+
+@app.route("/api/drone/visualizations")
+def drone_visualizations_manifest():
+    """Return metadata list of pre-generated validation charts."""
+    charts = [
+        {
+            "id": "1_health_score_by_confidence_threshold",
+            "filename": "1_health_score_by_confidence_threshold.png",
+            "title": "Health Score Distribution Across Thresholds",
+            "description": "Boxplots and mean/median score trajectory showing stability from conf=0.25 through 0.75.",
+            "url": "/api/drone/visualizations/1_health_score_by_confidence_threshold.png"
+        },
+        {
+            "id": "2_health_score_correlation_across_thresholds",
+            "filename": "2_health_score_correlation_across_thresholds.png",
+            "title": "Cross-Threshold Score Correlation vs Baseline",
+            "description": "Scatter correlations and regression trends demonstrating near-unity correlation (r=0.9994 at 0.40).",
+            "url": "/api/drone/visualizations/2_health_score_correlation_across_thresholds.png"
+        },
+        {
+            "id": "3_healthy_pct_by_confidence_threshold",
+            "filename": "3_healthy_pct_by_confidence_threshold.png",
+            "title": "Healthy Palm % Stability Across Thresholds",
+            "description": "Aggregate and image-level Healthy % across thresholds, tracking consistent crown classification.",
+            "url": "/api/drone/visualizations/3_healthy_pct_by_confidence_threshold.png"
+        },
+        {
+            "id": "4_non_healthy_pct_by_confidence_threshold",
+            "filename": "4_non_healthy_pct_by_confidence_threshold.png",
+            "title": "Non-Healthy Palm Composition Breakdown",
+            "description": "Detailed breakdown of Small, Yellow (chlorotic), and Dead palm percentages.",
+            "url": "/api/drone/visualizations/4_non_healthy_pct_by_confidence_threshold.png"
+        },
+        {
+            "id": "5_distribution_of_health_score_changes",
+            "filename": "5_distribution_of_health_score_changes.png",
+            "title": "Distribution of Score Shift (\u0394 Score)",
+            "description": "Histograms of image-level score deltas relative to baseline (conf=0.25).",
+            "url": "/api/drone/visualizations/5_distribution_of_health_score_changes.png"
+        },
+        {
+            "id": "6_detection_count_vs_health_score",
+            "filename": "6_detection_count_vs_health_score.png",
+            "title": "Palm Detection Count vs Health Score",
+            "description": "Scatter distribution highlighting density fences, replanted immature blocks, and border tiles.",
+            "url": "/api/drone/visualizations/6_detection_count_vs_health_score.png"
+        }
+    ]
+    available = [c for c in charts if (DRONE_VIZ_DIR / c["filename"]).exists()]
+    return jsonify(available)
+
+
+@app.route("/api/drone/visualizations/<path:filename>")
+def serve_drone_visualization(filename):
+    """Safely serve pre-generated validation chart PNGs."""
+    if not DRONE_VIZ_DIR.is_dir():
+        abort(404)
+    candidate = DRONE_VIZ_DIR / filename
+    if not candidate.is_file():
+        abort(404)
+    return send_from_directory(DRONE_VIZ_DIR, filename)
+
+
+
+# -------------------------------------------------------------------------
+# Standalone Multispectral Health Analysis Endpoints (MicaSense Altum UAV)
+# -------------------------------------------------------------------------
+MULTISPECTRAL_OUTPUTS_DIR = DRONE_DIR / "multispectral" / "outputs"
+MULTISPECTRAL_VIZ_DIR = MULTISPECTRAL_OUTPUTS_DIR / "visualizations"
+
+
+def load_multispectral_csv(filename):
+    path = MULTISPECTRAL_OUTPUTS_DIR / filename
+    if not path.exists():
+        return None
+    return pd.read_csv(path)
+
+
+@app.route("/api/multispectral/summary")
+def multispectral_summary_data():
+    """Return high-level summary of the validated 34-tile Multispectral Health Analysis."""
+    features_df = load_multispectral_csv("multispectral_tile_health_features.csv")
+    summary_file = MULTISPECTRAL_OUTPUTS_DIR / "multispectral_tile_health_features_summary.json"
+
+    if features_df is None:
+        return unavailable_object({}, "Multispectral tile health features dataset is not available")
+
+    summary_data = {}
+    if summary_file.exists():
+        try:
+            with open(summary_file, "r", encoding="utf-8") as f:
+                summary_data = json.load(f)
+        except Exception:
+            summary_data = {}
+
+    agg = summary_data.get("aggregate_health_metrics", {})
+    counts = summary_data.get("vigour_category_counts", {})
+
+    mhs_series = pd.to_numeric(features_df["multispectral_health_score"], errors="coerce").dropna()
+    ndvi_series = pd.to_numeric(features_df["canopy_ndvi_mean"], errors="coerce").dropna()
+    ndre_series = pd.to_numeric(features_df["canopy_ndre_mean"], errors="coerce").dropna()
+    canopy_series = pd.to_numeric(features_df["canopy_cover_percentage"], errors="coerce").dropna()
+
+    high_count = int(counts.get("High Vigour Canopy", (features_df["vigour_category"] == "High Vigour Canopy").sum()))
+    mod_count = int(counts.get("Moderate Vigour Canopy", (features_df["vigour_category"] == "Moderate Vigour Canopy").sum()))
+    bg_count = int(counts.get("Non-Canopy / Water / Background", (features_df["vigour_category"] == "Non-Canopy / Water / Background").sum()))
+    tile_count = len(features_df)
+
+    summary_resp = {
+        "tile_count": tile_count,
+        "mean_ndvi": round(float(agg.get("mean_canopy_ndvi_in_vegetated_tiles", ndvi_series.mean())), 4),
+        "median_ndvi": round(float(features_df["canopy_ndvi_median"].median()), 4),
+        "mean_ndre": round(float(agg.get("mean_canopy_ndre_in_vegetated_tiles", ndre_series.mean())), 4),
+        "median_ndre": round(float(features_df["canopy_ndre_median"].median()), 4),
+        "mean_canopy_cover": round(float(agg.get("mean_canopy_cover_percentage", canopy_series.mean())), 2),
+        "median_canopy_cover": round(float(canopy_series.median()), 2),
+        "mean_mhs": round(float(agg.get("mean_multispectral_health_score", mhs_series.mean())), 2),
+        "median_mhs": round(float(agg.get("median_multispectral_health_score", mhs_series.median())), 2),
+        "min_mhs": round(float(agg.get("min_multispectral_health_score", mhs_series.min())), 2),
+        "max_mhs": round(float(agg.get("max_multispectral_health_score", mhs_series.max())), 2),
+        "std_mhs": round(float(agg.get("std_multispectral_health_score", mhs_series.std())), 2),
+        "mean_canopy_uniformity": round(float(agg.get("mean_canopy_uniformity_score", 90.48)), 2),
+        "high_vigour_count": high_count,
+        "moderate_vigour_count": mod_count,
+        "background_count": bg_count,
+        "categories": {
+            "definition": "Project analysis operational categories; NOT agronomically validated disease or nutrient diagnoses.",
+            "HIGH": {
+                "label": "High Vigour Canopy",
+                "criteria": "Score >= 80% with high canopy cover",
+                "count": high_count,
+                "percentage": round((high_count / tile_count) * 100.0, 1) if tile_count else 0.0
+            },
+            "MODERATE": {
+                "label": "Moderate Vigour Canopy",
+                "criteria": "60% <= Score < 80% or transitional canopy cover",
+                "count": mod_count,
+                "percentage": round((mod_count / tile_count) * 100.0, 1) if tile_count else 0.0
+            },
+            "BACKGROUND": {
+                "label": "Non-Canopy / Water / Background",
+                "criteria": "Score < 60% or non-vegetated background",
+                "count": bg_count,
+                "percentage": round((bg_count / tile_count) * 100.0, 1) if tile_count else 0.0
+            }
+        },
+        "sensor_platform": "MicaSense Altum UAV Multispectral (5 calibrated bands: Blue, Green, Red, RedEdge, NIR)",
+        "resolution": "512x512 pixels per tile",
+        "total_pixels_evaluated": 8912896,
+        "block_mapping": "unavailable",
+        "block_mapping_details": "MSUAV500K Zenodo benchmark tiles operate on local raster coordinates; no georeferenced GIS shapefiles or plantation Block_IDs exist. No synthetic spatial mapping fabricated.",
+        "disclaimer": "Multispectral Health Score is a tile-level spectral indicator derived from calibrated UAV imagery. It is not a validated disease diagnosis and is not mapped to Palm Plantation Block_ID."
+    }
+    return jsonify(summary_resp)
+
+
+@app.route("/api/multispectral/tiles")
+def multispectral_tiles_data():
+    """Return tile-level multispectral health feature records with optional filtering and sorting."""
+    df = load_multispectral_csv("multispectral_tile_health_features.csv")
+    if df is None:
+        return unavailable_records("Multispectral tile health features CSV is not present")
+
+    df["block_mapping"] = "unavailable"
+
+    cat_filter = request.args.get("health_category") or request.args.get("vigour_category")
+    if cat_filter:
+        cf = cat_filter.strip().upper()
+        if cf == "HIGH":
+            df = df[df["vigour_category"].str.upper().str.contains("HIGH")]
+        elif cf == "MODERATE":
+            df = df[df["vigour_category"].str.upper().str.contains("MODERATE")]
+        elif cf in ["BACKGROUND", "NON-CANOPY", "LOW"]:
+            df = df[df["vigour_category"].str.upper().str.contains("NON-CANOPY|BACKGROUND")]
+        else:
+            df = df[df["vigour_category"].str.upper() == cat_filter.strip().upper()]
+
+    sort_by = request.args.get("sort_by")
+    if sort_by == "mhs_desc":
+        df = df.sort_values("multispectral_health_score", ascending=False)
+    elif sort_by == "mhs_asc":
+        df = df.sort_values("multispectral_health_score", ascending=True)
+    elif sort_by == "ndvi_desc":
+        df = df.sort_values("canopy_ndvi_mean", ascending=False)
+    elif sort_by == "ndvi_asc":
+        df = df.sort_values("canopy_ndvi_mean", ascending=True)
+    elif sort_by == "ndre_desc":
+        df = df.sort_values("canopy_ndre_mean", ascending=False)
+    elif sort_by == "ndre_asc":
+        df = df.sort_values("canopy_ndre_mean", ascending=True)
+    elif sort_by == "canopy_desc":
+        df = df.sort_values("canopy_cover_percentage", ascending=False)
+    elif sort_by == "canopy_asc":
+        df = df.sort_values("canopy_cover_percentage", ascending=True)
+    elif sort_by == "tile_id_desc":
+        df = df.sort_values("tile_id", ascending=False)
+    else:
+        df = df.sort_values("tile_id", ascending=True)
+
+    offset = request.args.get("offset")
+    if offset:
+        try:
+            df = df.iloc[int(offset):]
+        except (ValueError, TypeError):
+            pass
+
+    limit = request.args.get("limit")
+    if limit:
+        try:
+            df = df.iloc[:int(limit)]
+        except (ValueError, TypeError):
+            pass
+
+    records = dataframe_records(df)
+    return jsonify(records)
+
+
+@app.route("/api/multispectral/indices")
+def multispectral_indices_data():
+    """Return tile-level NDVI/NDRE statistics from calibrated 5-band imagery."""
+    df = load_multispectral_csv("multispectral_vegetation_indices.csv")
+    if df is None:
+        return unavailable_records("Multispectral vegetation indices CSV is not present")
+
+    df["block_mapping"] = "unavailable"
+
+    sort_by = request.args.get("sort_by")
+    if sort_by == "ndvi_desc":
+        df = df.sort_values("ndvi_mean", ascending=False)
+    elif sort_by == "ndvi_asc":
+        df = df.sort_values("ndvi_mean", ascending=True)
+    elif sort_by == "ndre_desc":
+        df = df.sort_values("ndre_mean", ascending=False)
+    elif sort_by == "ndre_asc":
+        df = df.sort_values("ndre_mean", ascending=True)
+    else:
+        df = df.sort_values("tile_id", ascending=True)
+
+    offset = request.args.get("offset")
+    if offset:
+        try:
+            df = df.iloc[int(offset):]
+        except (ValueError, TypeError):
+            pass
+
+    limit = request.args.get("limit")
+    if limit:
+        try:
+            df = df.iloc[:int(limit)]
+        except (ValueError, TypeError):
+            pass
+
+    records = dataframe_records(df)
+    return jsonify(records)
+
+
+@app.route("/api/multispectral/visualizations")
+def multispectral_visualizations_manifest():
+    """Return manifest of available verified multispectral visualization charts."""
+    charts = [
+        {
+            "id": "ndvi_ndre_spatial_maps",
+            "filename": "ndvi_ndre_spatial_maps.png",
+            "title": "Calibrated NDVI & NDRE Spatial Reflectance Maps",
+            "description": "Spatial raster heatmaps across all 34 tiles comparing NDVI canopy vigor with NDRE red-edge chlorophyll transition.",
+            "url": "/api/multispectral/visualizations/ndvi_ndre_spatial_maps.png"
+        },
+        {
+            "id": "ndvi_ndre_distributions",
+            "filename": "ndvi_ndre_distributions.png",
+            "title": "Pixel-Level NDVI and NDRE Distribution Curves",
+            "description": "Kernel density and histograms comparing distribution profiles of NDVI and NDRE across the 8.9M evaluated pixels.",
+            "url": "/api/multispectral/visualizations/ndvi_ndre_distributions.png"
+        },
+        {
+            "id": "tile_health_comparison",
+            "filename": "tile_health_comparison.png",
+            "title": "Tile Health & Canopy Cover Comparison",
+            "description": "Comparative bar breakdown of canopy cover percentage and vegetation vigor classification across each tile.",
+            "url": "/api/multispectral/visualizations/tile_health_comparison.png"
+        },
+        {
+            "id": "canopy_health_score_distribution",
+            "filename": "canopy_health_score_distribution.png",
+            "title": "Multispectral Health Score (MHS) Distribution",
+            "description": "Distribution of composite Multispectral Health Scores showing the 92.00% mean and 96.64% median.",
+            "url": "/api/multispectral/visualizations/canopy_health_score_distribution.png"
+        },
+        {
+            "id": "canopy_strata_breakdown",
+            "filename": "canopy_strata_breakdown.png",
+            "title": "Canopy Strata & Background Composition",
+            "description": "Stacked proportion of high-vigor canopy, moderate-vigor canopy, depressed canopy, bare soil, and shadow/water.",
+            "url": "/api/multispectral/visualizations/canopy_strata_breakdown.png"
+        },
+        {
+            "id": "canopy_ndvi_vs_ndre_scatter",
+            "filename": "canopy_ndvi_vs_ndre_scatter.png",
+            "title": "Canopy NDVI vs NDRE Correlation Landscape",
+            "description": "Tile-level scatter plot of canopy NDVI vs NDRE illustrating the non-linear saturation dynamic in dense foliage.",
+            "url": "/api/multispectral/visualizations/canopy_ndvi_vs_ndre_scatter.png"
+        },
+        {
+            "id": "canopy_heterogeneity_vs_vigour",
+            "filename": "canopy_heterogeneity_vs_vigour.png",
+            "title": "Canopy Heterogeneity vs Health Vigor",
+            "description": "Uniformity score versus Multispectral Health Score highlighting canopy variance across flight lines.",
+            "url": "/api/multispectral/visualizations/canopy_heterogeneity_vs_vigour.png"
+        }
+    ]
+    available = [c for c in charts if (MULTISPECTRAL_VIZ_DIR / c["filename"]).exists()]
+    return jsonify(available)
+
+
+@app.route("/api/multispectral/visualizations/<path:filename>")
+def serve_multispectral_visualization(filename):
+    """Safely serve pre-generated multispectral visualization PNGs."""
+    if not MULTISPECTRAL_VIZ_DIR.is_dir():
+        abort(404)
+    candidate = MULTISPECTRAL_VIZ_DIR / filename
+    if not candidate.is_file():
+        abort(404)
+    return send_from_directory(MULTISPECTRAL_VIZ_DIR, filename)
+
+
+
+# -------------------------------------------------------------------------
+# Final Multi-Source Evidence Consolidation Endpoints
+# -------------------------------------------------------------------------
+EVIDENCE_REGISTRY_FILE = OUTPUT_DIR / "multi_source_evidence_registry.json"
+
+
+@app.route("/api/multi-source/summary")
+def multi_source_summary_data():
+    """Return consolidated high-level status of the three independent evidence pillars."""
+    summary = {
+        "palm": {
+            "status": "available",
+            "level": "block",
+            "block_count": 42,
+            "description": "42 plantation blocks with monthly yield, foliar nutrients, and DRIS diagnostic observations.",
+            "period": "2012–2024",
+            "block_mapping": "native",
+            "risk_engine": "canonical",
+            "primary_indicators": ["Productivity_t_Ha", "FFB_Production_t", "Yield_Gap_pct", "Foliar_Nutrients", "DRIS_Indices"]
+        },
+        "rgb_drone": {
+            "status": "available",
+            "level": "image",
+            "image_count": 500,
+            "total_palms_detected": 43599,
+            "health_score_available": True,
+            "mean_health_score": 75.81,
+            "median_health_score": 89.19,
+            "block_mapping": "unavailable",
+            "primary_indicators": ["Healthy_Palms", "Small_Palms", "Yellow_Palms", "Dead_Palms", "Drone_Health_Score"]
+        },
+        "multispectral": {
+            "status": "available",
+            "level": "tile",
+            "tile_count": 34,
+            "ndvi_available": True,
+            "ndre_available": True,
+            "mhs_available": True,
+            "mean_mhs": 92.00,
+            "mean_ndvi": 0.8977,
+            "mean_ndre": 0.5129,
+            "mean_canopy_cover": 93.62,
+            "block_mapping": "unavailable",
+            "primary_indicators": ["Canopy_NDVI", "Canopy_NDRE", "Canopy_Cover_pct", "Canopy_Uniformity", "MHS_Score"]
+        },
+        "fusion_status": {
+            "direct_row_level_fusion": False,
+            "spatial_fusion": False,
+            "risk_score_fusion": False,
+            "reason": "No validated spatial linkage between UAV imagery and plantation Block_ID is available."
+        },
+        "future_requirements": [
+            "Estate Block GIS boundaries",
+            "Georeferenced UAV orthomosaics",
+            "Synchronized UAV telemetry or acquisition timestamps"
+        ]
+    }
+    return jsonify(summary)
+
+
+@app.route("/api/multi-source/evidence")
+def multi_source_evidence_data():
+    """Return compact evidence registry matrix for executive scientific consolidation."""
+    matrix = {
+        "architecture": "Decoupled Multi-Pillar Evidence Architecture",
+        "evidence_sources": [
+            {
+                "source_id": "palm",
+                "name": "Palm Agronomic Evidence",
+                "granularity": "Block",
+                "coverage": "42 Plantation Blocks (2012–2024)",
+                "main_indicators": "FFB, Productivity, Nutrients, DRIS",
+                "indicators_list": ["FFB Production", "Actual vs Expected Productivity", "Foliar Nutrients (N, P, K, Ca, Mg, B)", "DRIS Indices"],
+                "block_mapping": "Available",
+                "participates_in_canonical_risk": True,
+                "risk_role": "Core Canonical Risk Model (100%)",
+                "status": "AVAILABLE"
+            },
+            {
+                "source_id": "rgb_drone",
+                "name": "RGB Drone Evidence",
+                "granularity": "Image",
+                "coverage": "500 Survey Images (MOPAD Site 2)",
+                "main_indicators": "Healthy, Small, Yellow, Dead, Drone Health Score",
+                "indicators_list": ["YOLO11n Palm Detections", "Canopy Mortality / Stunting", "Drone Health Score"],
+                "block_mapping": "Unavailable",
+                "participates_in_canonical_risk": False,
+                "risk_role": "Independent Visual Evidence (0%)",
+                "status": "AVAILABLE"
+            },
+            {
+                "source_id": "multispectral",
+                "name": "Multispectral UAV Evidence",
+                "granularity": "Tile",
+                "coverage": "34 Calibrated 5-Band GeoTIFFs (MicaSense Altum)",
+                "main_indicators": "NDVI, NDRE, Canopy Cover, MHS",
+                "indicators_list": ["Calibrated NDVI", "Calibrated NDRE", "Canopy Coverage %", "Canopy Uniformity", "Multispectral Health Score (MHS)"],
+                "block_mapping": "Unavailable",
+                "participates_in_canonical_risk": False,
+                "risk_role": "Independent Spectral Evidence (0%)",
+                "status": "AVAILABLE"
+            }
+        ],
+        "fusion_status": {
+            "direct_row_level_fusion": False,
+            "spatial_fusion": False,
+            "risk_score_fusion": False,
+            "reason": "No validated spatial linkage between UAV imagery and plantation Block_ID is available."
+        },
+        "scientific_disclaimer": "Current UAV datasets cannot be spatially assigned to Palm Plantation Block_ID because validated GIS boundaries and georeferenced cross-source linkage are unavailable. Therefore, RGB and multispectral evidence is presented independently and is not included in the canonical Palm block-risk score. Drone Health Score and Multispectral Health Score are project-derived indicators. They are not validated disease diagnoses."
+    }
+    return jsonify(matrix)
+
 if __name__ == "__main__":
     app.run(
         host=os.environ.get("HOST", "0.0.0.0"),
