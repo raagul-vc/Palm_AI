@@ -143,55 +143,28 @@ export default function DroneHealthPage({ datasets, sourceStatus, loadSources })
 
   return (
     <div className="drone-health-page">
-      {/* STEP 5: PROMINENT EVIDENCE DISCLAIMER BANNER */}
-      <div className="drone-disclaimer-card" role="region" aria-label="Drone Evidence Disclaimer">
-        <div className="drone-disclaimer-top">
-          <div className="disclaimer-title-group">
-            <span className="disclaimer-icon-badge">
-              <ShieldAlert size={18} />
-            </span>
-            <div>
-              <div className="disclaimer-heading-row">
-                <h3>Drone Health Evidence Disclaimer</h3>
-                <span className="block-unavailable-badge">
-                  Block Mapping: Unavailable
-                </span>
-                {loadSources && (
-                  <button
-                    type="button"
-                    className="button-secondary refresh-btn-compact"
-                    onClick={loadSources}
-                    title="Reload Drone Health Data"
-                    disabled={isRefreshing}
-                  >
-                    <RefreshCw size={12} className={isRefreshing ? "spin-icon" : ""} />
-                    {isRefreshing ? "Refreshing…" : "Refresh"}
-                  </button>
-                )}
-              </div>
-              <p className="disclaimer-quote">
-                "Drone Health Score is a model-derived image-level indicator. It is not a validated disease diagnosis and is not mapped to Palm Plantation Block_ID."
-              </p>
-            </div>
-          </div>
+      {/* COMPACT EVIDENCE DISCLAIMER BANNER */}
+      <div className="compact-disclaimer-banner" role="region" aria-label="Drone Evidence Disclaimer">
+        <div className="disclaimer-content-wrap">
+          <ShieldAlert size={16} className="disclaimer-accent-icon" />
+          <p className="disclaimer-text">
+            "Drone Health Score is a model-derived image-level indicator, not a validated disease diagnosis. Images are not spatially mapped to plantation Block_ID."
+          </p>
         </div>
-
-        <div className="drone-isolation-specs">
-          <div className="isolation-item">
-            <span className="isolation-label">SPATIAL LINKAGE</span>
-            <strong>Canvas Pixel Coordinates Only</strong>
-            <small>MOPAD Site 2 benchmark tiles; no GIS shapefile or Block_ID</small>
-          </div>
-          <div className="isolation-item">
-            <span className="isolation-label">RISK ENGINE STATUS</span>
-            <strong>Strictly Isolated & Decoupled</strong>
-            <small>Does not alter palm risk formula or peer comparisons</small>
-          </div>
-          <div className="isolation-item">
-            <span className="isolation-label">SELECTION BEHAVIOR</span>
-            <strong>Independent Evidence Module</strong>
-            <small>Block selector (B001/B002/B005) does not filter drone data</small>
-          </div>
+        <div className="disclaimer-actions">
+          <span className="unmapped-pill">Spatial Link: Not Available</span>
+          {loadSources && (
+            <button
+              type="button"
+              className="button-secondary refresh-btn-compact"
+              onClick={loadSources}
+              title="Reload Drone Health Data"
+              disabled={isRefreshing}
+            >
+              <RefreshCw size={12} className={isRefreshing ? "spin-icon" : ""} />
+              {isRefreshing ? "Refreshing…" : "Refresh"}
+            </button>
+          )}
         </div>
       </div>
 
@@ -245,7 +218,7 @@ export default function DroneHealthPage({ datasets, sourceStatus, loadSources })
         {/* KPI 4: Coverage & Quality */}
         <article className="metric-card">
           <div className="metric-top">
-            <span className="metric-label">DETECTION QUALITY</span>
+            <span className="metric-label">SURVEY IMAGES</span>
             <span className="metric-icon"><Database size={16} /></span>
           </div>
           <strong className="metric-value">
@@ -325,11 +298,11 @@ export default function DroneHealthPage({ datasets, sourceStatus, loadSources })
                   <h2>Project Analysis Categories</h2>
                 </div>
                 <span className="operational-tag">
-                  Operational thresholds · Not agronomically validated
+                  Project analysis categories — not agronomically validated
                 </span>
               </div>
               <p className="panel-subtitle">
-                Tiles classified into operational categories based on ratio of healthy palms to total palms.
+                Images classified into operational categories based on ratio of healthy palms to total palms.
               </p>
 
               <div className="category-donut-container">
@@ -351,7 +324,7 @@ export default function DroneHealthPage({ datasets, sourceStatus, loadSources })
                       </Pie>
                       <Tooltip
                         formatter={(val, name, item) => [
-                          `${val} tiles (${item.payload.pct}%)`,
+                          `${val} images (${item.payload.pct}%)`,
                           item.payload.label,
                         ]}
                       />
@@ -359,7 +332,7 @@ export default function DroneHealthPage({ datasets, sourceStatus, loadSources })
                   </ResponsiveContainer>
                   <div className="donut-center">
                     <strong>500</strong>
-                    <span>images</span>
+                    <span>Images</span>
                   </div>
                 </div>
 
@@ -369,7 +342,7 @@ export default function DroneHealthPage({ datasets, sourceStatus, loadSources })
                       <div className="cat-header">
                         <span className="cat-color-dot" style={{ background: categoryColors[cat.name] }} />
                         <strong>{cat.label}</strong>
-                        <span className="cat-count">{cat.value} tiles</span>
+                        <span className="cat-count">{cat.value} images</span>
                       </div>
                       <div className="cat-bar-track">
                         <div
@@ -471,23 +444,21 @@ export default function DroneHealthPage({ datasets, sourceStatus, loadSources })
             </section>
           </div>
 
-          {/* Statistical Distribution Insights Panel */}
-          <section className="panel data-says-panel">
-            <div className="panel-heading">
-              <div>
-                <p className="panel-eyebrow">DISTRIBUTION CHARACTERISTICS</p>
-                <h2>Agronomic & Statistical Insights</h2>
-              </div>
-            </div>
-            <div className="data-says-body">
+          {/* STATISTICAL INSIGHTS: TWO COMPACT CARDS */}
+          <div className="stats-insights-grid">
+            <div className="insight-card">
+              <span className="insight-label">DISTRIBUTION</span>
               <p>
-                <strong>Bimodal Distribution Dynamics:</strong> The validated Drone Health Score displays a distinct positive skew where the <strong>Median (89.19%)</strong> is significantly higher than the <strong>Arithmetic Mean (75.81%)</strong>. This separation is driven by 22 validation tiles that have <em>0.00% healthy palms</em> because they represent newly replanted / immature blocks with 100% "small" palms, rather than canopy disease.
-              </p>
-              <p>
-                <strong>Detection Coverage:</strong> Zero images have zero detections (0/500). Mean detection density is <strong>87.2 palms/tile</strong> (min: 25, max: 138), demonstrating high UAV flight path overlap and thorough coverage across the survey canvas.
+                Median health score (89.19%) is above the mean (75.81%), influenced by young/replanted imagery with high Small-Palm detections.
               </p>
             </div>
-          </section>
+            <div className="insight-card">
+              <span className="insight-label">DETECTION COVERAGE</span>
+              <p>
+                All 500 images contain detections. Mean detection density: 87.2 palms/image.
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
@@ -812,7 +783,7 @@ export default function DroneHealthPage({ datasets, sourceStatus, loadSources })
                 <span className="rule-badge health-out">RULE 2: Statistical Health Outliers</span>
                 <strong className="rule-metric">59 images</strong>
                 <p className="rule-detail">
-                  Drone Health Score &lt; 28.34% (Q1 - 1.5×IQR). 22 tiles have 0% healthy palms because they consist exclusively of young replanted palms.
+                  Drone Health Score &lt; 28.34% (Q1 - 1.5×IQR). 22 images have 0% healthy palms because they consist exclusively of young replanted palms.
                 </p>
               </div>
 
@@ -820,7 +791,7 @@ export default function DroneHealthPage({ datasets, sourceStatus, loadSources })
                 <span className="rule-badge density-out">RULE 3: Detection-Density Outliers</span>
                 <strong className="rule-metric">15 images</strong>
                 <p className="rule-detail">
-                  Palms &ge; 107 per image (Q3 + 1.5×IQR). Indicates tight planting spacing or flight overlap at tile borders.
+                  Palms &ge; 107 per image (Q3 + 1.5×IQR). Indicates tight planting spacing or flight overlap at image borders.
                 </p>
               </div>
             </div>
@@ -920,7 +891,7 @@ export default function DroneHealthPage({ datasets, sourceStatus, loadSources })
                           {isZero && Number(item.small_count) > 0
                             ? "Immature / Replanted Block (100% Small Palms)"
                             : isLowDet
-                            ? "Flight Line Boundary / Partial Tile"
+                            ? "Flight Line Boundary / Partial Image"
                             : isDensityOut
                             ? "High Planting Density / Flight Overlap"
                             : item.operational_interpretation || "Statistical Tail Observation"}
@@ -936,7 +907,7 @@ export default function DroneHealthPage({ datasets, sourceStatus, loadSources })
       )}
 
       {/* ========================================================================= */}
-      {/* SUBTAB 5: IMAGE-LEVEL EXPLORER (500 TILES) */}
+      {/* SUBTAB 5: IMAGE-LEVEL EXPLORER (500 IMAGES) */}
       {/* ========================================================================= */}
       {activeTab === "explorer" && (
         <div className="drone-tab-content">

@@ -111,55 +111,28 @@ export default function MultispectralHealthPage({ datasets, sourceStatus, loadSo
 
   return (
     <div className="multispectral-health-page">
-      {/* STEP 5: PROMINENT EVIDENCE DISCLAIMER BANNER */}
-      <div className="multispectral-disclaimer-card" role="region" aria-label="Multispectral Evidence Disclaimer">
-        <div className="drone-disclaimer-top">
-          <div className="disclaimer-title-group">
-            <span className="disclaimer-icon-badge ms-icon-badge">
-              <ShieldAlert size={18} />
-            </span>
-            <div>
-              <div className="disclaimer-heading-row">
-                <h3>Multispectral Evidence Disclaimer & Decoupling</h3>
-                <span className="block-unavailable-badge">
-                  Block Mapping: Unavailable
-                </span>
-                {loadSources && (
-                  <button
-                    type="button"
-                    className="button-secondary refresh-btn-compact"
-                    onClick={loadSources}
-                    title="Reload Multispectral Data"
-                    disabled={isRefreshing}
-                  >
-                    <RefreshCw size={12} className={isRefreshing ? "spin-icon" : ""} />
-                    {isRefreshing ? "Refreshing…" : "Refresh"}
-                  </button>
-                )}
-              </div>
-              <p className="disclaimer-quote">
-                "Multispectral Health Score is a tile-level spectral indicator derived from calibrated UAV imagery. It is not a validated disease diagnosis and is not mapped to Palm Plantation Block_ID."
-              </p>
-            </div>
-          </div>
+      {/* COMPACT EVIDENCE DISCLAIMER BANNER */}
+      <div className="compact-disclaimer-banner" role="region" aria-label="Multispectral Evidence Disclaimer">
+        <div className="disclaimer-content-wrap">
+          <ShieldAlert size={16} className="disclaimer-accent-icon" />
+          <p className="disclaimer-text">
+            "Multispectral Health Score is a tile-level spectral indicator, not a validated disease diagnosis. Tiles are not mapped to plantation Block_ID."
+          </p>
         </div>
-
-        <div className="drone-isolation-specs">
-          <div className="isolation-item">
-            <span className="isolation-label">SPATIAL LINKAGE</span>
-            <strong>Local Raster Coordinates (512×512 px)</strong>
-            <small>Zenodo benchmark tiles; no GIS shapefiles or Block_IDs</small>
-          </div>
-          <div className="isolation-item">
-            <span className="isolation-label">RISK ENGINE STATUS</span>
-            <strong>Strictly Isolated & Decoupled</strong>
-            <small>Does not alter palm risk formula or peer comparisons</small>
-          </div>
-          <div className="isolation-item">
-            <span className="isolation-label">SELECTION BEHAVIOR</span>
-            <strong>Independent Evidence Module</strong>
-            <small>Block selector (B001/B002/B005) does not filter multispectral data</small>
-          </div>
+        <div className="disclaimer-actions">
+          <span className="unmapped-pill">Spatial Link: Not Available</span>
+          {loadSources && (
+            <button
+              type="button"
+              className="button-secondary refresh-btn-compact"
+              onClick={loadSources}
+              title="Reload Multispectral Data"
+              disabled={isRefreshing}
+            >
+              <RefreshCw size={12} className={isRefreshing ? "spin-icon" : ""} />
+              {isRefreshing ? "Refreshing…" : "Refresh"}
+            </button>
+          )}
         </div>
       </div>
 
@@ -333,7 +306,7 @@ export default function MultispectralHealthPage({ datasets, sourceStatus, loadSo
                   </ResponsiveContainer>
                   <div className="donut-center">
                     <strong>34</strong>
-                    <span>tiles</span>
+                    <span>Tiles</span>
                   </div>
                 </div>
 
@@ -381,51 +354,49 @@ export default function MultispectralHealthPage({ datasets, sourceStatus, loadSo
                 Calibrated surface reflectance wavelengths evaluated at 512×512 pixel resolution.
               </p>
 
-              <div className="detection-class-list">
-                <div className="detection-class-item">
-                  <div className="class-row-top">
-                    <span className="class-badge ms-blue">Band 0 · Blue</span>
-                    <strong>475 nm</strong>
-                    <span className="class-pct">32 nm FWHM</span>
-                  </div>
-                  <small className="class-note">Atmospheric scattering baseline</small>
-                </div>
-
-                <div className="detection-class-item">
-                  <div className="class-row-top">
-                    <span className="class-badge ms-green">Band 1 · Green</span>
-                    <strong>560 nm</strong>
-                    <span className="class-pct">27 nm FWHM</span>
-                  </div>
-                  <small className="class-note">Chlorophyll green peak reflectance</small>
-                </div>
-
-                <div className="detection-class-item">
-                  <div className="class-row-top">
-                    <span className="class-badge ms-red">Band 2 · Red</span>
-                    <strong>668 nm</strong>
-                    <span className="class-pct">16 nm FWHM</span>
-                  </div>
-                  <small className="class-note">Chlorophyll absorption peak (Critical for NDVI)</small>
-                </div>
-
-                <div className="detection-class-item">
-                  <div className="class-row-top">
-                    <span className="class-badge ms-rededge">Band 3 · RedEdge</span>
-                    <strong>717 nm</strong>
-                    <span className="class-pct">12 nm FWHM</span>
-                  </div>
-                  <small className="class-note">Transition edge sensitive to chlorophyll & nitrogen (Critical for NDRE)</small>
-                </div>
-
-                <div className="detection-class-item">
-                  <div className="class-row-top">
-                    <span className="class-badge ms-nir">Band 4 · NIR</span>
-                    <strong>842 nm</strong>
-                    <span className="class-pct">57 nm FWHM</span>
-                  </div>
-                  <small className="class-note">Leaf cellular mesophyll structure reflectance plateau (Critical for NDVI/NDRE)</small>
-                </div>
+              <div className="table-scroll table-compact">
+                <table className="data-table band-table">
+                  <thead>
+                    <tr>
+                      <th>Band</th>
+                      <th>Center Wavelength</th>
+                      <th>Bandwidth</th>
+                      <th>Spectral Role</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><span className="class-badge ms-blue">Blue</span></td>
+                      <td><strong>475 nm</strong></td>
+                      <td>32 nm FWHM</td>
+                      <td>Atmospheric scattering baseline</td>
+                    </tr>
+                    <tr>
+                      <td><span className="class-badge ms-green">Green</span></td>
+                      <td><strong>560 nm</strong></td>
+                      <td>27 nm FWHM</td>
+                      <td>Chlorophyll green peak</td>
+                    </tr>
+                    <tr>
+                      <td><span className="class-badge ms-red">Red</span></td>
+                      <td><strong>668 nm</strong></td>
+                      <td>16 nm FWHM</td>
+                      <td>Chlorophyll absorption peak (NDVI)</td>
+                    </tr>
+                    <tr>
+                      <td><span className="class-badge ms-rededge">Red Edge</span></td>
+                      <td><strong>717 nm</strong></td>
+                      <td>12 nm FWHM</td>
+                      <td>Chlorophyll / Nitrogen transition (NDRE)</td>
+                    </tr>
+                    <tr>
+                      <td><span className="class-badge ms-nir">NIR</span></td>
+                      <td><strong>842 nm</strong></td>
+                      <td>57 nm FWHM</td>
+                      <td>Mesophyll cellular reflectance (NDVI/NDRE)</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </section>
           </div>

@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 
 export default function MultiSourceEvidencePage({ datasets, navigate }) {
-  const summary = datasets.multiSourceSummary || {
+  const _summary = datasets.multiSourceSummary || {
     palm: {
       status: "available",
       level: "block",
@@ -48,8 +48,8 @@ export default function MultiSourceEvidencePage({ datasets, navigate }) {
       icon: TrendingUp,
       tone: "green",
       granularity: "Block",
-      indicators: "FFB, Productivity, Nutrients, DRIS",
-      mapping: "Available (Native)",
+      indicators: "FFB, Yield, Nutrients, DRIS",
+      mapping: "Native",
       mappingStatus: "available",
       usedInRisk: "YES",
       riskWeight: "100% of Canonical Risk",
@@ -62,8 +62,8 @@ export default function MultiSourceEvidencePage({ datasets, navigate }) {
       icon: Scan,
       tone: "blue",
       granularity: "Image",
-      indicators: "Healthy, Small, Yellow, Dead, Drone Health Score",
-      mapping: "Unavailable",
+      indicators: "Health Classes, DHS",
+      mapping: "Not available",
       mappingStatus: "unavailable",
       usedInRisk: "NO",
       riskWeight: "0% (Independent Evidence)",
@@ -76,8 +76,8 @@ export default function MultiSourceEvidencePage({ datasets, navigate }) {
       icon: Layers,
       tone: "purple",
       granularity: "Tile",
-      indicators: "NDVI, NDRE, Canopy Cover, MHS",
-      mapping: "Unavailable",
+      indicators: "NDVI, NDRE, MHS",
+      mapping: "Not available",
       mappingStatus: "unavailable",
       usedInRisk: "NO",
       riskWeight: "0% (Independent Evidence)",
@@ -94,18 +94,18 @@ export default function MultiSourceEvidencePage({ datasets, navigate }) {
           <div className="hero-tag-row">
             <span className="hero-chip primary">
               <Workflow size={13} />
-              EXECUTIVE EVIDENCE CONSOLIDATION
-            </span>
-            <span className="hero-chip warning">
-              SPATIAL FUSION: UNAVAILABLE
+              3 Evidence Sources
             </span>
             <span className="hero-chip neutral">
-              CANONICAL RISK: 100% AGRONOMIC
+              Canonical Risk: Agronomic
+            </span>
+            <span className="hero-chip warning">
+              Spatial Link: Not Available
             </span>
           </div>
-          <h2>Multi-Source Evidence Integration</h2>
+          <h2>Multi-Source Evidence</h2>
           <p className="hero-subtitle">
-            Independent agronomic, RGB UAV, and multispectral evidence — validated without fabricated spatial linkage.
+            Three independent evidence layers for plantation intelligence.
           </p>
         </div>
       </section>
@@ -129,7 +129,7 @@ export default function MultiSourceEvidencePage({ datasets, navigate }) {
             <div className="pillar-spec-grid">
               <div className="spec-item">
                 <span className="spec-label">EVIDENCE LEVEL</span>
-                <strong>BLOCK</strong>
+                <strong>BLOCK LEVEL</strong>
               </div>
               <div className="spec-item">
                 <span className="spec-label">COVERAGE</span>
@@ -192,7 +192,7 @@ export default function MultiSourceEvidencePage({ datasets, navigate }) {
             <div className="pillar-spec-grid">
               <div className="spec-item">
                 <span className="spec-label">EVIDENCE LEVEL</span>
-                <strong>IMAGE (TILE)</strong>
+                <strong>IMAGE LEVEL</strong>
               </div>
               <div className="spec-item">
                 <span className="spec-label">COVERAGE</span>
@@ -255,7 +255,7 @@ export default function MultiSourceEvidencePage({ datasets, navigate }) {
             <div className="pillar-spec-grid">
               <div className="spec-item">
                 <span className="spec-label">EVIDENCE LEVEL</span>
-                <strong>TILE (RASTER)</strong>
+                <strong>TILE LEVEL</strong>
               </div>
               <div className="spec-item">
                 <span className="spec-label">COVERAGE</span>
@@ -372,19 +372,27 @@ export default function MultiSourceEvidencePage({ datasets, navigate }) {
             </div>
           </div>
 
+          <div className="architecture-captions">
+            <p className="arch-note primary-note">
+              <strong>Canonical Risk Scope:</strong> Canonical risk uses Palm agronomic evidence only.
+            </p>
+            <p className="arch-note uav-note">
+              <strong>UAV Independence:</strong> RGB and Multispectral remain independent evidence.
+            </p>
+          </div>
+
           {/* Fusion Status Banner */}
           <div className="fusion-status-bridge">
             <div className="fusion-status-top">
               <GitMerge size={18} />
-              <strong>FINAL FUSION STATUS</strong>
+              <strong>SPATIAL FUSION: NOT AVAILABLE</strong>
             </div>
             <div className="fusion-status-body">
               <span className="fusion-status-pill">
-                Evidence available, but spatial fusion unavailable
+                Spatial Fusion: Not Available
               </span>
               <p>
-                {summary.fusion_status?.reason ||
-                  "No validated spatial linkage between UAV imagery and plantation Block_ID is available. Direct row-level fusion is strictly rejected to preserve scientific integrity."}
+                Validated GIS/georeferenced linkage is required before UAV evidence can be assigned to plantation Block_ID.
               </p>
             </div>
           </div>
@@ -469,10 +477,10 @@ export default function MultiSourceEvidencePage({ datasets, navigate }) {
         </div>
         <div className="limitation-body">
           <p className="limitation-lead">
-            "Current UAV datasets cannot be spatially assigned to Palm Plantation Block_ID because validated GIS boundaries and georeferenced cross-source linkage are unavailable. Therefore, RGB and multispectral evidence is presented independently and is not included in the canonical Palm block-risk score."
+            "UAV datasets are currently independent evidence because validated GIS/georeferenced linkage to plantation Block_ID is unavailable. They are therefore excluded from canonical block-risk scoring."
           </p>
           <p className="limitation-sub">
-            "Drone Health Score and Multispectral Health Score are project-derived indicators. They are not validated disease diagnoses."
+            "Drone Health Score and Multispectral Health Score are project-derived indicators, not validated disease diagnoses."
           </p>
         </div>
       </section>
@@ -482,7 +490,7 @@ export default function MultiSourceEvidencePage({ datasets, navigate }) {
         <div className="panel-heading">
           <div>
             <p className="panel-eyebrow">ROADMAP TO FUSION</p>
-            <h2>Future Prerequisites for Validated Spatial Fusion</h2>
+            <h2>Required for Future Spatial Fusion</h2>
           </div>
           <span className="unit-pill">3 Technical Prerequisites</span>
         </div>
