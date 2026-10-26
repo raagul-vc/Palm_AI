@@ -4,6 +4,7 @@ import {
   ChevronDown, CloudSun, Database, FlaskConical,
   Layers, LayoutDashboard, Leaf, Menu, RefreshCw,
   Search, Sprout, TrendingUp, Wind, Workflow, X, ClipboardCheck,
+  MapPin,
 } from "lucide-react";
 import {
   Bar, BarChart, CartesianGrid, Cell, Legend,
@@ -14,20 +15,22 @@ import DroneHealthPage from "./DroneHealthPage";
 import MultispectralHealthPage from "./MultispectralHealthPage";
 import MultiSourceEvidencePage from "./MultiSourceEvidencePage";
 import FieldActionCenter from "./FieldActionCenter";
+import UnifiedBlockIntelligence from "./UnifiedBlockIntelligence";
+import EstateCommandCenter from "./EstateCommandCenter";
 import "./App.css";
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || "/api").replace(/\/$/, "");
 
 const sections = [
-  { id: "overview", label: "Overview", icon: LayoutDashboard, title: "Risk and Productivity Overview", description: "Yield, nutrients, DRIS, weather and block health from project data." },
-  { id: "risk-analysis", label: "Risk Analysis", icon: AlertTriangle, title: "Multi-source Risk Analysis", description: "Compare block-varying yield and nutrient indicators, with DRIS where a block record exists. Weather is shown as estate-level context." },
-  { id: "block-diagnostics", label: "Block Diagnostics", icon: FlaskConical, title: "Block Diagnostics", description: "Review observations and saved analysis for one selected block." },
+  { id: "overview", label: "Command Center", icon: LayoutDashboard, title: "Estate Command Center", description: "Plantation operations command, fleet risk distribution, and historical productivity." },
+  { id: "block-intelligence", label: "Block Intelligence", icon: FlaskConical, title: "Unified Block Intelligence", description: "Comprehensive block intelligence dossier: yield trajectory, foliar assays, DRIS diagnostics, weather, and action plan." },
+  { id: "field-action-center", label: "Action Center", icon: ClipboardCheck, title: "Field Action Center", description: "Prioritised estate review queue and ground inspection follow-up directives." },
+  { id: "productivity", label: "Productivity", icon: TrendingUp, title: "Productivity & Analysis", description: "Review observed productivity, saved forecast outputs, nutrient data, age curves and validation outputs." },
+  { id: "risk-analysis", label: "Risk Analysis", icon: AlertTriangle, title: "Multi-Source Risk Analysis", description: "Compare block-varying yield and nutrient indicators with DRIS limitation diagnostics." },
   { id: "weather-impact", label: "Weather Data", icon: CloudSun, title: "Weather Data and Association", description: "Explore the available block weather summaries and observed weather–productivity correlations." },
-  { id: "productivity", label: "Productivity", icon: TrendingUp, title: "Productivity and Analysis", description: "Review observed productivity, saved forecast outputs, nutrient data, age curves and validation outputs." },
-  { id: "drone-health", label: "Drone Health", icon: Camera, title: "RGB UAV Survey", description: "YOLO-based palm health indicators from 500 UAV validation images." },
+  { id: "drone-health", label: "Drone UAV Hub", icon: Camera, title: "RGB UAV Survey & Live AI", description: "Live single-image YOLO11n canopy inference workshop and 500-image benchmark exploration." },
   { id: "multispectral-health", label: "Multispectral", icon: Layers, title: "Multispectral UAV Survey", description: "Calibrated 5-band reflectance, vegetation indices, and canopy health indicators." },
-  { id: "multi-source-evidence", label: "Multi-Source Evidence", icon: Workflow, title: "Multi-Source Evidence", description: "Three independent evidence layers for plantation intelligence." },
-  { id: "field-action-center", label: "Field Action Center", icon: ClipboardCheck, title: "Field Action Center", description: "Convert available evidence into a prioritised review queue and track follow-up actions." },
+  { id: "multi-source-evidence", label: "Evidence Matrix", icon: Workflow, title: "Multi-Source Evidence", description: "Three independent evidence layers with strict scientific provenance boundaries." },
 ];
 
 const productivityTabs = [
@@ -104,6 +107,7 @@ const emptyDatasets = {
 
 function initialSection() {
   const hash = window.location.hash.replace(/^#/, "");
+  if (hash === "block-diagnostics") return "block-intelligence";
   return sections.some((s) => s.id === hash) ? hash : "overview";
 }
 
@@ -171,7 +175,9 @@ function App() {
   useEffect(() => {
     const handleUrlChange = () => {
       const hash = window.location.hash.replace(/^#/, "");
-      if (sections.some((s) => s.id === hash)) {
+      if (hash === "block-diagnostics") {
+        setActiveSection("block-intelligence");
+      } else if (sections.some((s) => s.id === hash)) {
         setActiveSection(hash);
       } else if (!hash) {
         setActiveSection("overview");
@@ -305,7 +311,7 @@ function App() {
   const selectBlock = (blockId) => {
     setSelectedBlockId(blockId);
     setSearch("");
-    navigate("block-diagnostics");
+    navigate("block-intelligence");
   };
 
   return (
@@ -367,6 +373,27 @@ function App() {
             <strong>{currentSection.label}</strong>
           </div>
           <div className="topbar-meta">
+            <div className="topbar-estate-selector">
+              <div className="estate-dropdown-pill" title="Active Plantation Estate">
+                <MapPin size={13} style={{ color: "#059669" }} />
+                <span>Seri Ulu Langat (Div A)</span>
+              </div>
+              <div className="block-select-topbar" title="Quick Jump to Block Intelligence">
+                <Search size={13} />
+                <select
+                  value={selectedBlockId}
+                  onChange={(e) => selectBlock(e.target.value)}
+                  aria-label="Select plantation block"
+                >
+                  {datasets.risk.map((b) => (
+                    <option key={b.Block_ID} value={b.Block_ID}>
+                      {b.Block_ID} ({b.Risk_Level} Risk · {formatNumber(b.Actual_Yield_t_Ha)} t/ha)
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
             {activeSection === "multi-source-evidence" ? (
               <>
                 <span className="estate-badge">3 Evidence Sources</span>
@@ -406,14 +433,16 @@ function App() {
             <div>
               <p className="eyebrow">AI PLANTATION INTELLIGENCE</p>
               <h1>
-                {activeSection === "multi-source-evidence"
+                {activeSection === "overview"
+                  ? "Estate Command Center"
+                  : activeSection === "block-intelligence" || activeSection === "block-diagnostics"
+                  ? `Block Intelligence · ${selectedBlockId}`
+                  : activeSection === "multi-source-evidence"
                   ? "Multi-Source Evidence"
                   : activeSection === "multispectral-health"
                   ? "Multispectral UAV Survey"
                   : activeSection === "drone-health"
-                  ? "RGB UAV Survey"
-                  : activeSection === "overview"
-                  ? "Division A · Oil Palm Estate"
+                  ? "RGB UAV Survey & Live AI"
                   : currentSection.title}
               </h1>
               <p className="subtitle">{currentSection.description}</p>
@@ -432,19 +461,25 @@ function App() {
             </div>
           </section>
 
-          {/* SECTION 1: OVERVIEW */}
+          {/* SECTION 1: ESTATE COMMAND CENTER */}
           {activeSection === "overview" && (
-            <OverviewPage
+            <EstateCommandCenter
               datasets={datasets}
-              sourceStatus={sourceStatus}
-              riskCounts={riskCounts}
-              tableRows={tableRows}
-              search={search}
-              setSearch={setSearch}
-              riskFilter={riskFilter}
-              setRiskFilter={setRiskFilter}
-              selectBlock={selectBlock}
-              loadSources={loadSources}
+              onSelectBlock={selectBlock}
+              onNavigate={navigate}
+            />
+          )}
+
+          {/* SECTION 2: UNIFIED BLOCK INTELLIGENCE */}
+          {(activeSection === "block-intelligence" || activeSection === "block-diagnostics") && (
+            <UnifiedBlockIntelligence
+              blockId={selectedBlockId}
+              onSelectBlock={(id) => {
+                setSelectedBlockId(id);
+                navigate("block-intelligence");
+              }}
+              datasets={datasets}
+              onNavigate={navigate}
             />
           )}
 
@@ -465,26 +500,6 @@ function App() {
             />
           )}
 
-          {/* SECTION 3: BLOCK DIAGNOSTICS */}
-          {activeSection === "block-diagnostics" && (
-            <DiagnosticsPage
-              blocks={datasets.risk}
-              selectedBlock={selectedBlock}
-              selectedBlockId={currentBlockId}
-              setSelectedBlockId={setSelectedBlockId}
-              selectedMultiRisk={selectedMultiRisk}
-              selectedNutrients={selectedNutrients}
-              selectedDris={selectedDris}
-              selectedWeather={selectedWeather}
-              selectedSoil={selectedSoil}
-              nutrientReference={datasets.nutrientReference}
-              selectedHistory={selectedHistory}
-              selectedBlockForecast={selectedBlockForecast}
-              search={search}
-              setSearch={setSearch}
-              datasets={datasets}
-            />
-          )}
 
           {/* SECTION 4: WEATHER IMPACT */}
           {activeSection === "weather-impact" && (
