@@ -168,6 +168,93 @@ class DroneHealthApiTests(unittest.TestCase):
         self.assertEqual(data["image_count"], 500)
         self.assertNotIn("Block_ID", data)
 
+    def test_drone_predict_endpoint(self):
+        """Test POST /api/drone/predict with an actual aerial survey image."""
+        img_path = BASE / "drone" / "outputs" / "yolo_error_analysis" / "class_confusions" / "44000_16000_149_2457_confusion_1.jpg"
+        self.assertTrue(img_path.exists(), f"Sample test image missing at {img_path}")
+
+        with open(img_path, "rb") as f:
+            resp = self.client.post(
+                "/api/drone/predict",
+                data={"image": f, "conf": "0.25"},
+                content_type="multipart/form-data"
+            )
+
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+
+        # Required fields
+        required_keys = [
+            "filename", "dimensions", "confidence_threshold", "total_detections",
+            "palm_detections", "drone_health_score", "healthy_count", "small_count",
+            "yellow_count", "dead_count", "grass_count", "class_counts", "detections",
+            "annotated_image", "model_info", "disclaimer"
+        ]
+        for key in required_keys:
+            self.assertIn(key, data, f"Missing key '{key}' in prediction response")
+
+        # Metric assertions
+        self.assertGreater(data["palm_detections"], 0)
+        self.assertGreaterEqual(data["total_detections"], data["palm_detections"])
+        self.assertGreaterEqual(data["drone_health_score"], 0.0)
+        self.assertLessEqual(data["drone_health_score"], 100.0)
+        self.assertTrue(data["annotated_image"].startswith("data:image/jpeg;base64,"))
+        self.assertEqual(data["confidence_threshold"], 0.25)
+        self.assertEqual(data["model_info"]["name"], "YOLO11n (palm_yolo_best.pt)")
+
+    def test_drone_predict_get_schema(self):
+        """Test GET /api/drone/predict returns endpoint schema and parameters documentation."""
+        resp = self.client.get("/api/drone/predict")
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertEqual(data["endpoint"], "/api/drone/predict")
+        self.assertEqual(data["method"], "POST")
+        self.assertEqual(data["max_file_size_mb"], 10)
+        self.assertIn("parameters", data)
+        self.assertEqual(data["status"], "ready")
+
+    def test_drone_predict_validation_errors(self):
+        """Test POST /api/drone/predict error handling for missing and invalid uploads."""
+        import io
+        from PIL import Image
+
+        # 1. No file provided
+        resp_no_file = self.client.post("/api/drone/predict")
+        self.assertEqual(resp_no_file.status_code, 400)
+        self.assertIn("error", resp_no_file.get_json())
+
+        # 2. Unsupported extension (.txt)
+        resp_bad_ext = self.client.post(
+            "/api/drone/predict",
+            data={"image": (io.BytesIO(b"not an image"), "sample.txt")},
+            content_type="multipart/form-data"
+        )
+        self.assertEqual(resp_bad_ext.status_code, 400)
+        self.assertIn("Unsupported file extension", resp_bad_ext.get_json()["error"])
+
+        # 3. Empty file (0 bytes)
+        resp_empty = self.client.post(
+            "/api/drone/predict",
+            data={"image": (io.BytesIO(b""), "empty.jpg")},
+            content_type="multipart/form-data"
+        )
+        self.assertEqual(resp_empty.status_code, 400)
+        self.assertIn("empty", resp_empty.get_json()["error"].lower())
+
+        # 4. Tiny image (< 16x16)
+        tiny_img = Image.new("RGB", (8, 8), color="green")
+        tiny_buf = io.BytesIO()
+        tiny_img.save(tiny_buf, format="JPEG")
+        tiny_buf.seek(0)
+        resp_tiny = self.client.post(
+            "/api/drone/predict",
+            data={"image": (tiny_buf, "tiny.jpg")},
+            content_type="multipart/form-data"
+        )
+        self.assertEqual(resp_tiny.status_code, 400)
+        self.assertIn("too small", resp_tiny.get_json()["error"].lower())
+
 
 if __name__ == "__main__":
     unittest.main()
+

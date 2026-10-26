@@ -1,4 +1,4 @@
-﻿# Palm AI
+# Palm AI
 
 Palm AI is a plantation intelligence dashboard built around the project’s integrated FFB, leaf, soil, and weather data, saved analysis outputs, and trained yield model.
 
@@ -193,3 +193,9 @@ To smoke-test the combined local service after building, open the root URL, refr
 ## Checks
 
 Regenerate analysis outputs only when intentionally refreshing saved results from their source data/model. From `frontend/`, run `npm run lint` and `npm run build`. Run `.\venv\Scripts\python.exe -m unittest tests.test_data_integrity -v` for source, API, forecast, unit, peer-yield, and risk consistency checks. `tests/test_live_system.py` requires running backend and frontend servers.
+
+## Field Action Center (demo workflow)
+
+The React navigation includes a Field Action Center that turns existing saved outputs into a review queue. It keeps agronomic block tasks, RGB benchmark image tasks, and multispectral benchmark tile tasks separate because the UAV benchmark datasets are not spatially mapped to the operational plantation blocks. Users can filter by source/status, record demo follow-up status in the current browser, and export the queue to CSV. Browser-local statuses are for demonstration only; they are not shared across users or persisted to the backend.
+
+The queue is a screening and review aid, not a confirmed disease diagnosis or automatic field work order. Validate any flagged condition through field inspection.

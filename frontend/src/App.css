@@ -2716,3 +2716,1256 @@ html, body {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* =========================================================================
+   DRONE AI LIVE PREDICTION & INFERENCE STYLES
+   ========================================================================= */
+
+/* Subtab Live Indicator Pill */
+.subtab-live-pill {
+  margin-left: 6px;
+  font-size: 10px;
+  background: #2d6e47;
+  color: #ffffff;
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* Prominent Overview Hero Card for Live Drone Prediction */
+.drone-live-predict-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 22px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 1px solid #86efac;
+  border-left: 4px solid #16a34a;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.08);
+}
+
+.hero-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.hero-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #166534;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.4px;
+}
+
+.hero-sub-badge {
+  background: #bbf7d0;
+  color: #14532d;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.drone-live-predict-hero h3 {
+  margin: 0 0 6px 0;
+  font-size: 16px;
+  color: #14532d;
+  font-weight: 700;
+}
+
+.drone-live-predict-hero p {
+  margin: 0;
+  font-size: 12px;
+  color: #166534;
+  max-width: 720px;
+  line-height: 1.5;
+}
+
+.hero-launch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  font-weight: 700;
+  font-size: 13px;
+  white-space: nowrap;
+  background: #16a34a;
+  border-color: #15803d;
+  box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25);
+  transition: all 0.2s ease;
+}
+
+.hero-launch-btn:hover {
+  background: #15803d;
+  transform: translateY(-1px);
+}
+
+.drone-predict-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.drone-predict-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 18px;
+  background: #fffdf5;
+  border: 1px solid #fde68a;
+  border-left: 4px solid #d97706;
+  border-radius: 10px;
+}
+
+.drone-notice-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  background: #fef3c7;
+  color: #b45309;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.drone-notice-body strong {
+  display: block;
+  font-size: 13px;
+  color: #92400e;
+  margin-bottom: 4px;
+}
+
+.drone-notice-body p {
+  margin: 0;
+  font-size: 11.5px;
+  color: #78350f;
+  line-height: 1.55;
+}
+
+.drone-upload-grid {
+  display: grid;
+  grid-template-columns: minmax(320px, 1.15fr) minmax(360px, 1.35fr);
+  gap: 20px;
+  margin-top: 14px;
+  align-items: start;
+}
+
+.drone-upload-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.drone-results-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.drone-dropzone {
+  position: relative;
+  border: 2px dashed #cbdad0;
+  border-radius: 12px;
+  background: #fafdfa;
+  transition: all 0.2s ease;
+  min-height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.drone-dropzone:hover,
+.drone-dropzone.has-file {
+  border-color: #3b8256;
+  background: #f4f9f5;
+}
+
+.drone-dropzone.drag-over {
+  border-color: #16a34a !important;
+  background: #f0fdf4 !important;
+  box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.15) !important;
+}
+
+.drone-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.drone-dropzone-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 24px 20px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.drone-dropzone-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+}
+
+.dropzone-icon-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #eaf3ec;
+  color: #2d6e47;
+  display: grid;
+  place-items: center;
+}
+
+.drone-dropzone-empty strong {
+  font-size: 13px;
+  color: #1e3526;
+  font-weight: 700;
+}
+
+.drone-dropzone-empty p {
+  margin: 0;
+  font-size: 11px;
+  color: #64748b;
+  max-width: 320px;
+}
+
+.dropzone-browse-btn {
+  margin-top: 6px;
+  font-size: 11.5px;
+}
+
+.drone-preview-wrapper {
+  position: relative;
+  width: 100%;
+  max-height: 280px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #0f1c13;
+}
+
+.drone-preview-img {
+  max-width: 100%;
+  max-height: 260px;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+.drone-preview-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(15, 30, 20, 0.75);
+  color: #ffffff;
+  padding: 6px 12px;
+  font-size: 11px;
+  text-align: center;
+  backdrop-filter: blur(2px);
+}
+
+.drone-controls-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #fbfdfb;
+  border: 1px solid #e2ede4;
+  border-radius: 12px;
+  padding: 18px;
+}
+
+.control-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.control-header label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e3526;
+}
+
+.control-val-badge {
+  font-size: 12px;
+  font-weight: 800;
+  color: #2d6e47;
+  background: #eaf4ed;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.drone-slider {
+  width: 100%;
+  accent-color: #2d6e47;
+  cursor: pointer;
+}
+
+.slider-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.baseline-tag {
+  color: #2d6e47;
+  font-weight: 700;
+}
+
+.control-hint {
+  display: block;
+  font-size: 10.5px;
+  color: #6b7280;
+  line-height: 1.45;
+  margin-top: 6px;
+}
+
+.file-info-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 8px;
+  font-size: 11px;
+  color: #065f46;
+}
+
+.file-name {
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 180px;
+}
+
+.file-size {
+  color: #047857;
+}
+
+.file-change-link {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #047857;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
+.file-change-link:hover {
+  color: #065f46;
+}
+
+.drone-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  font-size: 11.5px;
+  color: #991b1b;
+}
+
+.drone-error-banner .error-text {
+  flex: 1;
+}
+
+.error-dismiss-btn {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #991b1b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+}
+
+.drone-btn-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.drone-predict-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-weight: 700;
+  font-size: 12.5px;
+}
+
+/* Empty State Instructions Card */
+.drone-empty-instructions-card {
+  background: #f8faf8;
+  border: 1px solid #e0eae2;
+  border-radius: 12px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.instructions-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.instructions-header h3 {
+  margin: 0;
+  font-size: 15px;
+  color: #1e3526;
+  font-weight: 700;
+}
+
+.instructions-list {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+  color: #334155;
+  line-height: 1.5;
+}
+
+.model-specs-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+  padding-top: 12px;
+  border-top: 1px solid #e2ede4;
+}
+
+.spec-pill {
+  font-size: 11px;
+  background: #ffffff;
+  border: 1px solid #cbdad0;
+  border-radius: 6px;
+  padding: 4px 10px;
+  color: #1e3526;
+}
+
+/* Loading Card */
+.drone-loading-card {
+  background: #f8faf8;
+  border: 1px solid #cbdad0;
+  border-radius: 12px;
+  padding: 40px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 240px;
+}
+
+/* Prediction Outcome Header & Health Summary Banner */
+.drone-prediction-outcome {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.result-quick-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.result-quick-header h3 {
+  margin: 2px 0 0 0;
+  font-size: 16px;
+  color: #1e3526;
+  font-weight: 700;
+}
+
+.result-status-tag {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #166534;
+  letter-spacing: 0.5px;
+}
+
+.result-quick-meta {
+  display: flex;
+  gap: 8px;
+  font-size: 11px;
+  color: #64748b;
+}
+
+.result-quick-meta span {
+  background: #f1f5f9;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.health-summary-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  border-radius: 10px;
+}
+
+.health-summary-banner.tone-green {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-left: 4px solid #10b981;
+}
+
+.health-summary-banner.tone-amber {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-left: 4px solid #f59e0b;
+}
+
+.health-summary-banner.tone-red {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-left: 4px solid #ef4444;
+}
+
+.health-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #1e3526;
+  margin-bottom: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.summary-desc {
+  margin: 0;
+  font-size: 12px;
+  color: #334155;
+  line-height: 1.5;
+}
+
+.banner-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 90px;
+  padding: 8px 12px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.score-num {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1e3526;
+  line-height: 1;
+}
+
+.score-lbl {
+  font-size: 10px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+.predict-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.class-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot-healthy { background: #2d6e47; }
+.dot-small { background: #d9a726; }
+.dot-yellow { background: #eab308; }
+.dot-dead { background: #c75242; }
+.dot-grass { background: #94a3b8; }
+
+/* Breakdown Card */
+.predict-breakdown-card {
+  background: #ffffff;
+  border: 1px solid #e2ede4;
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.breakdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.breakdown-header .total-badge {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.breakdown-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.breakdown-item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11.5px;
+  margin-bottom: 4px;
+}
+
+.item-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.item-counts strong {
+  color: #0f172a;
+}
+
+.item-counts .item-pct {
+  margin-left: 4px;
+  color: #64748b;
+  font-size: 11px;
+}
+
+.drone-image-viewer-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #f8faf8;
+  border: 1px solid #e0eae2;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.viewer-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.viewer-mode-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.mode-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid #d5e2d7;
+  background: #ffffff;
+  color: #334155;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mode-btn.active {
+  background: #2d6e47;
+  color: #ffffff;
+  border-color: #2d6e47;
+}
+
+.viewer-meta-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 11px;
+  color: #64748b;
+}
+
+.annotated-image-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #0f1c13;
+  border-radius: 8px;
+  overflow: hidden;
+  min-height: 380px;
+  max-height: 640px;
+}
+
+.drone-full-annotated-img {
+  max-width: 100%;
+  max-height: 640px;
+  object-fit: contain;
+}
+
+.predict-detections-table-wrap {
+  margin-top: 14px;
+  max-height: 280px;
+  overflow-y: auto;
+  border: 1px solid #e2ede4;
+  border-radius: 8px;
+}
+
+.class-chip-healthy { background: #eaf5ec; color: #1e5a35; border: 1px solid #c2e2c8; }
+.class-chip-small { background: #fef9c3; color: #854d0e; border: 1px solid #fef08a; }
+.class-chip-yellow { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+.class-chip-dead { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+.class-chip-grass { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
+@media (max-width: 900px) {
+  .drone-upload-grid {
+    grid-template-columns: 1fr;
+  }
+  .predict-kpi-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .drone-live-predict-hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 500px) {
+  .predict-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ========================================================================= */
+/* Phase 3 Hardening: Provenance Banners, Coverage Matrix & GIS Readiness    */
+/* ========================================================================= */
+
+/* Provenance Alert Banner in Multispectral Health */
+.ms-provenance-banner {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%) !important;
+  border: 1.5px solid #fde68a !important;
+  border-left: 6px solid #d97706 !important;
+}
+
+.provenance-banner-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.provenance-banner-title {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #92400e;
+  text-transform: uppercase;
+}
+
+.provenance-tag-pill {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.provenance-meta-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.prov-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 5px;
+}
+
+.prov-badge.warning {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.prov-badge.neutral {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+}
+
+.prov-badge.unmapped {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.prov-badge.isolated {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+/* Coverage & Mapping Status Grid */
+.coverage-status-panel {
+  margin-bottom: 24px;
+}
+
+.coverage-status-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.coverage-card {
+  background: #ffffff;
+  border-radius: 10px;
+  border: 1px solid #e2ede4;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.coverage-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.coverage-card.card-agronomic {
+  border-top: 4px solid #059669;
+}
+
+.coverage-card.card-rgb {
+  border-top: 4px solid #2563eb;
+}
+
+.coverage-card.card-multispectral {
+  border-top: 4px solid #7c3aed;
+}
+
+.cov-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cov-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2.5px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.3px;
+}
+
+.cov-badge.active {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.cov-badge.isolated {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.cov-source-tag {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.4px;
+}
+
+.cov-card-body h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e3526;
+  margin: 0 0 6px;
+}
+
+.cov-provenance-text {
+  font-size: 11.5px;
+  color: #475569;
+  line-height: 1.4;
+  margin: 0 0 12px;
+}
+
+.cov-stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  background: #f8fafc;
+  border: 1px solid #edf2f7;
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+.cov-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cov-stat-label {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.3px;
+}
+
+.cov-stat strong {
+  font-size: 12px;
+  color: #0f172a;
+}
+
+.cov-card-footer {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px dashed #e2e8f0;
+}
+
+.cov-card-footer small {
+  font-size: 10.5px;
+  color: #64748b;
+  line-height: 1.35;
+  display: block;
+}
+
+/* Benchmark notice inside Pillar 3 card */
+.pillar-benchmark-notice {
+  background: #faf5ff;
+  border: 1px solid #e9d5ff;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+
+.prov-notice-tag {
+  font-size: 9.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #6b21a8;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 3px;
+}
+
+.pillar-benchmark-notice p {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: #4c1d95;
+  margin: 0;
+}
+
+.text-purple-bold {
+  color: #7c3aed !important;
+  font-weight: 700;
+}
+
+/* Benchmark Provenance Panel in Multispectral Health Overview */
+.benchmark-provenance-panel {
+  margin-top: 20px;
+  background: #faf5ff;
+  border: 1.5px solid #e9d5ff;
+}
+
+.benchmark-provenance-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.prov-info-card {
+  background: #ffffff;
+  border: 1px solid #f3e8ff;
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.prov-info-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #6b21a8;
+  letter-spacing: 0.4px;
+}
+
+.prov-info-card strong {
+  font-size: 13.5px;
+  color: #1e1b4b;
+  font-weight: 700;
+}
+
+.prov-info-card p {
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: #4b5563;
+  margin: 2px 0 0;
+}
+
+/* Provenance cell wrap in Evidence Matrix */
+.provenance-cell-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.prov-cell-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.prov-cell-eco {
+  font-size: 10.5px;
+  color: #64748b;
+  font-style: italic;
+}
+
+/* GIS Readiness Checklist Cards */
+.gis-checklist-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.gis-checklist-card {
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gis-checklist-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
+}
+
+.gis-checklist-card.status-missing {
+  border-left: 5px solid #ef4444;
+}
+
+.gis-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.gis-step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #0f172a;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.gis-card-title {
+  flex: 1 1 auto;
+}
+
+.gis-card-title h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 2px;
+}
+
+.gis-req-tag {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.4px;
+}
+
+.gis-status-badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.4px;
+  flex-shrink: 0;
+}
+
+.gis-status-badge.missing {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.gis-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gis-spec-text {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #334155;
+  margin: 0;
+}
+
+.gis-spec-text strong {
+  color: #0f172a;
+}
+
+.gis-card-status-note {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #991b1b;
+  background: #fef2f2;
+  border: 1px solid #fee2e2;
+  border-radius: 6px;
+  padding: 7px 10px;
+  margin-top: 4px;
+}
+
+.gis-checklist-footer-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #fffbeb;
+  border: 1.5px solid #fde68a;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-top: 18px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #78350f;
+}
+
+.gis-checklist-footer-note strong {
+  color: #92400e;
+}
+
+.benchmark-provenance-inline-badge {
+  display: inline-block;
+  background: #faf5ff;
+  border: 1px solid #e9d5ff;
+  color: #6b21a8;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 10px;
+}
+
+@media (max-width: 1024px) {
+  .coverage-status-grid {
+    grid-template-columns: 1fr;
+  }
+  .benchmark-provenance-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .gis-checklist-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .benchmark-provenance-grid {
+    grid-template-columns: 1fr;
+  }
+  .cov-stats-row {
+    grid-template-columns: 1fr;
+  }
+}

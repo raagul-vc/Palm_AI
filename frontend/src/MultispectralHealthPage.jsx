@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import {
-  Activity, AlertTriangle, CheckCircle2,
-  Database, ExternalLink, Layers, Maximize2,
-  RefreshCw, Search, ShieldAlert, Sliders, X,
+  Activity, AlertTriangle, Calendar, CheckCircle2,
+  Compass, Database, ExternalLink, FileText, Globe,
+  Hash, Layers, MapPin, Maximize2, RefreshCw, Search,
+  ShieldAlert, ShieldCheck, Sliders, X, XCircle,
 } from "lucide-react";
 import {
   Cell, Pie, PieChart, ResponsiveContainer, Tooltip,
@@ -111,13 +112,37 @@ export default function MultispectralHealthPage({ datasets, sourceStatus, loadSo
 
   return (
     <div className="multispectral-health-page">
-      {/* COMPACT EVIDENCE DISCLAIMER BANNER */}
-      <div className="compact-disclaimer-banner" role="region" aria-label="Multispectral Evidence Disclaimer">
+      {/* PROVENANCE AND DATASET INTEGRITY ALERT BANNER */}
+      <div className="compact-disclaimer-banner ms-provenance-banner" role="region" aria-label="Multispectral Evidence Provenance">
         <div className="disclaimer-content-wrap">
-          <ShieldAlert size={16} className="disclaimer-accent-icon" />
+          <div className="provenance-banner-top">
+            <ShieldAlert size={18} className="disclaimer-accent-icon text-amber" />
+            <span className="provenance-banner-title">
+              DATASET PROVENANCE · MSUAV500K BENCHMARK (GERMAN BEECH FOREST)
+            </span>
+            <span className="provenance-tag-pill">NOT OIL-PALM DATA</span>
+          </div>
           <p className="disclaimer-text">
-            "Multispectral Health Score is a tile-level spectral indicator, not a validated disease diagnosis. Tiles are not mapped to plantation Block_ID."
+            <strong>Dataset Origin:</strong> MSUAV500K Benchmark (Hullerbusch Beech Forest, Mecklenburg-Vorpommern, Germany — Zenodo Record 16743975 / DOI 10.5281/zenodo.16743974). This 5-band imagery represents a European temperate deciduous beech forest (<em>Fagus sylvatica</em>). It serves strictly as an algorithmic benchmark to demonstrate calibrated surface reflectance and vegetation index formulas (NDVI/NDRE). It is <strong>NOT oil-palm plantation data</strong>, is <strong>not mapped to Palm Plantation Block_ID</strong> (B001–B042), and contributes <strong>0% to canonical block risk</strong>.
           </p>
+          <div className="provenance-meta-badges">
+            <span className="prov-badge warning">
+              <Globe size={11} />
+              Origin: Hullerbusch, Germany (~53.3°N, 13.2°E)
+            </span>
+            <span className="prov-badge neutral">
+              <FileText size={11} />
+              Coverage: 34 GeoTIFF Tiles · 8.91M Pixels
+            </span>
+            <span className="prov-badge unmapped">
+              <XCircle size={11} />
+              Spatial Mapping: Unmapped (0/42 Blocks)
+            </span>
+            <span className="prov-badge isolated">
+              <ShieldCheck size={11} />
+              Canonical Risk Weight: 0% (Isolated Evidence)
+            </span>
+          </div>
         </div>
         <div className="disclaimer-actions">
           <span className="unmapped-pill">Spatial Link: Not Available</span>
@@ -211,9 +236,9 @@ export default function MultispectralHealthPage({ datasets, sourceStatus, loadSo
         </article>
 
         {/* KPI 6: Calibrated Imagery Coverage */}
-        <article className="metric-card">
+        <article className="metric-card tone-purple">
           <div className="metric-top">
-            <span className="metric-label">EVALUATED TILES</span>
+            <span className="metric-label">EVALUATED TILES (BENCHMARK)</span>
             <span className="metric-icon"><Database size={16} /></span>
           </div>
           <strong className="metric-value">
@@ -221,7 +246,7 @@ export default function MultispectralHealthPage({ datasets, sourceStatus, loadSo
             <span className="metric-unit"> tiles</span>
           </strong>
           <span className="metric-hint">
-            8.91M calibrated pixels (MicaSense Altum)
+            MSUAV500K German Forest Benchmark · Unmapped to B001–B042
           </span>
         </article>
       </div>
@@ -255,6 +280,13 @@ export default function MultispectralHealthPage({ datasets, sourceStatus, loadSo
           onClick={() => setActiveTab("tiles")}
         >
           Tile-Level Analysis ({tiles.length || 34} Tiles)
+        </button>
+        <button
+          type="button"
+          className={`subtab-btn ${activeTab === "gis-readiness" ? "active" : ""}`}
+          onClick={() => setActiveTab("gis-readiness")}
+        >
+          GIS Integration Readiness (5 Prerequisites)
         </button>
       </div>
 
@@ -429,6 +461,41 @@ export default function MultispectralHealthPage({ datasets, sourceStatus, loadSo
                 <span className="strata-label">NON-VEGETATED BACKGROUND</span>
                 <strong>6.33%</strong>
                 <small>Soil, shade, or water bodies</small>
+              </div>
+            </div>
+          </section>
+
+          {/* Benchmark Provenance & Architecture Safeguard Notice */}
+          <section className="panel benchmark-provenance-panel">
+            <div className="panel-heading">
+              <div>
+                <p className="panel-eyebrow">SCIENTIFIC PROVENANCE &amp; ARCHITECTURAL DECOUPLING</p>
+                <h2>MSUAV500K Benchmark Dataset Specifications</h2>
+              </div>
+              <span className="operational-tag">
+                German Beech Forest · Non-Oil Palm Data
+              </span>
+            </div>
+            <div className="benchmark-provenance-grid">
+              <div className="prov-info-card">
+                <span className="prov-info-label">DATASET SOURCE</span>
+                <strong>MSUAV500K Benchmark</strong>
+                <p>Zenodo Record 16743975 / DOI 10.5281/zenodo.16743974. Benchmark collected via MicaSense Altum UAV.</p>
+              </div>
+              <div className="prov-info-card">
+                <span className="prov-info-label">GEOGRAPHIC LOCATION</span>
+                <strong>Hullerbusch, Germany</strong>
+                <p>Mecklenburg-Vorpommern, Germany (~53.3° N, 13.2° E). Temperate European broadleaf forest ecosystem.</p>
+              </div>
+              <div className="prov-info-card">
+                <span className="prov-info-label">CANOPY SPECIES</span>
+                <strong>European Beech (Fagus sylvatica)</strong>
+                <p>Deciduous forest canopy creates high NDVI saturation (0.8977 mean) that does NOT diagnose oil-palm health.</p>
+              </div>
+              <div className="prov-info-card">
+                <span className="prov-info-label">SPATIAL MAPPING STATUS</span>
+                <strong>Unmapped to Plantation Blocks</strong>
+                <p>Zero spatial linkage to blocks B001–B042. Excluded from canonical risk scoring (0% risk contribution).</p>
               </div>
             </div>
           </section>
@@ -805,6 +872,158 @@ export default function MultispectralHealthPage({ datasets, sourceStatus, loadSo
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* SUBTAB 5: GIS INTEGRATION READINESS (5 PREREQUISITES) */}
+      {/* ========================================================================= */}
+      {activeTab === "gis-readiness" && (
+        <div className="drone-tab-content">
+          <section className="panel gis-readiness-panel">
+            <div className="panel-heading">
+              <div>
+                <p className="panel-eyebrow">SPATIAL DATA GOVERNANCE</p>
+                <h2>GIS Readiness Checklist for Future Plantation Integration</h2>
+              </div>
+              <span className="operational-tag">
+                5 Technical Prerequisites · Unmet
+              </span>
+            </div>
+            <p className="panel-subtitle">
+              The existing 34 multispectral tiles originate from a German temperate beech-forest benchmark (MSUAV500K). To replace this benchmark and safely fuse genuine oil-palm multispectral rasters with plantation blocks B001–B042, the following 5 technical GIS prerequisites must be satisfied:
+            </p>
+
+            <div className="gis-checklist-grid">
+              {/* Item 1 */}
+              <div className="gis-checklist-card status-missing">
+                <div className="gis-card-header">
+                  <div className="gis-step-num">1</div>
+                  <div className="gis-card-title">
+                    <h4>Plantation Vector GIS Boundaries</h4>
+                    <span className="gis-req-tag">BOUNDARY GEOMETRY</span>
+                  </div>
+                  <span className="gis-status-badge missing">MISSING / REQUIRED</span>
+                </div>
+                <div className="gis-card-body">
+                  <p className="gis-spec-text">
+                    <strong>Technical Specification:</strong> Authoritative vector polygon boundaries in ESRI Shapefile (.shp, .shx, .dbf, .prj) or GeoJSON format containing verified attribute columns for all 42 operational blocks (B001–B042).
+                  </p>
+                  <p className="gis-spec-text">
+                    <strong>Spatial Fusion Role:</strong> Enables point-in-polygon clipping, raster zonal statistics (mean NDVI, NDRE, canopy uniformity per block), and spatial intersection of UAV orthomosaics with block perimeters.
+                  </p>
+                  <div className="gis-card-status-note">
+                    <XCircle size={14} className="text-negative" />
+                    <span>Current Status: No vector shapefiles or GeoJSON block boundary polygons exist in workspace.</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Item 2 */}
+              <div className="gis-checklist-card status-missing">
+                <div className="gis-card-header">
+                  <div className="gis-step-num">2</div>
+                  <div className="gis-card-title">
+                    <h4>Coordinate Reference System (CRS)</h4>
+                    <span className="gis-req-tag">PROJECTION &amp; DATUM</span>
+                  </div>
+                  <span className="gis-status-badge missing">MISSING / REQUIRED</span>
+                </div>
+                <div className="gis-card-body">
+                  <p className="gis-spec-text">
+                    <strong>Technical Specification:</strong> Explicit, standardized projected Coordinate Reference System (e.g. WGS 84 / UTM Zone 47N/48N or authoritative national EPSG datum) applied identically to estate vector layers and drone flight plans.
+                  </p>
+                  <p className="gis-spec-text">
+                    <strong>Spatial Fusion Role:</strong> Prevents geographic warping, reprojection distortions, and inaccurate surface area calculations during raster-to-vector spatial joins.
+                  </p>
+                  <div className="gis-card-status-note">
+                    <XCircle size={14} className="text-negative" />
+                    <span>Current Status: Local pixel raster coordinates only; no unified plantation CRS metadata defined.</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Item 3 */}
+              <div className="gis-checklist-card status-missing">
+                <div className="gis-card-header">
+                  <div className="gis-step-num">3</div>
+                  <div className="gis-card-title">
+                    <h4>Georeferenced Oil-Palm Imagery</h4>
+                    <span className="gis-req-tag">RADIOMETRIC &amp; SPATIAL</span>
+                  </div>
+                  <span className="gis-status-badge missing">MISSING / REQUIRED</span>
+                </div>
+                <div className="gis-card-body">
+                  <p className="gis-spec-text">
+                    <strong>Technical Specification:</strong> Full-estate multi-band orthomosaics with sub-meter spatial resolution (GSD &le; 10 cm/pixel), calibrated downwelling light sensors (DLS), radiometric calibration panels, and surveyed Ground Control Points (GCPs) flown over the oil-palm plantation.
+                  </p>
+                  <p className="gis-spec-text">
+                    <strong>Spatial Fusion Role:</strong> Replaces the German beech-forest benchmark with verified oil-palm canopy spectral reflectance, allowing genuine frond-level chlorophyll and vegetation vigor analysis.
+                  </p>
+                  <div className="gis-card-status-note">
+                    <XCircle size={14} className="text-negative" />
+                    <span>Current Status: Existing 34 GeoTIFF tiles originate from Hullerbusch Beech Forest in Germany (MSUAV500K benchmark).</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Item 4 */}
+              <div className="gis-checklist-card status-missing">
+                <div className="gis-card-header">
+                  <div className="gis-step-num">4</div>
+                  <div className="gis-card-title">
+                    <h4>Flight Telemetry &amp; Timestamps</h4>
+                    <span className="gis-req-tag">TEMPORAL COUPLING</span>
+                  </div>
+                  <span className="gis-status-badge missing">MISSING / REQUIRED</span>
+                </div>
+                <div className="gis-card-body">
+                  <p className="gis-spec-text">
+                    <strong>Technical Specification:</strong> UAV mission flight logs, GPS position records, and exact acquisition timestamps synchronized with monthly FFB harvesting rounds and annual Frond 17 foliar nutrient laboratory sampling dates.
+                  </p>
+                  <p className="gis-spec-text">
+                    <strong>Spatial Fusion Role:</strong> Eliminates temporal mismatch between transient UAV canopy observations and multi-year agronomic productivity trends.
+                  </p>
+                  <div className="gis-card-status-note">
+                    <XCircle size={14} className="text-negative" />
+                    <span>Current Status: UAV flight timestamps and estate harvest calendar are completely uncoupled.</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Item 5 */}
+              <div className="gis-checklist-card status-missing">
+                <div className="gis-card-header">
+                  <div className="gis-step-num">5</div>
+                  <div className="gis-card-title">
+                    <h4>Verified Block Identifier Association</h4>
+                    <span className="gis-req-tag">ATTRIBUTION INTEGRITY</span>
+                  </div>
+                  <span className="gis-status-badge missing">MISSING / REQUIRED</span>
+                </div>
+                <div className="gis-card-body">
+                  <p className="gis-spec-text">
+                    <strong>Technical Specification:</strong> Authoritative spatial lookup table or relational schema linking flight tiles/orthomosaic extents directly to plantation block identifiers B001–B042.
+                  </p>
+                  <p className="gis-spec-text">
+                    <strong>Spatial Fusion Role:</strong> Authorizes executive cross-pillar aggregation without fabricating synthetic joins or corrupting the canonical risk engine.
+                  </p>
+                  <div className="gis-card-status-note">
+                    <XCircle size={14} className="text-negative" />
+                    <span>Current Status: Zero spatial linkages exist. Linking unmapped rasters to B001–B042 is strictly prohibited.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="gis-checklist-footer-note">
+              <ShieldAlert size={18} className="text-amber" />
+              <div>
+                <strong>Architectural Safeguard:</strong>
+                <span> Canonical block risk is exclusively driven by verified agronomic evidence (Production 40%, Foliar Nutrients 25%, DRIS 15%, normalized to 100%). UAV multispectral benchmark data is strictly isolated with 0% risk contribution until all 5 GIS prerequisites are verified.</span>
+              </div>
+            </div>
+          </section>
         </div>
       )}
     </div>

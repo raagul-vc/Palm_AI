@@ -3,7 +3,7 @@ import {
   Activity, AlertTriangle, Camera,
   ChevronDown, CloudSun, Database, FlaskConical,
   Layers, LayoutDashboard, Leaf, Menu, RefreshCw,
-  Search, Sprout, TrendingUp, Wind, Workflow, X,
+  Search, Sprout, TrendingUp, Wind, Workflow, X, ClipboardCheck,
 } from "lucide-react";
 import {
   Bar, BarChart, CartesianGrid, Cell, Legend,
@@ -13,9 +13,10 @@ import {
 import DroneHealthPage from "./DroneHealthPage";
 import MultispectralHealthPage from "./MultispectralHealthPage";
 import MultiSourceEvidencePage from "./MultiSourceEvidencePage";
+import FieldActionCenter from "./FieldActionCenter";
 import "./App.css";
 
-const API_BASE = "/api";
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || "/api").replace(/\/$/, "");
 
 const sections = [
   { id: "overview", label: "Overview", icon: LayoutDashboard, title: "Risk and Productivity Overview", description: "Yield, nutrients, DRIS, weather and block health from project data." },
@@ -26,6 +27,7 @@ const sections = [
   { id: "drone-health", label: "Drone Health", icon: Camera, title: "RGB UAV Survey", description: "YOLO-based palm health indicators from 500 UAV validation images." },
   { id: "multispectral-health", label: "Multispectral", icon: Layers, title: "Multispectral UAV Survey", description: "Calibrated 5-band reflectance, vegetation indices, and canopy health indicators." },
   { id: "multi-source-evidence", label: "Multi-Source Evidence", icon: Workflow, title: "Multi-Source Evidence", description: "Three independent evidence layers for plantation intelligence." },
+  { id: "field-action-center", label: "Field Action Center", icon: ClipboardCheck, title: "Field Action Center", description: "Convert available evidence into a prioritised review queue and track follow-up actions." },
 ];
 
 const productivityTabs = [
@@ -528,6 +530,11 @@ function App() {
               loadSources={loadSources}
               navigate={navigate}
             />
+          )}
+
+          {/* SECTION 9: FIELD ACTION CENTER */}
+          {activeSection === "field-action-center" && (
+            <FieldActionCenter datasets={datasets} />
           )}
 
           <footer className="dashboard-footer">

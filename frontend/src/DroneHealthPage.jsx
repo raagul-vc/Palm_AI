@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
-  AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight,
-  Database, ExternalLink, Maximize2, RefreshCw,
-  Scan, Search, ShieldAlert, Sliders, X,
+  AlertTriangle, Camera, CheckCircle2, ChevronLeft, ChevronRight,
+  Database, ExternalLink, Eye, Maximize2, RefreshCw, RotateCcw,
+  Scan, Search, ShieldAlert, Sliders, UploadCloud, X,
 } from "lucide-react";
 import {
   Cell, Pie, PieChart, ResponsiveContainer, Tooltip,
@@ -26,7 +26,7 @@ function formatNumber(value, digits = 2) {
 }
 
 export default function DroneHealthPage({ datasets, sourceStatus, loadSources }) {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("predict");
   const [selectedChart, setSelectedChart] = useState(null);
 
   // Image Explorer filter state
@@ -40,6 +40,142 @@ export default function DroneHealthPage({ datasets, sourceStatus, loadSources })
   // Outlier Audit filter state
   const [outlierFilter, setOutlierFilter] = useState("ALL");
   const [outlierSearch, setOutlierSearch] = useState("");
+
+  // Live Single-Image Inference state
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [confidenceThreshold, setConfidenceThreshold] = useState(0.25);
+  const [isPredicting, setIsPredicting] = useState(false);
+  const [predictResult, setPredictResult] = useState(null);
+  const [predictError, setPredictError] = useState(null);
+  const [viewMode, setViewMode] = useState("annotated");
+  const [showDetectionList, setShowDetectionList] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const validateAndSetFile = (file) => {
+    if (!file) return;
+
+    const allowedExtensions = [".jpg", ".jpeg", ".png"];
+    const ext = "." + (file.name.split(".").pop() || "").toLowerCase();
+    const allowedMimeTypes = ["image/jpeg", "image/png", "image/jpg"];
+
+    if (!allowedExtensions.includes(ext) && !allowedMimeTypes.includes(file.type)) {
+      setPredictError(`Unsupported file format '${ext}'. Please upload a JPG, JPEG, or PNG image.`);
+      setSelectedFile(null);
+      setImagePreview(null);
+      setPredictResult(null);
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setPredictError(`Selected file exceeds the 10 MB limit (${(file.size / (1024 * 1024)).toFixed(2)} MB).`);
+      setSelectedFile(null);
+      setImagePreview(null);
+      setPredictResult(null);
+      return;
+    }
+
+    setSelectedFile(file);
+    setPredictError(null);
+    setPredictResult(null);
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImagePreview(reader.result);
+    };
+    reader.onerror = () => {
+      setPredictError("Failed to read image file.");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    validateAndSetFile(file);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer?.files?.[0];
+    validateAndSetFile(file);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleResetPrediction = () => {
+    setSelectedFile(null);
+    setImagePreview(null);
+    setPredictResult(null);
+    setPredictError(null);
+    setViewMode("annotated");
+    setShowDetectionList(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleRunInference = async () => {
+    if (!selectedFile) {
+      setPredictError("Please select or drop an aerial JPG, JPEG, or PNG image first.");
+      return;
+    }
+
+    setIsPredicting(true);
+    setPredictError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("image", selectedFile);
+      formData.append("conf", String(confidenceThreshold));
+
+      const apiBase = (import.meta.env.VITE_API_BASE_URL || "/api").replace(/\/$/, "");
+      const res = await fetch(`${apiBase}/drone/predict`, {
+        method: "POST",
+        body: formData,
+      });
+
+      const contentType = res.headers.get("content-type") || "";
+
+      let data;
+      if (contentType.includes("application/json")) {
+        try {
+          data = await res.json();
+        } catch (jsonErr) {
+          throw new Error(`Failed to parse server JSON response: ${jsonErr.message}`);
+        }
+      } else {
+        const textResponse = await res.text();
+        const snippet = textResponse.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160);
+        throw new Error(
+          `Server returned HTTP ${res.status} (${res.statusText || "Unexpected Response"}) with non-JSON content (${contentType || "unknown"}). ${
+            snippet ? `Message: "${snippet}"` : "Please verify the backend API service is running and accessible."
+          }`
+        );
+      }
+
+      if (!res.ok) {
+        throw new Error(data?.error || `Server responded with HTTP ${res.status}`);
+      }
+
+      setPredictResult(data);
+      setViewMode("annotated");
+    } catch (err) {
+      console.error("Drone prediction error:", err);
+      setPredictError(err.message || "Failed to execute inference on the image.");
+    } finally {
+      setIsPredicting(false);
+    }
+  };
 
   const summary = datasets.droneSummary || {};
   const validation = datasets.droneValidation || {};
@@ -249,6 +385,15 @@ export default function DroneHealthPage({ datasets, sourceStatus, loadSources })
       <div className="subtab-bar drone-subtab-bar">
         <button
           type="button"
+          className={`subtab-btn ${activeTab === "predict" ? "active" : ""}`}
+          onClick={() => setActiveTab("predict")}
+        >
+          <Camera size={14} style={{ marginRight: 6, verticalAlign: "middle" }} />
+          Live Drone AI Prediction
+          <span className="subtab-live-pill">LIVE</span>
+        </button>
+        <button
+          type="button"
           className={`subtab-btn ${activeTab === "overview" ? "active" : ""}`}
           onClick={() => setActiveTab("overview")}
         >
@@ -289,6 +434,31 @@ export default function DroneHealthPage({ datasets, sourceStatus, loadSources })
       {/* ========================================================================= */}
       {activeTab === "overview" && (
         <div className="drone-tab-content">
+          {/* PROMINENT LIVE DRONE AI PREDICTION HERO BANNER IN OVERVIEW */}
+          <div className="drone-live-predict-hero">
+            <div className="hero-left">
+              <div className="hero-badge-row">
+                <span className="hero-live-badge"><Camera size={13} /> LIVE DRONE AI PREDICTION</span>
+                <span className="hero-sub-badge">YOLO11n Real-Time Inference</span>
+              </div>
+              <h3>Upload & Detect Palm Crowns with Live Drone AI</h3>
+              <p>
+                Run live canopy detection on any RGB aerial survey image (JPG, JPEG, PNG).
+                Our trained YOLO11n model detects crowns, classifies health (Healthy, Small, Yellow, Dead), and generates an annotated image with foliar scoring in seconds.
+              </p>
+            </div>
+            <div className="hero-actions">
+              <button
+                type="button"
+                className="button-primary hero-launch-btn"
+                onClick={() => setActiveTab("predict")}
+              >
+                <Camera size={16} />
+                <span>Open Live Drone AI Prediction</span>
+              </button>
+            </div>
+          </div>
+
           <div className="overview-grid">
             {/* Operational Health Categories Card */}
             <section className="panel">
@@ -1080,6 +1250,477 @@ export default function DroneHealthPage({ datasets, sourceStatus, loadSources })
               </button>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* SUBTAB: LIVE DRONE AI PREDICTION */}
+      {/* ========================================================================= */}
+      {activeTab === "predict" && (
+        <div className="drone-tab-content drone-predict-tab" id="live-drone-ai-prediction">
+          {/* Scientific Provenance Banner */}
+          <div className="drone-predict-notice">
+            <div className="drone-notice-icon">
+              <Camera size={20} />
+            </div>
+            <div className="drone-notice-body">
+              <strong>Live Drone AI Prediction — YOLO11n Canopy Health Engine</strong>
+              <p>
+                Run live, in-memory single-image palm crown detection using the project's trained YOLO11n weights (<code>palm_yolo_best.pt</code>).
+                Detections classify visible crown morphology into 5 classes: <strong>Healthy</strong> (green canopy), <strong>Small</strong> (juvenile/stunted), <strong>Yellow</strong> (chlorotic stress), <strong>Dead</strong> (standing desiccated trunks), and <strong>Grass</strong> (ground weed cover).
+                This is visual RGB object detection and does <em>NOT</em> provide clinical pathology diagnosis (e.g. <em>Ganoderma</em> root rot).
+                Uploaded imagery is evaluated in-memory on CPU and is <strong>not mapped to any ALM AI management block</strong>.
+              </p>
+            </div>
+          </div>
+
+          {/* Upload and Control Card */}
+          <section className="panel drone-upload-panel">
+            <div className="panel-heading">
+              <div>
+                <p className="panel-eyebrow">IMAGE INGESTION & CONFIGURATION</p>
+                <h2>Live Drone AI Prediction</h2>
+              </div>
+              <div className="panel-heading-badges" style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                <span className="operational-tag">Model: YOLO11n (palm_yolo_best.pt)</span>
+                <span className="operational-tag">In-Memory Inference (Max 10 MB)</span>
+              </div>
+            </div>
+
+            <div className="drone-upload-grid">
+              {/* Left Column: Dropzone & Parameters */}
+              <div className="drone-upload-col">
+                <div
+                  className={`drone-dropzone ${selectedFile ? "has-file" : ""} ${isDragging ? "drag-over" : ""}`}
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onClick={() => !selectedFile && fileInputRef.current?.click()}
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Upload aerial drone image"
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    id="drone-file-input"
+                    className="drone-file-input"
+                    accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                    onChange={handleFileChange}
+                  />
+
+                  {imagePreview ? (
+                    <div className="drone-preview-wrapper">
+                      <img src={imagePreview} alt="Selected preview" className="drone-preview-img" />
+                      <div className="drone-preview-overlay">
+                        <span>Click "Change" or drag another image to replace</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="drone-dropzone-empty">
+                      <div className="dropzone-icon-circle">
+                        <UploadCloud size={32} />
+                      </div>
+                      <strong>Drag & drop aerial image here, or click to browse</strong>
+                      <p>Supports JPG, JPEG, and PNG (up to 10 MB · Recommended 1024×1024 px)</p>
+                      <button
+                        type="button"
+                        className="button-secondary button-sm dropzone-browse-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          fileInputRef.current?.click();
+                        }}
+                      >
+                        Select Image File
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Controls Card */}
+                <div className="drone-controls-card">
+                  <div className="control-group">
+                    <div className="control-header">
+                      <label htmlFor="conf-threshold-slider">Confidence Threshold (conf)</label>
+                      <span className="control-val-badge">conf = {confidenceThreshold.toFixed(2)}</span>
+                    </div>
+                    <input
+                      id="conf-threshold-slider"
+                      type="range"
+                      min="0.05"
+                      max="0.85"
+                      step="0.05"
+                      value={confidenceThreshold}
+                      onChange={(e) => setConfidenceThreshold(parseFloat(e.target.value))}
+                      className="drone-slider"
+                    />
+                    <div className="slider-labels">
+                      <span>0.10 (Sensitive)</span>
+                      <span className="baseline-tag">0.25 (Validated Standard)</span>
+                      <span>0.85 (Strict)</span>
+                    </div>
+                    <small className="control-hint">
+                      Confidence 0.25 is the validated operational standard that retains small juvenile and chlorotic yellow crowns without noise.
+                    </small>
+                  </div>
+
+                  {selectedFile && (
+                    <div className="file-info-badge">
+                      <CheckCircle2 size={14} className="text-emerald" />
+                      <span className="file-name" title={selectedFile.name}>{selectedFile.name}</span>
+                      <span className="file-size">({(selectedFile.size / 1024).toFixed(1)} KB)</span>
+                      <button
+                        type="button"
+                        className="file-change-link"
+                        onClick={() => fileInputRef.current?.click()}
+                        title="Choose a different image"
+                      >
+                        Change
+                      </button>
+                    </div>
+                  )}
+
+                  {predictError && (
+                    <div className="drone-error-banner" role="alert">
+                      <AlertTriangle size={16} />
+                      <span className="error-text">{predictError}</span>
+                      <button
+                        type="button"
+                        className="error-dismiss-btn"
+                        onClick={() => setPredictError(null)}
+                        aria-label="Dismiss error"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="drone-btn-row">
+                    <button
+                      type="button"
+                      className="button-primary drone-predict-btn"
+                      disabled={!selectedFile || isPredicting}
+                      onClick={handleRunInference}
+                    >
+                      {isPredicting ? (
+                        <>
+                          <RefreshCw size={16} className="spin-icon" />
+                          <span>Analyzing with YOLO11n...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Camera size={16} />
+                          <span>Analyze Image</span>
+                        </>
+                      )}
+                    </button>
+
+                    {selectedFile && (
+                      <button
+                        type="button"
+                        className="button-secondary"
+                        onClick={handleResetPrediction}
+                        disabled={isPredicting}
+                        title="Clear current image and results"
+                      >
+                        <RotateCcw size={14} />
+                        <span>Reset</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Dynamic Results / Empty State / Loading */}
+              <div className="drone-results-col">
+                {isPredicting && (
+                  <div className="drone-loading-card">
+                    <div className="loading-state">
+                      <span className="spinner" />
+                      <div>
+                        <strong>Running YOLO11n Crown Detection & Health Classification...</strong>
+                        <p>Inference executing in-memory on CPU at 1024×1024 resolution.</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {!isPredicting && !predictResult && (
+                  <div className="drone-empty-instructions-card">
+                    <div className="instructions-header">
+                      <Scan size={24} className="text-emerald" />
+                      <h3>How Live Drone AI Prediction Works</h3>
+                    </div>
+                    <ul className="instructions-list">
+                      <li>
+                        <strong>1. Select or Drop an Image:</strong> Upload any high-resolution RGB aerial orthomosaic crop or drone survey photo (JPG, JPEG, or PNG up to 10 MB).
+                      </li>
+                      <li>
+                        <strong>2. Configure Confidence:</strong> Baseline threshold 0.25 is pre-calibrated to preserve detection recall for small juvenile and chlorotic crowns.
+                      </li>
+                      <li>
+                        <strong>3. Click "Analyze Image":</strong> In-memory YOLO11n extracts crown bounding boxes and computes the Drone Health Score.
+                      </li>
+                      <li>
+                        <strong>4. Review Outputs:</strong> Examine annotated bounding boxes, detected palm count, class distribution, and individual confidence scores.
+                      </li>
+                    </ul>
+
+                    <div className="model-specs-strip">
+                      <div className="spec-pill"><strong>Model:</strong> YOLO11n-seg/det</div>
+                      <div className="spec-pill"><strong>Weights:</strong> palm_yolo_best.pt</div>
+                      <div className="spec-pill"><strong>Input:</strong> 1024×1024 RGB</div>
+                      <div className="spec-pill"><strong>5 Classes:</strong> Healthy, Small, Yellow, Dead, Grass</div>
+                    </div>
+                  </div>
+                )}
+
+                {!isPredicting && predictResult && (
+                  <div className="drone-prediction-outcome">
+                    {/* Summary Header */}
+                    <div className="result-quick-header">
+                      <div>
+                        <span className="result-status-tag">Inference Complete</span>
+                        <h3>Foliar Health & Crown Assessment</h3>
+                      </div>
+                      <div className="result-quick-meta">
+                        <span>{predictResult.filename}</span>
+                        <span>{predictResult.dimensions.width}×{predictResult.dimensions.height} px</span>
+                        <span>conf ≥ {predictResult.confidence_threshold}</span>
+                      </div>
+                    </div>
+
+                    {/* Health Summary Banner */}
+                    <div className={`health-summary-banner tone-${predictResult.drone_health_score >= 80 ? 'green' : predictResult.drone_health_score >= 60 ? 'amber' : 'red'}`}>
+                      <div className="banner-left">
+                        <span className="health-badge">
+                          {predictResult.drone_health_score >= 80 ? 'HIGH HEALTH TIER' : predictResult.drone_health_score >= 60 ? 'MODERATE HEALTH TIER' : 'LOW HEALTH TIER'}
+                        </span>
+                        <p className="summary-desc">
+                          {predictResult.healthy_count} of {predictResult.palm_detections} detected palm crowns ({predictResult.drone_health_score}%) exhibit normal green canopy morphology.
+                          {predictResult.small_count > 0 && ` Flagged ${predictResult.small_count} juvenile/stunted crown${predictResult.small_count > 1 ? 's' : ''}.`}
+                          {predictResult.yellow_count > 0 && ` Detected ${predictResult.yellow_count} chlorotic/yellow crown${predictResult.yellow_count > 1 ? 's' : ''}.`}
+                          {predictResult.dead_count > 0 && ` Found ${predictResult.dead_count} standing dead trunk${predictResult.dead_count > 1 ? 's' : ''}.`}
+                        </p>
+                      </div>
+                      <div className="banner-score">
+                        <span className="score-num">{predictResult.drone_health_score}%</span>
+                        <span className="score-lbl">Health Score</span>
+                      </div>
+                    </div>
+
+                    {/* KPI 6-Grid */}
+                    <div className="predict-kpi-grid">
+                      <article className="metric-card tone-green">
+                        <div className="metric-top">
+                          <span className="metric-label">DRONE HEALTH SCORE</span>
+                          <CheckCircle2 size={16} />
+                        </div>
+                        <strong className="metric-value">
+                          {formatNumber(predictResult.drone_health_score, 1)}
+                          <span className="metric-unit">%</span>
+                        </strong>
+                        <span className="metric-hint">Healthy canopy ratio</span>
+                      </article>
+
+                      <article className="metric-card">
+                        <div className="metric-top">
+                          <span className="metric-label">DETECTED PALMS</span>
+                          <Scan size={16} />
+                        </div>
+                        <strong className="metric-value">
+                          {predictResult.palm_detections}
+                          <span className="metric-unit"> crowns</span>
+                        </strong>
+                        <span className="metric-hint">Excludes ground grass</span>
+                      </article>
+
+                      <article className="metric-card tone-emerald">
+                        <div className="metric-top">
+                          <span className="metric-label">HEALTHY PALMS</span>
+                          <span className="class-dot dot-healthy" />
+                        </div>
+                        <strong className="metric-value">
+                          {predictResult.healthy_count}
+                          <span className="metric-unit"> palms</span>
+                        </strong>
+                        <span className="metric-hint">
+                          {predictResult.palm_detections > 0 ? ((predictResult.healthy_count / predictResult.palm_detections) * 100).toFixed(1) : 0}% of palms
+                        </span>
+                      </article>
+
+                      <article className="metric-card tone-amber">
+                        <div className="metric-top">
+                          <span className="metric-label">SMALL / STUNTED</span>
+                          <span className="class-dot dot-small" />
+                        </div>
+                        <strong className="metric-value">
+                          {predictResult.small_count}
+                          <span className="metric-unit"> palms</span>
+                        </strong>
+                        <span className="metric-hint">
+                          {predictResult.palm_detections > 0 ? ((predictResult.small_count / predictResult.palm_detections) * 100).toFixed(1) : 0}% of palms
+                        </span>
+                      </article>
+
+                      <article className="metric-card tone-orange">
+                        <div className="metric-top">
+                          <span className="metric-label">YELLOW / CHLOROTIC</span>
+                          <span className="class-dot dot-yellow" />
+                        </div>
+                        <strong className="metric-value">
+                          {predictResult.yellow_count}
+                          <span className="metric-unit"> palms</span>
+                        </strong>
+                        <span className="metric-hint">
+                          {predictResult.palm_detections > 0 ? ((predictResult.yellow_count / predictResult.palm_detections) * 100).toFixed(1) : 0}% of palms
+                        </span>
+                      </article>
+
+                      <article className="metric-card tone-red">
+                        <div className="metric-top">
+                          <span className="metric-label">DEAD PALMS</span>
+                          <span className="class-dot dot-dead" />
+                        </div>
+                        <strong className="metric-value">
+                          {predictResult.dead_count}
+                          <span className="metric-unit"> palms</span>
+                        </strong>
+                        <span className="metric-hint">
+                          {predictResult.palm_detections > 0 ? ((predictResult.dead_count / predictResult.palm_detections) * 100).toFixed(1) : 0}% of palms
+                        </span>
+                      </article>
+                    </div>
+
+                    {/* Class Breakdown Bars */}
+                    <div className="predict-breakdown-card">
+                      <div className="breakdown-header">
+                        <strong>Class-Wise Detection Breakdown</strong>
+                        <span className="total-badge">Total Detections: {predictResult.total_detections} (incl. {predictResult.grass_count} ground grass)</span>
+                      </div>
+                      <div className="breakdown-rows">
+                        {[
+                          { label: "Healthy Palm", count: predictResult.healthy_count, color: "#2d6e47", dotClass: "dot-healthy", isPalm: true },
+                          { label: "Small / Stunted", count: predictResult.small_count, color: "#d9a726", dotClass: "dot-small", isPalm: true },
+                          { label: "Yellow / Chlorotic", count: predictResult.yellow_count, color: "#eab308", dotClass: "dot-yellow", isPalm: true },
+                          { label: "Dead Palm", count: predictResult.dead_count, color: "#c75242", dotClass: "dot-dead", isPalm: true },
+                          { label: "Ground Grass (weed)", count: predictResult.grass_count, color: "#94a3b8", dotClass: "dot-grass", isPalm: false },
+                        ].map((cls, idx) => {
+                          const pct = predictResult.palm_detections > 0 && cls.isPalm
+                            ? ((cls.count / predictResult.palm_detections) * 100).toFixed(1)
+                            : predictResult.total_detections > 0
+                            ? ((cls.count / predictResult.total_detections) * 100).toFixed(1)
+                            : 0;
+                          return (
+                            <div key={idx} className="breakdown-item">
+                              <div className="breakdown-item-top">
+                                <span className="item-label">
+                                  <span className={`class-dot ${cls.dotClass}`} />
+                                  {cls.label}
+                                </span>
+                                <span className="item-counts">
+                                  <strong>{cls.count}</strong>
+                                  <span className="item-pct">({pct}%)</span>
+                                </span>
+                              </div>
+                              <div className="cat-bar-track">
+                                <div className="cat-bar-fill" style={{ width: `${Math.min(100, pct)}%`, background: cls.color }} />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Annotated Image Viewer */}
+                    <div className="drone-image-viewer-container">
+                      <div className="viewer-toolbar">
+                        <div className="viewer-mode-buttons">
+                          <button
+                            type="button"
+                            className={`mode-btn ${viewMode === "annotated" ? "active" : ""}`}
+                            onClick={() => setViewMode("annotated")}
+                          >
+                            <Eye size={14} />
+                            <span>Annotated Image (YOLO Bounding Boxes)</span>
+                          </button>
+                          <button
+                            type="button"
+                            className={`mode-btn ${viewMode === "original" ? "active" : ""}`}
+                            onClick={() => setViewMode("original")}
+                          >
+                            <span>Original Image</span>
+                          </button>
+                        </div>
+
+                        <div className="viewer-meta-info">
+                          <span>Threshold: conf ≥ {predictResult.confidence_threshold}</span>
+                          <button
+                            type="button"
+                            className="button-secondary button-sm"
+                            onClick={() => setShowDetectionList(!showDetectionList)}
+                          >
+                            {showDetectionList ? "Hide Detections Table" : `Show All ${predictResult.total_detections} Detections`}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="annotated-image-box">
+                        {viewMode === "annotated" && predictResult.annotated_image ? (
+                          <img
+                            src={predictResult.annotated_image}
+                            alt="Annotated detection results with bounding boxes"
+                            className="drone-full-annotated-img"
+                          />
+                        ) : (
+                          <img
+                            src={imagePreview}
+                            alt="Original uploaded image"
+                            className="drone-full-annotated-img"
+                          />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Detailed Detections Table */}
+                    {showDetectionList && (
+                      <div className="predict-detections-table-wrap">
+                        <table className="data-table">
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th>Class</th>
+                              <th>Confidence Score</th>
+                              <th>Bounding Box [x1, y1, x2, y2]</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {predictResult.detections.map((det, idx) => (
+                              <tr key={idx}>
+                                <td>{idx + 1}</td>
+                                <td>
+                                  <span className={`status-chip class-chip-${det.class_name.toLowerCase()}`}>
+                                    {det.class_name}
+                                  </span>
+                                </td>
+                                <td>
+                                  <strong>{(det.confidence * 100).toFixed(1)}%</strong>
+                                  <small className="text-muted" style={{ marginLeft: 6 }}>({det.confidence})</small>
+                                </td>
+                                <td className="code-text font-mono text-xs">
+                                  [{det.bbox.join(", ")}]
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
         </div>
       )}
     </div>

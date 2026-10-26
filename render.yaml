@@ -12,4 +12,8 @@ services:
       - key: PYTHONUNBUFFERED
         value: "1"
       - key: WEB_CONCURRENCY
-        value: "2"
+        value: "1"
+      - key: YOLO_CONFIG_DIR
+        value: "/tmp/ultralytics"
+      - key: MPLCONFIGDIR
+        value: "/tmp/matplotlib"

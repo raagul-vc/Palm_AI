@@ -6,6 +6,8 @@ import numpy as np
 from functools import lru_cache
 from pathlib import Path
 import os
+import io
+import base64
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 FRONTEND_DIST_DIR = BASE_DIR / "frontend" / "dist"
@@ -14,6 +16,8 @@ app = Flask(__name__, static_folder=None)
 cors_origins = [origin.strip() for origin in os.environ.get("PALM_AI_CORS_ORIGINS", "").split(",") if origin.strip()]
 if cors_origins:
     CORS(app, origins=cors_origins, expose_headers=["X-Data-Availability", "X-Data-Reason"])
+else:
+    CORS(app, expose_headers=["X-Data-Availability", "X-Data-Reason"])
 
 DATA_DIR = BASE_DIR / "data"
 OUTPUT_DIR = BASE_DIR / "outputs"
@@ -31,6 +35,27 @@ def serve_frontend(path):
     if path and candidate.is_file():
         return send_from_directory(FRONTEND_DIST_DIR, path)
     return send_from_directory(FRONTEND_DIST_DIR, "index.html")
+
+
+@app.errorhandler(404)
+def handle_404(e):
+    if request.path.startswith("/api"):
+        return jsonify({"error": f"API endpoint not found: {request.path}"}), 404
+    return e
+
+
+@app.errorhandler(405)
+def handle_405(e):
+    if request.path.startswith("/api"):
+        return jsonify({"error": f"HTTP method {request.method} is not allowed for {request.path}"}), 405
+    return e
+
+
+@app.errorhandler(500)
+def handle_500(e):
+    if request.path.startswith("/api"):
+        return jsonify({"error": "Internal server error on API endpoint."}), 500
+    return e
 
 
 def load_csv(filename):
@@ -877,6 +902,203 @@ def serve_drone_visualization(filename):
     return send_from_directory(DRONE_VIZ_DIR, filename)
 
 
+# Reusable YOLO model instance cache
+_drone_yolo_model = None
+
+
+def get_drone_yolo_model():
+    """Lazily load and cache the Drone YOLO11n model instance in memory."""
+    global _drone_yolo_model
+    if _drone_yolo_model is not None:
+        return _drone_yolo_model
+    model_path = DRONE_DIR / "models" / "palm_yolo_best.pt"
+    if not model_path.exists():
+        app.logger.error("Drone model checkpoint not found at %s", model_path)
+        return None
+    try:
+        from ultralytics import YOLO
+        _drone_yolo_model = YOLO(str(model_path))
+        return _drone_yolo_model
+    except Exception as e:
+        app.logger.exception("Failed to initialize Drone YOLO model: %s", e)
+        return None
+
+
+MAX_IMAGE_UPLOAD_BYTES = 10 * 1024 * 1024  # 10 MB limit
+ALLOWED_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tif", ".tiff"}
+
+
+@app.route("/api/drone/predict", methods=["GET", "POST"])
+def predict_drone_image():
+    """Run live single-image palm crown detection using the trained YOLO11n model.
+    
+    Accepts multipart/form-data upload with field 'image' or 'file'.
+    Returns bounding boxes, class counts, confidence scores, and an in-memory annotated base64 image.
+    Strictly read-only and in-memory: does not overwrite existing dataset or validation files.
+    """
+    if request.method == "GET":
+        return jsonify({
+            "endpoint": "/api/drone/predict",
+            "method": "POST",
+            "description": "Upload an aerial survey RGB image (multipart/form-data with field 'image' or 'file') to run live YOLO11n canopy detection.",
+            "allowed_extensions": sorted(list(ALLOWED_IMAGE_EXTENSIONS)),
+            "max_file_size_bytes": MAX_IMAGE_UPLOAD_BYTES,
+            "max_file_size_mb": 10,
+            "parameters": {
+                "image": "File (JPG, JPEG, PNG, WebP, TIFF)",
+                "conf": "Float confidence threshold between 0.05 and 0.95 (default 0.25)"
+            },
+            "status": "ready"
+        }), 200
+
+    file = request.files.get("image") or request.files.get("file")
+    if not file or not file.filename:
+        return jsonify({
+            "error": "No image file provided. Please submit an image in multipart/form-data under 'image' or 'file'."
+        }), 400
+
+    filename = file.filename
+    ext = Path(filename).suffix.lower()
+    if ext not in ALLOWED_IMAGE_EXTENSIONS:
+        return jsonify({
+            "error": f"Unsupported file extension '{ext}'. Supported formats: {', '.join(sorted(ALLOWED_IMAGE_EXTENSIONS))}"
+        }), 400
+
+    try:
+        file_bytes = file.read()
+    except Exception as e:
+        return jsonify({"error": f"Unable to read uploaded file stream: {e}"}), 400
+
+    if len(file_bytes) == 0:
+        return jsonify({"error": "Uploaded file is empty (0 bytes)."}), 400
+
+    if len(file_bytes) > MAX_IMAGE_UPLOAD_BYTES:
+        return jsonify({
+            "error": f"Uploaded file size ({len(file_bytes) / (1024 * 1024):.2f} MB) exceeds the 10 MB limit."
+        }), 400
+
+    try:
+        from PIL import Image
+        pil_img = Image.open(io.BytesIO(file_bytes))
+        pil_img.verify()
+        pil_img = Image.open(io.BytesIO(file_bytes))
+        orig_width, orig_height = pil_img.size
+        pil_img = pil_img.convert("RGB")
+    except Exception as e:
+        return jsonify({"error": f"Invalid or unreadable image file: {e}"}), 400
+
+    if orig_width < 16 or orig_height < 16:
+        return jsonify({
+            "error": f"Image dimensions ({orig_width}x{orig_height}) are too small (minimum 16x16 pixels required)."
+        }), 400
+
+    # Downscale safely if image exceeds 2048x2048 to prevent memory spikes on free-tier containers
+    max_dim = max(orig_width, orig_height)
+    if max_dim > 2048:
+        scale = 2048.0 / max_dim
+        new_w = max(16, int(round(orig_width * scale)))
+        new_h = max(16, int(round(orig_height * scale)))
+        pil_img = pil_img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+
+    conf_param = request.form.get("conf") or request.args.get("conf") or "0.25"
+    try:
+        conf_val = float(conf_param)
+        conf_val = max(0.05, min(0.95, conf_val))
+    except ValueError:
+        conf_val = 0.25
+
+    model = get_drone_yolo_model()
+    if model is None:
+        return jsonify({
+            "error": "Drone AI inference engine is unavailable. Ensure drone/models/palm_yolo_best.pt exists and Ultralytics/PyTorch is installed."
+        }), 503
+
+    try:
+        results = model.predict(
+            source=pil_img,
+            imgsz=1024,
+            conf=conf_val,
+            iou=0.7,
+            device="cpu",
+            save=False,
+            verbose=False
+        )
+        res = results[0]
+    except Exception as e:
+        app.logger.exception("Inference failed during Drone prediction: %s", e)
+        return jsonify({"error": f"Inference execution failed: {e}"}), 500
+
+    boxes_obj = res.boxes
+    detections = []
+    class_counts = {"Healthy": 0, "Small": 0, "Yellow": 0, "Dead": 0, "Grass": 0}
+
+    if boxes_obj is not None and len(boxes_obj) > 0:
+        cls_ids = boxes_obj.cls.cpu().numpy().astype(int)
+        confs = boxes_obj.conf.cpu().numpy().astype(float)
+        xyxy = boxes_obj.xyxy.cpu().numpy().astype(float)
+
+        for i in range(len(cls_ids)):
+            cid = int(cls_ids[i])
+            cname = model.names.get(cid, str(cid))
+            conf = float(confs[i])
+            box = [round(float(coord), 1) for coord in xyxy[i]]
+
+            if cname in class_counts:
+                class_counts[cname] += 1
+            else:
+                class_counts[cname] = 1
+
+            detections.append({
+                "class_id": cid,
+                "class_name": cname,
+                "confidence": round(conf, 4),
+                "bbox": box
+            })
+
+    total_detections = len(detections)
+    palm_detections = (
+        class_counts.get("Healthy", 0) +
+        class_counts.get("Small", 0) +
+        class_counts.get("Yellow", 0) +
+        class_counts.get("Dead", 0)
+    )
+    healthy_count = class_counts.get("Healthy", 0)
+    drone_health_score = round((healthy_count / palm_detections) * 100.0, 2) if palm_detections > 0 else 0.0
+
+    try:
+        plotted_bgr = res.plot()
+        annotated_pil = Image.fromarray(plotted_bgr[:, :, ::-1])
+        buf = io.BytesIO()
+        annotated_pil.save(buf, format="JPEG", quality=85)
+        encoded_image = "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode("utf-8")
+    except Exception as e:
+        app.logger.warning("Could not generate plotted annotated image: %s", e)
+        encoded_image = None
+
+    return jsonify({
+        "filename": filename,
+        "dimensions": {"width": orig_width, "height": orig_height},
+        "confidence_threshold": conf_val,
+        "total_detections": total_detections,
+        "palm_detections": palm_detections,
+        "drone_health_score": drone_health_score,
+        "healthy_count": healthy_count,
+        "small_count": class_counts.get("Small", 0),
+        "yellow_count": class_counts.get("Yellow", 0),
+        "dead_count": class_counts.get("Dead", 0),
+        "grass_count": class_counts.get("Grass", 0),
+        "class_counts": class_counts,
+        "detections": detections,
+        "annotated_image": encoded_image,
+        "model_info": {
+            "name": "YOLO11n (palm_yolo_best.pt)",
+            "classes": ["Dead", "Healthy", "Grass", "Small", "Yellow"],
+            "dataset_origin": "MOPAD Site 2 benchmark"
+        },
+        "disclaimer": "Drone Health Score is a model-derived image-level indicator. It is not a validated disease diagnosis and is not mapped to Palm Plantation Block_ID."
+    })
+
+
 
 # -------------------------------------------------------------------------
 # Standalone Multispectral Health Analysis Endpoints (MicaSense Altum UAV)
@@ -960,12 +1182,61 @@ def multispectral_summary_data():
                 "percentage": round((bg_count / tile_count) * 100.0, 1) if tile_count else 0.0
             }
         },
+        "dataset_provenance": "MSUAV500K Benchmark (Hullerbusch Beech Forest, Germany)",
+        "provenance_details": "Zenodo Record 16743975 / DOI 10.5281/zenodo.16743974; collected over Hullerbusch Beech Forest in Mecklenburg-Vorpommern, Germany (~53.3° N, 13.2° E). Used as an algorithmic benchmark for 5-band calibrated multispectral index processing.",
+        "land_cover_type": "Temperate Deciduous Beech Forest (Benchmark Only - NOT Oil Palm)",
+        "oil_palm_applicability": "Non-oil-palm technical benchmark demonstration; evaluates spectral index mechanics (NDVI, NDRE) but cannot diagnose oil palm health or diseases.",
         "sensor_platform": "MicaSense Altum UAV Multispectral (5 calibrated bands: Blue, Green, Red, RedEdge, NIR)",
         "resolution": "512x512 pixels per tile",
         "total_pixels_evaluated": 8912896,
         "block_mapping": "unavailable",
-        "block_mapping_details": "MSUAV500K Zenodo benchmark tiles operate on local raster coordinates; no georeferenced GIS shapefiles or plantation Block_IDs exist. No synthetic spatial mapping fabricated.",
-        "disclaimer": "Multispectral Health Score is a tile-level spectral indicator derived from calibrated UAV imagery. It is not a validated disease diagnosis and is not mapped to Palm Plantation Block_ID."
+        "block_mapping_status": "unmapped",
+        "block_mapping_details": "MSUAV500K Zenodo benchmark tiles operate on local raster coordinates; no georeferenced GIS shapefiles or plantation Block_IDs exist. Unmapped to B001–B042; no synthetic spatial mapping fabricated.",
+        "disclaimer": "Multispectral Health Score is a tile-level spectral indicator derived from calibrated European beech-forest UAV imagery (MSUAV500K). It is not oil-palm plantation data, is not a validated disease diagnosis, and is not mapped to Palm Plantation Block_ID.",
+        "coverage": {
+            "total_tiles": tile_count,
+            "evaluated_pixels": 8912896,
+            "mapped_blocks": 0,
+            "mapping_status": "unmapped",
+            "risk_contribution_pct": 0.0
+        },
+        "gis_readiness_checklist": [
+            {
+                "id": "boundaries",
+                "item": "Plantation Block Boundaries",
+                "requirement": "Authoritative vector polygon boundaries (ESRI Shapefile / GeoJSON) for all 42 operational blocks (B001–B042).",
+                "status": "MISSING / REQUIRED",
+                "ready": False
+            },
+            {
+                "id": "crs",
+                "item": "Coordinate Reference System (CRS)",
+                "requirement": "Standard projected spatial reference system (e.g. WGS84 UTM Zone / EPSG code) for both vector GIS layers and UAV flight surveys.",
+                "status": "MISSING / REQUIRED",
+                "ready": False
+            },
+            {
+                "id": "georeferenced_imagery",
+                "item": "Georeferenced Oil-Palm Imagery",
+                "requirement": "Calibrated multi-band orthomosaics with sub-meter geospatial accuracy and embedded Ground Control Points (GCPs) flown over the oil-palm plantation.",
+                "status": "MISSING / REQUIRED",
+                "ready": False
+            },
+            {
+                "id": "timestamps",
+                "item": "Flight Telemetry & Synchronized Timestamps",
+                "requirement": "UAV flight mission logs with GPS positioning and acquisition timestamps synchronized with monthly FFB harvesting and annual Frond 17 foliar sampling rounds.",
+                "status": "MISSING / REQUIRED",
+                "ready": False
+            },
+            {
+                "id": "block_identifiers",
+                "item": "Verified Block Identifier Lookup",
+                "requirement": "Verified spatial join or lookup table linking UAV image footprints/rasters directly to operational plantation block IDs B001–B042.",
+                "status": "MISSING / REQUIRED",
+                "ready": False
+            }
+        ]
     }
     return jsonify(summary_resp)
 
@@ -1155,9 +1426,14 @@ def multi_source_summary_data():
             "level": "block",
             "block_count": 42,
             "description": "42 plantation blocks with monthly yield, foliar nutrients, and DRIS diagnostic observations.",
+            "provenance": "Oil Palm Plantation Division A (Native Operational System)",
+            "land_cover": "Commercial Oil Palm Plantation (Elaeis guineensis)",
             "period": "2012–2024",
             "block_mapping": "native",
+            "block_mapping_status": "mapped",
             "risk_engine": "canonical",
+            "risk_role": "Core Canonical Risk Model (100%)",
+            "risk_contribution_pct": 100.0,
             "primary_indicators": ["Productivity_t_Ha", "FFB_Production_t", "Yield_Gap_pct", "Foliar_Nutrients", "DRIS_Indices"]
         },
         "rgb_drone": {
@@ -1165,16 +1441,24 @@ def multi_source_summary_data():
             "level": "image",
             "image_count": 500,
             "total_palms_detected": 43599,
+            "provenance": "MOPAD Site 2 Benchmark (Oil Palm Canopy Aerial RGB)",
+            "land_cover": "Oil Palm Canopy (Visual Aerial RGB Benchmark)",
             "health_score_available": True,
             "mean_health_score": 75.81,
             "median_health_score": 89.19,
             "block_mapping": "unavailable",
+            "block_mapping_status": "unmapped",
+            "risk_role": "Independent Visual Evidence (0% of Canonical Risk)",
+            "risk_contribution_pct": 0.0,
             "primary_indicators": ["Healthy_Palms", "Small_Palms", "Yellow_Palms", "Dead_Palms", "Drone_Health_Score"]
         },
         "multispectral": {
             "status": "available",
             "level": "tile",
             "tile_count": 34,
+            "provenance": "MSUAV500K Benchmark (Hullerbusch Beech Forest, Germany — Zenodo Record 16743975)",
+            "land_cover": "Temperate Deciduous Beech Forest (German Benchmark — NOT Oil Palm)",
+            "is_oil_palm_data": False,
             "ndvi_available": True,
             "ndre_available": True,
             "mhs_available": True,
@@ -1183,14 +1467,89 @@ def multi_source_summary_data():
             "mean_ndre": 0.5129,
             "mean_canopy_cover": 93.62,
             "block_mapping": "unavailable",
+            "block_mapping_status": "unmapped",
+            "risk_role": "Independent Spectral Benchmark (0% of Canonical Risk)",
+            "risk_contribution_pct": 0.0,
             "primary_indicators": ["Canopy_NDVI", "Canopy_NDRE", "Canopy_Cover_pct", "Canopy_Uniformity", "MHS_Score"]
+        },
+        "coverage_matrix": {
+            "agronomic_blocks": {
+                "source": "Palm Agronomic Records",
+                "total_units": 42,
+                "unit_type": "Blocks (B001–B042)",
+                "mapped_units": 42,
+                "unmapped_units": 0,
+                "mapping_status": "VERIFIED_MAPPED",
+                "provenance": "Native Oil Palm Plantation (Division A, 2012–2024)",
+                "risk_contribution_pct": 100.0,
+                "risk_status": "ACTIVE_CANONICAL"
+            },
+            "drone_imagery": {
+                "source": "RGB Drone Imagery",
+                "total_units": 500,
+                "unit_type": "Aerial Images (43,599 Palms)",
+                "mapped_units": 0,
+                "unmapped_units": 500,
+                "mapping_status": "UNMAPPED_BENCHMARK",
+                "provenance": "MOPAD Site 2 Benchmark",
+                "risk_contribution_pct": 0.0,
+                "risk_status": "ISOLATED_INDEPENDENT"
+            },
+            "multispectral_tiles": {
+                "source": "Multispectral UAV Rasters",
+                "total_units": 34,
+                "unit_type": "Calibrated GeoTIFF Tiles (8.91M Pixels)",
+                "mapped_units": 0,
+                "unmapped_units": 34,
+                "mapping_status": "UNMAPPED_BENCHMARK",
+                "provenance": "MSUAV500K Beech Forest Benchmark (Hullerbusch, Germany)",
+                "risk_contribution_pct": 0.0,
+                "risk_status": "ISOLATED_INDEPENDENT"
+            }
         },
         "fusion_status": {
             "direct_row_level_fusion": False,
             "spatial_fusion": False,
             "risk_score_fusion": False,
-            "reason": "No validated spatial linkage between UAV imagery and plantation Block_ID is available."
+            "reason": "No validated spatial linkage between UAV imagery and plantation Block_ID is available. MSUAV500K multispectral data is a German beech-forest benchmark."
         },
+        "gis_readiness_checklist": [
+            {
+                "id": "boundaries",
+                "item": "Plantation Block Boundaries",
+                "requirement": "Authoritative vector polygon boundaries (ESRI Shapefile / GeoJSON) for all 42 operational blocks (B001–B042).",
+                "status": "MISSING / REQUIRED",
+                "ready": False
+            },
+            {
+                "id": "crs",
+                "item": "Coordinate Reference System (CRS)",
+                "requirement": "Standard projected spatial reference system (e.g. WGS84 UTM Zone / EPSG code) for both vector GIS layers and UAV flight surveys.",
+                "status": "MISSING / REQUIRED",
+                "ready": False
+            },
+            {
+                "id": "georeferenced_imagery",
+                "item": "Georeferenced Oil-Palm Imagery",
+                "requirement": "Calibrated multi-band orthomosaics with sub-meter geospatial accuracy and embedded Ground Control Points (GCPs) flown over the oil-palm plantation.",
+                "status": "MISSING / REQUIRED",
+                "ready": False
+            },
+            {
+                "id": "timestamps",
+                "item": "Flight Telemetry & Synchronized Timestamps",
+                "requirement": "UAV flight mission logs with GPS positioning and acquisition timestamps synchronized with monthly FFB harvesting and annual Frond 17 foliar sampling rounds.",
+                "status": "MISSING / REQUIRED",
+                "ready": False
+            },
+            {
+                "id": "block_identifiers",
+                "item": "Verified Block Identifier Lookup",
+                "requirement": "Verified spatial join or lookup table linking UAV image footprints/rasters directly to operational plantation block IDs B001–B042.",
+                "status": "MISSING / REQUIRED",
+                "ready": False
+            }
+        ],
         "future_requirements": [
             "Estate Block GIS boundaries",
             "Georeferenced UAV orthomosaics",
@@ -1211,11 +1570,16 @@ def multi_source_evidence_data():
                 "name": "Palm Agronomic Evidence",
                 "granularity": "Block",
                 "coverage": "42 Plantation Blocks (2012–2024)",
+                "provenance": "Oil Palm Plantation Division A (Native Records 2012–2024)",
+                "provenance_badge": "Native Plantation Data",
+                "is_oil_palm_data": True,
                 "main_indicators": "FFB, Productivity, Nutrients, DRIS",
                 "indicators_list": ["FFB Production", "Actual vs Expected Productivity", "Foliar Nutrients (N, P, K, Ca, Mg, B)", "DRIS Indices"],
                 "block_mapping": "Available",
+                "mapping_status": "mapped",
                 "participates_in_canonical_risk": True,
                 "risk_role": "Core Canonical Risk Model (100%)",
+                "risk_weight_pct": 100.0,
                 "status": "AVAILABLE"
             },
             {
@@ -1223,33 +1587,86 @@ def multi_source_evidence_data():
                 "name": "RGB Drone Evidence",
                 "granularity": "Image",
                 "coverage": "500 Survey Images (MOPAD Site 2)",
+                "provenance": "MOPAD Site 2 Benchmark (Oil Palm Canopy RGB)",
+                "provenance_badge": "RGB Benchmark",
+                "is_oil_palm_data": True,
                 "main_indicators": "Healthy, Small, Yellow, Dead, Drone Health Score",
                 "indicators_list": ["YOLO11n Palm Detections", "Canopy Mortality / Stunting", "Drone Health Score"],
                 "block_mapping": "Unavailable",
+                "mapping_status": "unmapped",
                 "participates_in_canonical_risk": False,
                 "risk_role": "Independent Visual Evidence (0%)",
+                "risk_weight_pct": 0.0,
                 "status": "AVAILABLE"
             },
             {
                 "source_id": "multispectral",
-                "name": "Multispectral UAV Evidence",
+                "name": "Multispectral UAV Evidence (MSUAV500K Benchmark)",
                 "granularity": "Tile",
-                "coverage": "34 Calibrated 5-Band GeoTIFFs (MicaSense Altum)",
+                "coverage": "34 Calibrated 5-Band GeoTIFFs (Hullerbusch, Germany)",
+                "provenance": "MSUAV500K Benchmark (Hullerbusch Beech Forest, Germany — Zenodo Record 16743975)",
+                "provenance_badge": "German Beech Forest Benchmark",
+                "is_oil_palm_data": False,
+                "land_cover": "Temperate Deciduous Beech Forest (NOT Oil Palm)",
                 "main_indicators": "NDVI, NDRE, Canopy Cover, MHS",
                 "indicators_list": ["Calibrated NDVI", "Calibrated NDRE", "Canopy Coverage %", "Canopy Uniformity", "Multispectral Health Score (MHS)"],
                 "block_mapping": "Unavailable",
+                "mapping_status": "unmapped",
                 "participates_in_canonical_risk": False,
-                "risk_role": "Independent Spectral Evidence (0%)",
+                "risk_role": "Independent Spectral Benchmark (0%)",
+                "risk_weight_pct": 0.0,
                 "status": "AVAILABLE"
+            }
+        ],
+        "coverage_summary": {
+            "agronomic_blocks": {"total": 42, "mapped": 42, "unmapped": 0, "status": "VERIFIED_MAPPED", "risk_contribution_pct": 100.0},
+            "drone_imagery": {"total_images": 500, "mapped": 0, "unmapped": 500, "status": "UNMAPPED_BENCHMARK", "risk_contribution_pct": 0.0},
+            "multispectral_tiles": {"total_tiles": 34, "mapped": 0, "unmapped": 34, "status": "UNMAPPED_BENCHMARK", "risk_contribution_pct": 0.0}
+        },
+        "gis_readiness_checklist": [
+            {
+                "id": "boundaries",
+                "item": "Plantation Block Boundaries",
+                "requirement": "Authoritative vector polygon boundaries (ESRI Shapefile / GeoJSON) for all 42 operational blocks (B001–B042).",
+                "status": "MISSING / REQUIRED",
+                "ready": False
+            },
+            {
+                "id": "crs",
+                "item": "Coordinate Reference System (CRS)",
+                "requirement": "Standard projected spatial reference system (e.g. WGS84 UTM Zone / EPSG code) for both vector GIS layers and UAV flight surveys.",
+                "status": "MISSING / REQUIRED",
+                "ready": False
+            },
+            {
+                "id": "georeferenced_imagery",
+                "item": "Georeferenced Oil-Palm Imagery",
+                "requirement": "Calibrated multi-band orthomosaics with sub-meter geospatial accuracy and embedded Ground Control Points (GCPs) flown over the oil-palm plantation.",
+                "status": "MISSING / REQUIRED",
+                "ready": False
+            },
+            {
+                "id": "timestamps",
+                "item": "Flight Telemetry & Synchronized Timestamps",
+                "requirement": "UAV flight mission logs with GPS positioning and acquisition timestamps synchronized with monthly FFB harvesting and annual Frond 17 foliar sampling rounds.",
+                "status": "MISSING / REQUIRED",
+                "ready": False
+            },
+            {
+                "id": "block_identifiers",
+                "item": "Verified Block Identifier Lookup",
+                "requirement": "Verified spatial join or lookup table linking UAV image footprints/rasters directly to operational plantation block IDs B001–B042.",
+                "status": "MISSING / REQUIRED",
+                "ready": False
             }
         ],
         "fusion_status": {
             "direct_row_level_fusion": False,
             "spatial_fusion": False,
             "risk_score_fusion": False,
-            "reason": "No validated spatial linkage between UAV imagery and plantation Block_ID is available."
+            "reason": "No validated spatial linkage between UAV imagery and plantation Block_ID is available. MSUAV500K multispectral data is a German beech-forest benchmark."
         },
-        "scientific_disclaimer": "Current UAV datasets cannot be spatially assigned to Palm Plantation Block_ID because validated GIS boundaries and georeferenced cross-source linkage are unavailable. Therefore, RGB and multispectral evidence is presented independently and is not included in the canonical Palm block-risk score. Drone Health Score and Multispectral Health Score are project-derived indicators. They are not validated disease diagnoses."
+        "scientific_disclaimer": "Current UAV datasets cannot be spatially assigned to Palm Plantation Block_ID because validated GIS boundaries, standardized CRS, and georeferenced cross-source linkage are unavailable. Existing MSUAV500K multispectral data is a scientific benchmark collected over a German beech forest in Hullerbusch (Zenodo Record 16743975), not oil-palm plantation data. Therefore, RGB and multispectral evidence is presented independently and is not included in the canonical Palm block-risk score (0% weight). Canonical block risk is driven 100% by verified agronomic evidence."
     }
     return jsonify(matrix)
 
