@@ -53,6 +53,11 @@ import {
   PolarRadiusAxis,
   Radar
 } from "recharts";
+import PlantationImage from "./PlantationImage";
+import tallPalmImg from "./assets/images/tall_oil_palm_plantation.jpg";
+import estateOverviewImg from "./assets/images/estate_canopy_overview.jpg";
+import fruitBunchImg from "./assets/images/oil_palm_fruit_bunch.jpg";
+import droneCanopyImg from "./assets/images/drone_canopy_inspection.jpg";
 
 const riskColors = {
   HIGH: "#dc2626",
@@ -360,6 +365,15 @@ export default function UnifiedBlockIntelligence({
             <ArrowLeft size={16} />
             <span>Block Grid</span>
           </button>
+          <PlantationImage
+            src={fruitBunchImg}
+            fallbackSrc="/images/oil_palm_fruit_bunch.jpg"
+            alt={`Block ${currentBlockId} Palm Stand`}
+            width="34px"
+            height="34px"
+            aspectRatio="1:1"
+            className="block-crumb-thumb"
+          />
           <div className="context-breadcrumb-trail">
             <span className="crumb-dim">{estateName}</span>
             <span className="crumb-sep">/</span>
@@ -763,6 +777,25 @@ export default function UnifiedBlockIntelligence({
                   <strong>{seedType}</strong>
                 </div>
               </div>
+
+              {/* Commercial FFB Bunch Development Photographic Reference */}
+              <div className="photo-thumbnail-card" style={{ marginTop: "14px" }}>
+                <div className="thumb-img">
+                  <PlantationImage
+                    src={fruitBunchImg}
+                    fallbackSrc="/images/oil_palm_fruit_bunch.jpg"
+                    alt="Oil Palm Fresh Fruit Bunch (FFB) Development"
+                    height="80px"
+                    aspectRatio="1:1"
+                  />
+                </div>
+                <div className="thumb-content">
+                  <span className="thumb-title">Commercial FFB Bunch Development</span>
+                  <p className="thumb-desc">
+                    Mature Fresh Fruit Bunches (FFB) nestled in leaf axils. Yield gap reduction directly targets bunch weight and bunch count per palm.
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Monthly Harvest Breakdown if available */}
@@ -1076,6 +1109,25 @@ export default function UnifiedBlockIntelligence({
                   <p>Performing within expected parameters; routine maintenance schedule.</p>
                 </div>
               </div>
+
+              {/* Commercial Division Stand Reference */}
+              <div className="photo-thumbnail-card" style={{ marginTop: "14px" }}>
+                <div className="thumb-img">
+                  <PlantationImage
+                    src={estateOverviewImg}
+                    fallbackSrc="/images/estate_canopy_overview.jpg"
+                    alt="Division A Plantation Landscape"
+                    height="80px"
+                    aspectRatio="1:1"
+                  />
+                </div>
+                <div className="thumb-content">
+                  <span className="thumb-title">Division A Plantation Stand</span>
+                  <p className="thumb-desc">
+                    Commercial 1,512 Ha plantation landscape. Multi-source evidence converges at the operational block boundary.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -1213,6 +1265,25 @@ export default function UnifiedBlockIntelligence({
                 <li><CheckCircle2 size={14} className="text-emerald" /> Cadastral block shapefile boundary masks</li>
                 <li><CheckCircle2 size={14} className="text-emerald" /> Spatial intersection pipeline to attribute crowns to Block {currentBlockId}</li>
               </ul>
+
+              {/* Precision UAV Commercial Canopy Pattern Reference */}
+              <div className="photo-thumbnail-card" style={{ marginTop: "14px" }}>
+                <div className="thumb-img">
+                  <PlantationImage
+                    src={droneCanopyImg}
+                    fallbackSrc="/images/drone_canopy_inspection.jpg"
+                    alt="Precision UAV Commercial Canopy Orthomosaic Reference"
+                    height="80px"
+                    aspectRatio="1:1"
+                  />
+                </div>
+                <div className="thumb-content">
+                  <span className="thumb-title">Precision UAV Stand Reference</span>
+                  <p className="thumb-desc">
+                    Commercial equilateral triangular planting arrangement (~135–143 palms/ha). Distinct from German beech-forest benchmark and live inference results.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         )}

@@ -42,6 +42,11 @@ import {
   Cell
 } from "recharts";
 import UnifiedBlockIntelligence from "./UnifiedBlockIntelligence";
+import PlantationImage from "./PlantationImage";
+import tallPalmImg from "./assets/images/tall_oil_palm_plantation.jpg";
+import estateOverviewImg from "./assets/images/estate_canopy_overview.jpg";
+import fruitBunchImg from "./assets/images/oil_palm_fruit_bunch.jpg";
+import droneCanopyImg from "./assets/images/drone_canopy_inspection.jpg";
 import "./App.css";
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || "/api").replace(/\/$/, "");
@@ -444,6 +449,18 @@ export default function App() {
                 className="estate-card"
                 onClick={() => navigateTo("blocks")}
               >
+                {/* Real Commercial Oil-Palm Plantation Photographic Banner */}
+                <PlantationImage
+                  src={estateOverviewImg}
+                  fallbackSrc="/images/estate_canopy_overview.jpg"
+                  alt="North Estate (PT Palm Indo) Commercial Plantation"
+                  className="estate-card-photo-banner"
+                  height="170px"
+                  badge="Commercial Stand · Division A"
+                  caption="Mature Oil-Palm Plantation Fleet (1,512 Ha)"
+                  subcaption="42 Operational Blocks · 204,120 Palms · DxP Hybrid Stand"
+                />
+
                 <div className="estate-card-top">
                   <div>
                     <span className="estate-category-tag">Operational Fleet · Division A</span>
@@ -706,6 +723,19 @@ export default function App() {
                   </div>
                 </div>
               </div>
+
+              {/* Tall Plantation Visual Panel on Right Side */}
+              <div className="tall-plantation-panel">
+                <PlantationImage
+                  src={tallPalmImg}
+                  fallbackSrc="/images/tall_oil_palm_plantation.jpg"
+                  alt="Commercial Oil Palm Plantation Stand (Elaeis guineensis)"
+                  height="100%"
+                  badge="Field Telemetry Reference"
+                  caption="Commercial Stand Reference"
+                  subcaption="Mature African oil palm canopy (Elaeis guineensis) under systematic agronomic management"
+                />
+              </div>
             </div>
 
             {/* ===================================================== */}
@@ -738,18 +768,31 @@ export default function App() {
                       onClick={() => navigateTo("block-detail", b.Block_ID)}
                       title={`Inspect complete intelligence for Block ${b.Block_ID}`}
                     >
-                      <div className="chip-top">
-                        <strong className="chip-id">Block {b.Block_ID}</strong>
-                        <span className={`chip-badge ${bRisk.toLowerCase()}`}>
-                          {bRisk} ({fmt(bScore, 1)})
-                        </span>
-                      </div>
-                      <div className="chip-metric">
-                        <span>Yield:</span>
-                        <strong>{bYield != null ? `${fmt(bYield)} t/ha` : "N/A"}</strong>
-                        <span className={`chip-gap ${bGap != null && bGap < 0 ? "negative" : "positive"}`}>
-                          {bGap != null ? `${fmt(bGap)}%` : ""}
-                        </span>
+                      <div className="chip-header-with-thumb">
+                        <PlantationImage
+                          src={fruitBunchImg}
+                          fallbackSrc="/images/oil_palm_fruit_bunch.jpg"
+                          alt={`Block ${b.Block_ID}`}
+                          width="38px"
+                          height="38px"
+                          aspectRatio="1:1"
+                          className="chip-palm-thumb"
+                        />
+                        <div className="chip-top-content">
+                          <div className="chip-top">
+                            <strong className="chip-id">Block {b.Block_ID}</strong>
+                            <span className={`chip-badge ${bRisk.toLowerCase()}`}>
+                              {bRisk} ({fmt(bScore, 1)})
+                            </span>
+                          </div>
+                          <div className="chip-metric">
+                            <span>Yield:</span>
+                            <strong>{bYield != null ? `${fmt(bYield)} t/ha` : "N/A"}</strong>
+                            <span className={`chip-gap ${bGap != null && bGap < 0 ? "negative" : "positive"}`}>
+                              {bGap != null ? `${fmt(bGap)}%` : ""}
+                            </span>
+                          </div>
+                        </div>
                       </div>
                       <div className="chip-issue">
                         <span className="issue-label">Issue:</span>
@@ -894,22 +937,6 @@ export default function App() {
               </div>
             </div>
           </div>
-        )}
-
-        {/* ======================================================== */}
-        {/* VIEW 3: BLOCK SELECTED — ALL ANALYSIS ON THE SAME SCREEN */}
-        {/* ======================================================== */}
-        {viewLevel === "block-detail" && (
-          <UnifiedBlockIntelligence
-            blockId={selectedBlockId}
-            onSelectBlock={(bid) => {
-              setSelectedBlockId(bid);
-              window.history.pushState(null, "", `#${bid}`);
-            }}
-            datasets={datasets}
-            onBackToGrid={() => navigateTo("blocks")}
-            estateName={selectedEstate}
-          />
         )}
 
         {/* ======================================================== */}
