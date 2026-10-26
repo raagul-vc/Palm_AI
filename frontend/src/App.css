@@ -7449,45 +7449,544 @@ html, body {
   }
 }
 
-@media (max-width: 768px) {
-  .global-topbar {
-    padding: 0 16px;
-  }
-  .single-screen-content {
-    padding: 16px;
-  }
-  .view-hero-banner {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .estate-cards-grid {
-    grid-template-columns: 1fr;
-  }
-  .estate-stats-grid {
+/* ======================================================== */
+/* SECTION 3 & 4: ESTATE ANALYTICS & AI PIPELINE STYLING    */
+/* ======================================================== */
+
+.estate-analytics-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(360px, 1.2fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.analytics-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: 14px;
+  padding: 18px 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+}
+
+.analytics-card.span-2 {
+  grid-column: span 1;
+}
+
+.analytics-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.analytics-card-header h3 {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+.analytics-card-header .subtext {
+  margin: 4px 0 0;
+  font-size: 11.5px;
+  color: var(--text-dim);
+}
+
+.chart-container-wrap {
+  width: 100%;
+  margin: 8px 0;
+}
+
+.chart-footer-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.legend-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.legend-dot.bg-emerald { background: var(--emerald); }
+.legend-dot.bg-gold { background: var(--gold); }
+.legend-dot.dashed { border: 1px dashed var(--gold); background: transparent; }
+.legend-note {
+  margin-left: auto;
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+
+/* Risk Distribution & Progress Bar */
+.distribution-progress-stack {
+  margin: 12px 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progress-labels-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+}
+
+.stacked-progress-bar {
+  display: flex;
+  height: 10px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.progress-slice {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.progress-slice.high { background: var(--ruby); }
+.progress-slice.medium { background: var(--gold); }
+.progress-slice.low { background: var(--emerald); }
+
+/* Estate Recommended Action Panel */
+.estate-action-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.action-panel-title {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+
+.action-directive-item {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border-left: 3px solid;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--text-dim);
+}
+
+.action-directive-item.critical {
+  border-left-color: var(--ruby);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.action-directive-item.moderate {
+  border-left-color: var(--gold);
+  background: rgba(217, 119, 6, 0.05);
+}
+
+.action-directive-item.routine {
+  border-left-color: var(--emerald);
+  background: rgba(16, 185, 129, 0.04);
+}
+
+.directive-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+
+.directive-tag.critical { color: #f87171; }
+.directive-tag.moderate { color: #fbbf24; }
+.directive-tag.routine { color: #34d399; }
+
+.action-directive-item p {
+  margin: 0;
+}
+
+/* Priority Watchlist Strip */
+.priority-watchlist-card {
+  background: var(--bg-card);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.watchlist-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.watchlist-header h3 {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+.watchlist-header .subtext {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.priority-blocks-scroll-row {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+
+.priority-chip-card {
+  flex: 0 0 210px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-card);
+  border-radius: 10px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.priority-chip-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(16, 185, 129, 0.5);
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.priority-chip-card.high {
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.priority-chip-card.medium {
+  border-color: rgba(217, 119, 6, 0.35);
+}
+
+.chip-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chip-id {
+  font-size: 13px;
+  color: var(--text-main);
+}
+
+.chip-badge {
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.chip-badge.high { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+.chip-badge.medium { background: rgba(217, 119, 6, 0.2); color: #fbbf24; }
+
+.chip-metric {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.chip-metric strong { color: var(--text-main); }
+.chip-gap.negative { color: #f87171; font-weight: 600; font-size: 10px; }
+.chip-gap.positive { color: #34d399; font-weight: 600; font-size: 10px; }
+
+.chip-issue {
+  display: flex;
+  gap: 4px;
+  font-size: 10.5px;
+  line-height: 1.35;
+}
+
+.issue-label { color: var(--text-muted); }
+.issue-text { color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.chip-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  color: var(--emerald);
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+/* Fleet Grid Section */
+.fleet-grid-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.fleet-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.section-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.section-sub {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+/* Cohort Tag in Header */
+.cohort-tag {
+  font-size: 11px;
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+/* ======================================================== */
+/* AI INTELLIGENCE PANEL (HIERARCHY PIPELINE)               */
+/* ======================================================== */
+.ai-intelligence-panel {
+  background: linear-gradient(180deg, #0a2919 0%, #061e12 100%);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.ai-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.ai-header-left {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.ai-badge-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ai-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ai-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.ai-priority-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ai-priority-badge.critical { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+.ai-priority-badge.moderate { background: rgba(217, 119, 6, 0.2); color: #fbbf24; border: 1px solid rgba(217, 119, 6, 0.4); }
+.ai-priority-badge.routine { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+
+.ai-engine-tag {
+  font-size: 10px;
+  color: #a7f3d0;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.ai-subtitle {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.ai-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  color: var(--emerald);
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+/* 5-Stage Hierarchy Pipeline (RISK → WHY → EVIDENCE → ACTION → FOLLOW-UP) */
+.executive-hierarchy-pipeline {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.pipeline-card {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-card);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pipeline-card.stage-risk { border-left: 3px solid var(--ruby); }
+.pipeline-card.stage-why { border-left: 3px solid var(--gold); }
+.pipeline-card.stage-evidence { border-left: 3px solid #60a5fa; }
+.pipeline-card.stage-action { border-left: 3px solid var(--emerald); background: rgba(16, 185, 129, 0.04); }
+.pipeline-card.stage-followup { border-left: 3px solid #a78bfa; }
+
+.stage-tag {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+.stage-highlight {
+  font-size: 12.5px;
+  color: var(--text-main);
+  line-height: 1.35;
+}
+
+.stage-highlight.high { color: #f87171; }
+.stage-highlight.medium { color: #fbbf24; }
+.stage-highlight.low { color: #34d399; }
+
+.stage-detail {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+.stage-facts-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 10.5px;
+  color: var(--text-dim);
+}
+
+.stage-facts-list strong {
+  color: var(--text-main);
+}
+
+.ai-provenance-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 11px;
+}
+
+.provenance-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.provenance-chips-wrap {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.prov-chip {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.prov-chip strong {
+  color: #a7f3d0;
+}
+
+@media (max-width: 1200px) {
+  .executive-hierarchy-pipeline {
     grid-template-columns: repeat(2, 1fr);
   }
-  .block-grid-header {
-    flex-direction: column;
-  }
-  .grid-summary-stats {
-    width: 100%;
-    justify-content: space-between;
-  }
-  .grid-toolbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .search-input-wrap {
-    max-width: 100%;
-  }
-  .executive-summary-strip {
-    grid-template-columns: 1fr;
-  }
-  .action-five-stage-grid {
-    grid-template-columns: 1fr;
-  }
-  .bands-grid {
+  .estate-analytics-grid {
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 768px) {
+  .executive-hierarchy-pipeline {
+    grid-template-columns: 1fr;
+  }
+}
+
 

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   AlertTriangle,
   TrendingDown,
@@ -106,6 +106,37 @@ export default function UnifiedBlockIntelligence({
 
   const bKey = (id) => String(id ?? "").trim().toUpperCase();
   const currentBlockId = bKey(blockId || "B012");
+
+  // Live / Deterministic AI Recommendations API State
+  const [recommendations, setRecommendations] = useState(null);
+  const [loadingRecommendations, setLoadingRecommendations] = useState(false);
+  const [recError, setRecError] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    setLoadingRecommendations(true);
+    setRecError(null);
+    fetch(`/api/recommendations/${currentBlockId}`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        if (isMounted) {
+          setRecommendations(data);
+          setLoadingRecommendations(false);
+        }
+      })
+      .catch((err) => {
+        if (isMounted) {
+          setRecError(err.message);
+          setLoadingRecommendations(false);
+        }
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [currentBlockId]);
 
   // Match datasets for the selected block
   const allBlocks = datasets.risk || [];
@@ -451,6 +482,106 @@ export default function UnifiedBlockIntelligence({
               <span>View Full 5-Stage Action Plan</span>
               <ArrowRight size={13} />
             </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 2B. AGRONOMIC AI INTELLIGENCE & GROUNDED DIRECTIVES (RISK → WHY → EVIDENCE → ACTION → FOLLOW-UP) */}
+      <div className="ai-intelligence-panel">
+        <div className="ai-panel-header">
+          <div className="ai-header-left">
+            <div className="ai-badge-icon">
+              <Sparkles size={16} className="text-emerald" />
+            </div>
+            <div>
+              <div className="ai-title-row">
+                <h3 className="ai-title">Agronomic AI Intelligence & Grounded Directives</h3>
+                <span className={`ai-priority-badge ${recommendations?.recommendation?.priority?.toLowerCase() || (riskLevel === "HIGH" ? "critical" : riskLevel === "MEDIUM" ? "moderate" : "routine")}`}>
+                  {recommendations?.recommendation?.priority || (riskLevel === "HIGH" ? "Critical" : riskLevel === "MEDIUM" ? "Moderate" : "Routine")} Priority
+                </span>
+                <span className="ai-engine-tag">
+                  {recommendations?.is_ai_generated ? "OpenAI Synthesis (gpt-4o-mini)" : "Deterministic Agronomic Rules Engine"}
+                </span>
+              </div>
+              <p className="ai-subtitle">
+                {recommendations?.note || "Synthesized from verified 2024 harvest telemetry, Frond 17 foliar assay, DRIS ratios, and canonical screening formulas."}
+              </p>
+            </div>
+          </div>
+
+          <div className="ai-header-right">
+            <span className="ai-status-pill">
+              <span className="dot-live" /> Telemetry Grounded
+            </span>
+          </div>
+        </div>
+
+        {/* 5-STAGE EXECUTIVE HIERARCHY: RISK → WHY → EVIDENCE → RECOMMENDED ACTION → FOLLOW-UP */}
+        <div className="executive-hierarchy-pipeline">
+          {/* STAGE 1: RISK */}
+          <div className="pipeline-card stage-risk">
+            <div className="stage-tag">1. RISK</div>
+            <strong className={`stage-highlight ${riskLevel.toLowerCase()}`}>
+              {riskLevel} RISK ({riskScore != null ? fmt(riskScore, 1) : "N/A"}/100)
+            </strong>
+            <p className="stage-detail">
+              Canonical Screening Score (Yield Gap 40%, Foliar Assay 25%, DRIS 15%).
+            </p>
+          </div>
+
+          {/* STAGE 2: WHY */}
+          <div className="pipeline-card stage-why">
+            <div className="stage-tag">2. WHY (RATIONALE)</div>
+            <strong className="stage-highlight">
+              {recommendations?.recommendation?.agronomic_rationale || actionPlan[0]?.whyCare}
+            </strong>
+            <p className="stage-detail">
+              {multiRiskRow?.Main_Contributing_Indicators || "Yield Gap Variance"} correlates with physiological nutritional constraints.
+            </p>
+          </div>
+
+          {/* STAGE 3: EVIDENCE */}
+          <div className="pipeline-card stage-evidence">
+            <div className="stage-tag">3. EVIDENCE (OBSERVED FACTS)</div>
+            <ul className="stage-facts-list">
+              <li>• <strong>2024 Yield:</strong> {fmt(actualYield)} t/ha ({yieldGap != null ? `${fmt(yieldGap)}% gap` : "Cohort standard"})</li>
+              <li>• <strong>Foliar Assay:</strong> {nutrientsRow ? `N=${fmt(nutrientsRow.N_pct, 2)}%, P=${fmt(nutrientsRow.P_pct, 2)}%, K=${fmt(nutrientsRow.K_pct, 2)}%` : "Frond 17 sampled"}</li>
+              <li>• <strong>DRIS:</strong> {drisRow?.Limitation_1 ? `Limiting: ${drisRow.Limitation_1}` : "Surveyed"}</li>
+              <li>• <strong>Soil:</strong> {soilRow?.status === "observed" ? "Surveyed (Observed)" : "No block sample (7-block estate survey)"}</li>
+            </ul>
+          </div>
+
+          {/* STAGE 4: RECOMMENDED ACTION */}
+          <div className="pipeline-card stage-action">
+            <div className="stage-tag">4. RECOMMENDED ACTION</div>
+            <strong className="stage-highlight text-emerald">
+              {recommendations?.recommendation?.recommended_action || actionPlan[0]?.action}
+            </strong>
+            <p className="stage-detail">
+              Immediate practical agronomic intervention for field operations manager.
+            </p>
+          </div>
+
+          {/* STAGE 5: FOLLOW-UP */}
+          <div className="pipeline-card stage-followup">
+            <div className="stage-tag">5. FOLLOW-UP</div>
+            <strong className="stage-highlight">
+              {recommendations?.recommendation?.validation_protocol || actionPlan[0]?.validation}
+            </strong>
+            <p className="stage-detail">
+              Measurable 60–90 day verification protocol (Frond 17 re-sampling & monthly bunch census).
+            </p>
+          </div>
+        </div>
+
+        {/* PROVENANCE AUDIT FOOTER */}
+        <div className="ai-provenance-footer">
+          <span className="provenance-title"><Info size={13} className="text-emerald" /> Telemetry Provenance:</span>
+          <div className="provenance-chips-wrap">
+            <span className="prov-chip"><strong>Production:</strong> outputs/block_health_risk.csv (2024 Observed)</span>
+            <span className="prov-chip"><strong>Foliar Tissue:</strong> outputs/block_nutrient_diagnostics.csv ({nutrientsRow?.Year || nutrientsRow?.Leaf_Sampling_Year || 2022} Observed)</span>
+            <span className="prov-chip"><strong>DRIS Diagnostic:</strong> outputs/dris_prescription_analysis.csv ({drisRow?.Year || 2022})</span>
+            <span className="prov-chip"><strong>Canonical Model:</strong> outputs/multi_source_block_risk.csv (2024 Screening)</span>
           </div>
         </div>
       </div>

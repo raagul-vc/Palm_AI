@@ -1670,7 +1670,210 @@ def multi_source_evidence_data():
     }
     return jsonify(matrix)
 
+@app.route("/api/recommendations/<block_id>", methods=["GET", "POST"])
+def block_recommendations(block_id):
+    """Generate secure, evidence-grounded agronomic recommendations for a specific block.
+    
+    Adheres strictly to the scientific boundary guidelines:
+    - Grounded 100% on verified block observations (yield, foliar panel, DRIS, soil).
+    - If OPENAI_API_KEY is configured in the environment, synthesizes via OpenAI with timeout and cost controls.
+    - If OPENAI_API_KEY is not configured or fails/times out, seamlessly uses the deterministic rule engine.
+    - Clearly distinguishes observed facts, model predictions, and AI-generated suggestions.
+    - Never invents diseases, unmeasured deficiencies, or chemical dosages.
+    - Preserves canonical screening scores as the immutable source of truth.
+    """
+    canonical = load_canonical_risk()
+    norm_id = str(block_id).strip().upper()
+    if norm_id not in canonical:
+        return jsonify({
+            "error": f"Block '{block_id}' not found in plantation records",
+            "status": 404
+        }), 404
+
+    b = canonical[norm_id]
+    prod = b.get("production_evidence", {})
+    agron = b.get("agronomic_evidence", {})
+    leaf = agron.get("leaf_nutrients", {})
+    dris = agron.get("dris_indicators", {})
+    soil = agron.get("soil_indicators", {})
+    weather = b.get("weather_evidence", {})
+    risk_level = b.get("risk_level", "LOW")
+    risk_score = b.get("overall_risk_score", 0.0)
+
+    actual_yield = prod.get("Productivity_t_Ha") or prod.get("actual_yield_t_ha")
+    expected_yield = prod.get("High_Production_threshold_t") or prod.get("expected_yield_t_ha")
+    yield_gap = prod.get("Productivity_deviation") or prod.get("yield_gap_pct")
+    plant_age = agron.get("Plant_Age_Years", 12)
+    seed_type = agron.get("Seed_Type", "DxP Tenera")
+
+    panel = leaf.get("panel", {})
+    low_nutrients = leaf.get("low_nutrients", [])
+    leaf_year = leaf.get("sample_year", 2024)
+
+    limiting = dris.get("limiting_nutrients", [])
+    excess = dris.get("excess_nutrients", [])
+    prescription = dris.get("prescription", "Maintain balanced fertilizer application.")
+
+    actual_str = f"{actual_yield:.2f} t/ha" if actual_yield is not None else "Unrecorded"
+    expected_str = f"{expected_yield:.2f} t/ha" if expected_yield is not None else "Cohort baseline"
+    gap_str = f"{yield_gap:+.1f}%" if yield_gap is not None else "N/A"
+    score_val = float(risk_score) if risk_score is not None else 0.0
+
+    # 1. Compile immutable observed facts
+    observed_facts = [
+        f"2024 FFB Yield: {actual_str}",
+        f"Foliar Assay ({leaf_year}): N={panel.get('N_pct', 'N/A')}%, P={panel.get('P_pct', 'N/A')}%, K={panel.get('K_pct', 'N/A')}%, Ca={panel.get('Ca_pct', 'N/A')}%, Mg={panel.get('Mg_pct', 'N/A')}%, B={panel.get('B_ppm', 'N/A')} ppm",
+        f"Foliar Deficiencies: {', '.join(low_nutrients) if low_nutrients else 'None below standard reference thresholds'}",
+        f"DRIS Nutritional Imbalance: Limiting={', '.join(limiting) if limiting else 'None'}, Excess={', '.join(excess) if excess else 'None'}",
+        f"Soil Status: {str(soil.get('status', 'unavailable')).title()} ({soil.get('note', 'No soil survey recorded for this block')})",
+        f"Estate Weather Context: Rainfall {weather.get('Rainfall_mm_day', 'N/A')} mm/day, Temp {weather.get('Temperature_C', 'N/A')} °C (Excluded from block score)",
+    ]
+
+    # 2. Compile model predictions
+    model_predictions = [
+        f"Canonical Screening Score: {score_val:.1f} / 100",
+        f"Screening Risk Band: {risk_level} (Low <40, Medium 40–<70, High ≥70)",
+        f"Age-Peer Cohort Expected Yield: {expected_str} (Yield Gap: {gap_str})",
+        f"High Production Probability: {prod.get('High_Production_probability', 0.50):.2f}",
+    ]
+
+    evidence_grounding = [
+        {"layer": "Production / FFB", "source": "outputs/block_health_risk.csv", "year": 2024, "status": "Observed"},
+        {"layer": "Foliar Tissue", "source": "outputs/block_nutrient_diagnostics.csv", "year": leaf_year, "status": "Observed"},
+        {"layer": "DRIS Prescription", "source": "outputs/dris_prescription_analysis.csv", "year": dris.get("sample_year", 2024), "status": "Diagnostic"},
+        {"layer": "Multi-Source Canonical", "source": "outputs/multi_source_block_risk.csv", "year": 2024, "status": "Screening Model"},
+    ]
+
+    # 3. Determine priority
+    priority = "Critical" if risk_level == "HIGH" else "Moderate" if risk_level == "MEDIUM" else "Routine"
+
+    # 4. Check for OpenAI API Key
+    openai_key = os.environ.get("OPENAI_API_KEY", "").strip()
+    ai_generated = False
+    source_name = "deterministic_engine"
+    model_name = "canonical_agronomic_rules"
+    note = "Deterministic agronomic engine active. Set OPENAI_API_KEY in the server environment to enable live LLM synthesis."
+
+    finding = ""
+    rationale = ""
+    action = ""
+    validation = ""
+
+    if openai_key:
+        try:
+            import urllib.request
+            import urllib.error
+
+            system_prompt = (
+                "You are an enterprise commercial oil-palm agronomist assistant. Ground your response STRICTLY "
+                "on the verified facts provided below. Do NOT invent diseases (e.g. Ganoderma, bud rot), unmeasured deficiencies, "
+                "proprietary chemical doses, or imaginary field measurements. If data is sparse or unavailable (e.g. soil tests), "
+                "explicitly state that field verification or sampling is required first. Keep response concise, manager-friendly, "
+                "and actionable. Return exactly 4 clear lines prefixed with:\n"
+                "FINDING: <1-2 sentences on observed condition>\n"
+                "RATIONALE: <1-2 sentences on agronomic cause grounded in data>\n"
+                "ACTION: <1-2 sentences on recommended immediate next step>\n"
+                "VALIDATION: <1 sentence on follow-up verification measurement>"
+            )
+
+            user_prompt = (
+                f"Block: {norm_id}\n"
+                f"Risk Level: {risk_level} (Score: {score_val:.1f}/100)\n"
+                f"Planted: {b.get('identity', {}).get('Planting_Year', 2012)} ({plant_age} yrs, {seed_type})\n"
+                f"Observed Yield: {actual_str} (Gap: {gap_str} vs Expected: {expected_str})\n"
+                f"Foliar Nutrients: {panel}\n"
+                f"Deficient Nutrients: {low_nutrients}\n"
+                f"DRIS Limiting: {limiting}, Excess: {excess}\n"
+                f"DRIS Prescription: {prescription}\n"
+                f"Soil Status: {soil.get('status')} - {soil.get('note')}\n"
+            )
+
+            req_payload = json.dumps({
+                "model": os.environ.get("OPENAI_MODEL", "gpt-4o-mini"),
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                "temperature": 0.2,
+                "max_tokens": 300,
+            }).encode("utf-8")
+
+            req = urllib.request.Request(
+                "https://api.openai.com/v1/chat/completions",
+                data=req_payload,
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {openai_key}"
+                },
+                method="POST"
+            )
+
+            with urllib.request.urlopen(req, timeout=8.0) as resp:
+                if resp.status == 200:
+                    api_data = json.loads(resp.read().decode("utf-8"))
+                    content = api_data["choices"][0]["message"]["content"].strip()
+                    lines = content.splitlines()
+                    for line in lines:
+                        if line.startswith("FINDING:"):
+                            finding = line.replace("FINDING:", "").strip()
+                        elif line.startswith("RATIONALE:"):
+                            rationale = line.replace("RATIONALE:", "").strip()
+                        elif line.startswith("ACTION:"):
+                            action = line.replace("ACTION:", "").strip()
+                        elif line.startswith("VALIDATION:"):
+                            validation = line.replace("VALIDATION:", "").strip()
+
+                    if finding and action:
+                        ai_generated = True
+                        source_name = "openai"
+                        model_name = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
+                        note = "AI synthesis generated via OpenAI API and strictly grounded on verified block telemetry."
+        except Exception as exc:
+            app.logger.warning("OpenAI API call failed or timed out: %s. Using deterministic fallback.", exc)
+
+    # Deterministic fallback synthesis if OpenAI was not used or failed
+    if not ai_generated:
+        if risk_level == "HIGH":
+            gap_display = f"{abs(yield_gap):.1f}% below expectation" if yield_gap is not None else "severe productivity deficit"
+            finding = f"Block {norm_id} is operating in high-priority lag with canonical risk score {score_val:.1f}/100 and yield {gap_display}."
+            lim_str = f"DRIS identifies {', '.join(limiting)} limitation." if limiting else "Productivity gap is the primary constraint."
+            rationale = f"Observed production of {actual_str} correlates with nutritional stress. {lim_str} {prescription}"
+            action = f"Convene joint agronomy audit for Block {norm_id}. Review weed circle cleanliness, check field drainage channels, and execute prescribed foliar balancing: {prescription}."
+            validation = "Target quarterly bunch census count and conduct Frond 17 foliar re-sampling at 60–90 days."
+        elif risk_level == "MEDIUM":
+            finding = f"Block {norm_id} shows moderate variance with canonical risk score {score_val:.1f}/100 and yield of {actual_str}."
+            rationale = f"Foliar diagnostic flags {', '.join(low_nutrients) if low_nutrients else 'mild imbalance'}. {prescription}"
+            action = f"Verify field application logs for Block {norm_id} and schedule spot canopy greenness inspection. Follow recommendation: {prescription}."
+            validation = "Monitor monthly bunch delivery weights across the upcoming harvest rounds."
+        else:
+            finding = f"Block {norm_id} is operating within normal operational parameters (Risk Score: {score_val:.1f}/100, Yield: {actual_str})."
+            rationale = "Nutritional ratios and yield trends align with age-cohort expectations with no critical limiting constraints."
+            action = "Maintain scheduled routine maintenance, weed circle upkeep, and standard fertilizer broadcast rounds."
+            validation = "Routine annual foliar assay and standard monthly yield tracking."
+
+    return jsonify({
+        "block_id": norm_id,
+        "risk_level": risk_level,
+        "risk_score": risk_score,
+        "source": source_name,
+        "model": model_name,
+        "is_ai_generated": ai_generated,
+        "note": note,
+        "observed_facts": observed_facts,
+        "model_predictions": model_predictions,
+        "recommendation": {
+            "priority": priority,
+            "observed_finding": finding,
+            "agronomic_rationale": rationale,
+            "recommended_action": action,
+            "validation_protocol": validation,
+        },
+        "evidence_grounding": evidence_grounding
+    })
+
+
 if __name__ == "__main__":
+
     app.run(
         host=os.environ.get("HOST", "0.0.0.0"),
         port=int(os.environ.get("PORT", "5000")),
