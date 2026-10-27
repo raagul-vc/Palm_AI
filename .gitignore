@@ -26,4 +26,7 @@ drone/.mplconfig/
 drone/.ultralytics/
 drone/runs/
 weights/
-yolo11n.pt
+yolo11n.pt 
+*.db
+*.db-wal
+*.db-shm

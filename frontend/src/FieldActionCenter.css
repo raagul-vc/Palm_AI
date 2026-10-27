@@ -18,13 +18,13 @@
 .fac-hero-banner {
   display: flex;
   justify-content: space-between;
-  align-items: stretch;
-  gap: 28px;
-  padding: 32px;
-  border-radius: 20px;
-  background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 50%, #f4fbf6 100%);
-  border: 1px solid #d1fae5;
-  box-shadow: 0 4px 20px -2px rgba(16, 185, 129, 0.08);
+  align-items: center;
+  gap: 20px;
+  padding: 16px 20px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #092014 0%, #06160d 100%);
+  border: 1px solid rgba(16, 185, 129, 0.24);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
 }
 
 .fac-hero-content {
@@ -40,96 +40,205 @@
   gap: 8px;
   font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.12em;
-  color: #059669;
+  letter-spacing: 0.1em;
+  color: #34d399;
   text-transform: uppercase;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .fac-title {
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 800;
-  letter-spacing: -0.03em;
-  color: #064e3b;
-  margin: 0 0 10px;
+  letter-spacing: -0.02em;
+  color: #f8fafc;
+  margin: 0 0 4px;
   line-height: 1.2;
 }
 
 .fac-subtitle {
-  font-size: 14px;
-  line-height: 1.6;
-  color: #4b6354;
-  margin: 0 0 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #94a3b8;
+  margin: 0 0 8px;
   max-width: 680px;
+}
+
+/* 7-Step Operational Workflow Stepper */
+.fac-workflow-stepper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.42);
+  border: 1px solid rgba(16, 185, 129, 0.22);
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin: 4px 0 8px;
+}
+
+.fac-stepper-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.fac-stepper-title {
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #34d399;
+  font-size: 10.5px;
+}
+
+.fac-stepper-hint {
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.fac-stepper-track {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 2px 0;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.fac-step-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.06);
+  color: #cbd5e1;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: all 0.15s ease;
+}
+
+.fac-step-item.current {
+  background: #10b981;
+  color: #021a0e;
+  border-color: #34d399;
+  font-weight: 800;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
+}
+
+.fac-step-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.16);
+  color: inherit;
+}
+
+.fac-step-item.current .fac-step-badge {
+  background: #021a0e;
+  color: #10b981;
+}
+
+.fac-step-label {
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.fac-step-arrow {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+  user-select: none;
 }
 
 .fac-boundary-notice {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 12px 16px;
-  border-radius: 12px;
-  background: #fffbeb;
-  border: 1px solid #fef3c7;
-  color: #92400e;
-  font-size: 12px;
-  line-height: 1.5;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(217, 119, 6, 0.1);
+  border: 1px solid rgba(217, 119, 6, 0.28);
+  color: #fde68a;
+  font-size: 11.5px;
+  line-height: 1.45;
+  margin-top: 4px;
+}
+
+.fac-boundary-notice strong {
+  color: #fbbf24;
 }
 
 .fac-hero-stats {
   display: grid;
-  grid-template-columns: repeat(2, minmax(130px, 1fr));
-  gap: 12px;
-  min-width: 320px;
+  grid-template-columns: repeat(2, minmax(135px, 1fr));
+  gap: 8px;
+  min-width: 290px;
+  align-self: center;
 }
 
 .fac-stat-box {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 16px;
-  border-radius: 14px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-  transition: transform 0.2s, box-shadow 0.2s;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(13, 35, 23, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s, border-color 0.15s;
 }
 
 .fac-stat-box:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+  border-color: rgba(16, 185, 129, 0.3);
 }
 
 .fac-stat-label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  color: #64748b;
+  color: #94a3b8;
   letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 
 .fac-stat-val {
-  font-size: 26px;
+  font-size: 20px;
   font-weight: 800;
-  letter-spacing: -0.04em;
-  color: #1e293b;
-  margin: 4px 0 2px;
+  letter-spacing: -0.03em;
+  color: #f8fafc;
+  margin: 2px 0 1px;
+  line-height: 1.1;
 }
 
 .fac-stat-sub {
-  font-size: 10px;
-  color: #94a3b8;
+  font-size: 9.5px;
+  color: #64748b;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .fac-stat-box.urgent {
-  border-color: #fecdd3;
-  background: #fff1f2;
+  border-color: rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.08);
 }
 
 .fac-stat-box.completed {
-  border-color: #d1fae5;
-  background: #f0fdf4;
+  border-color: rgba(16, 185, 129, 0.35);
+  background: rgba(16, 185, 129, 0.08);
 }
 
 /* 2. TOOLBAR & FILTERS */
@@ -865,15 +974,51 @@
 @media (max-width: 1024px) {
   .fac-hero-banner {
     flex-direction: column;
-    padding: 24px;
+    align-items: stretch;
+    padding: 16px;
+    gap: 14px;
   }
   .fac-hero-stats {
     grid-template-columns: repeat(2, 1fr);
     min-width: unset;
+    width: 100%;
   }
 }
 
 @media (max-width: 768px) {
+  .fac-hero-banner {
+    padding: 12px 14px;
+    gap: 12px;
+  }
+  .fac-title {
+    font-size: 19px;
+  }
+  .fac-workflow-stepper {
+    padding: 8px 10px;
+  }
+  .fac-stepper-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+  .fac-stepper-track {
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .fac-step-item {
+    font-size: 10.5px;
+    padding: 3px 7px;
+  }
+  .fac-hero-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+  .fac-stat-box {
+    padding: 6px 10px;
+  }
+  .fac-stat-val {
+    font-size: 17px;
+  }
   .fac-toolbar {
     flex-direction: column;
     align-items: stretch;

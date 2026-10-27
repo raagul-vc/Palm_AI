@@ -29,6 +29,8 @@ COPY outputs/ ./outputs/
 COPY drone/ ./drone/
 COPY --from=frontend-build /app/frontend/dist ./frontend/dist
 
+RUN chown -R appuser:appuser /app/data /app/outputs
+
 USER appuser
 EXPOSE 10000
 CMD ["python", "-m", "gunicorn", "backend.api:app", "--bind", "0.0.0.0:10000", "--workers", "1", "--threads", "4", "--timeout", "120"]

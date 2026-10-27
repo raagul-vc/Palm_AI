@@ -314,10 +314,10 @@ function exportDirectivesCsv(items, records) {
   URL.revokeObjectURL(url);
 }
 
-export default function FieldActionCenter({ datasets, onNavigateBlock }) {
+export default function FieldActionCenter({ datasets, onNavigateBlock, currentUser, authToken }) {
   const allItems = useMemo(() => buildActionItems(datasets), [datasets]);
 
-  // Local storage for field verification statuses and notes
+  // Persistent storage for field verification statuses and notes
   const [records, setRecords] = useState(() => {
     try {
       return JSON.parse(window.localStorage.getItem(STORAGE_KEY) || "{}");
@@ -335,6 +335,41 @@ export default function FieldActionCenter({ datasets, onNavigateBlock }) {
   const [aiRecommendations, setAiRecommendations] = useState({});
   const [loadingAi, setLoadingAi] = useState({});
 
+  // Synchronize with server-side SQLite tasks
+  useEffect(() => {
+    async function loadServerTasks() {
+      try {
+        const headers = {};
+        if (authToken) headers["Authorization"] = `Bearer ${authToken}`;
+        const res = await fetch("/api/tasks", { headers });
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.tasks && data.tasks.length > 0) {
+            setRecords((prev) => {
+              const updated = { ...prev };
+              data.tasks.forEach((t) => {
+                const key = `block-${t.block_id}`;
+                const serverStatus = t.status === "COMPLETED" ? "COMPLETED" : (t.status === "SUBMITTED" ? "VERIFYING IN FIELD" : (t.status === "IN_PROGRESS" || t.status === "ASSIGNED" ? "IN REVIEW" : "OPEN"));
+                updated[key] = {
+                  ...(updated[key] || {}),
+                  status: serverStatus,
+                  notes: t.worker_findings || updated[key]?.notes || "",
+                  inspector: t.assignee_name || updated[key]?.inspector || "",
+                  completedAt: t.completed_at ? new Date(t.completed_at).toLocaleString() : updated[key]?.completedAt,
+                  serverTaskId: t.task_id
+                };
+              });
+              return updated;
+            });
+          }
+        }
+      } catch (err) {
+        console.warn("Server task sync notice:", err);
+      }
+    }
+    loadServerTasks();
+  }, [authToken]);
+
   useEffect(() => {
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
@@ -347,17 +382,39 @@ export default function FieldActionCenter({ datasets, onNavigateBlock }) {
   const updateStatus = useCallback((id, newStatus) => {
     setRecords((prev) => {
       const current = prev[id] || {};
-      const completedAt = newStatus === "COMPLETED" ? new Date().toISOString() : current.completedAt;
+      const completedAt = newStatus === "COMPLETED" ? new Date().toLocaleString() : null;
       return {
         ...prev,
         [id]: {
           ...current,
           status: newStatus,
-          completedAt: newStatus === "COMPLETED" ? (current.completedAt || new Date().toLocaleString()) : null,
+          completedAt: newStatus === "COMPLETED" ? (current.completedAt || completedAt) : null,
         }
       };
     });
-  }, []);
+
+    // Server-side synchronization
+    if (id.startsWith("block-")) {
+      const bid = id.replace("block-", "");
+      fetch(`/api/tasks?block_id=${bid}`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (data?.tasks && data.tasks[0]) {
+            const taskId = data.tasks[0].task_id;
+            const headers = { "Content-Type": "application/json" };
+            if (authToken) headers["Authorization"] = `Bearer ${authToken}`;
+            if (newStatus === "COMPLETED") {
+              fetch(`/api/tasks/${taskId}/review`, {
+                method: "POST",
+                headers,
+                body: JSON.stringify({ decision: "APPROVE", comments: "Verified via Field Action Center" })
+              }).catch(() => {});
+            }
+          }
+        })
+        .catch(() => {});
+    }
+  }, [authToken]);
 
   // Update inspector name and notes
   const updateDetails = useCallback((id, field, value) => {
@@ -446,23 +503,47 @@ export default function FieldActionCenter({ datasets, onNavigateBlock }) {
             Turn verified empirical evidence into actionable field inspection directives. Track verification progress, record agronomist findings, and export audit-ready handoffs for field teams.
           </p>
 
-          {/* Block-Centric Operational Workflow Stepper */}
-          <div className="fac-workflow-stepper">
-            <span className="stepper-title">Operational Workflow:</span>
-            <div className="stepper-track">
-              <span className="step-pill current">1. Action Queue</span>
-              <span className="step-arrow">→</span>
-              <span className="step-pill">2. Select Block</span>
-              <span className="step-arrow">→</span>
-              <span className="step-pill">3. Understand Issue</span>
-              <span className="step-arrow">→</span>
-              <span className="step-pill">4. Review Evidence</span>
-              <span className="step-arrow">→</span>
-              <span className="step-pill">5. Recommended Solution</span>
-              <span className="step-arrow">→</span>
-              <span className="step-pill">6. Record Inspection</span>
-              <span className="step-arrow">→</span>
-              <span className="step-pill">7. Complete</span>
+          {/* 7-Step Operational Workflow Stepper */}
+          <div className="fac-workflow-stepper" role="navigation" aria-label="Operational Workflow Stepper">
+            <div className="fac-stepper-header">
+              <span className="fac-stepper-title">Operational Workflow:</span>
+              <span className="fac-stepper-hint">Action Queue → Block Resolution Protocol</span>
+            </div>
+            <div className="fac-stepper-track">
+              <span className="fac-step-item current">
+                <span className="fac-step-badge">1</span>
+                <span className="fac-step-label">Action Queue</span>
+              </span>
+              <span className="fac-step-arrow" aria-hidden="true">→</span>
+              <span className="fac-step-item">
+                <span className="fac-step-badge">2</span>
+                <span className="fac-step-label">Block</span>
+              </span>
+              <span className="fac-step-arrow" aria-hidden="true">→</span>
+              <span className="fac-step-item">
+                <span className="fac-step-badge">3</span>
+                <span className="fac-step-label">Issue</span>
+              </span>
+              <span className="fac-step-arrow" aria-hidden="true">→</span>
+              <span className="fac-step-item">
+                <span className="fac-step-badge">4</span>
+                <span className="fac-step-label">Evidence</span>
+              </span>
+              <span className="fac-step-arrow" aria-hidden="true">→</span>
+              <span className="fac-step-item">
+                <span className="fac-step-badge">5</span>
+                <span className="fac-step-label">Solution</span>
+              </span>
+              <span className="fac-step-arrow" aria-hidden="true">→</span>
+              <span className="fac-step-item">
+                <span className="fac-step-badge">6</span>
+                <span className="fac-step-label">Inspection</span>
+              </span>
+              <span className="fac-step-arrow" aria-hidden="true">→</span>
+              <span className="fac-step-item">
+                <span className="fac-step-badge">7</span>
+                <span className="fac-step-label">Complete</span>
+              </span>
             </div>
           </div>
 

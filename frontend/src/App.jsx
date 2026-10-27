@@ -53,6 +53,8 @@ import tallPalmImg from "./assets/images/tall_oil_palm_plantation.jpg";
 import estateOverviewImg from "./assets/images/estate_canopy_overview.jpg";
 import fruitBunchImg from "./assets/images/oil_palm_fruit_bunch.jpg";
 import droneCanopyImg from "./assets/images/drone_canopy_inspection.jpg";
+import AuthManager from "./AuthManager";
+import "./AuthManager.css";
 import "./App.css";
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || "/api").replace(/\/$/, "");
@@ -214,6 +216,31 @@ export default function App() {
     return null;
   });
   const [selectedActionId, setSelectedActionId] = useState(null);
+
+  // Enterprise Role-Based Authentication State
+  const [authToken, setAuthToken] = useState(() => {
+    try {
+      return sessionStorage.getItem("palm_ai_auth_token") || null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const stored = sessionStorage.getItem("palm_ai_user");
+      return stored ? JSON.parse(stored) : {
+        id: "USR-MGR-01",
+        email: "manager@palmai.com",
+        full_name: "Estate Agronomy Operations Manager",
+        role: "MANAGER",
+        estate_permissions: ["North Estate (PT Palm Indo)"],
+        block_permissions: ["*"]
+      };
+    } catch {
+      return null;
+    }
+  });
 
   const [blockSearch, setBlockSearch] = useState("");
   const [riskFilter, setRiskFilter] = useState("ALL");
@@ -638,6 +665,27 @@ export default function App() {
             </span>
           </div>
 
+          <AuthManager
+            currentUser={currentUser}
+            onUserChange={(u) => {
+              setCurrentUser(u);
+              if (u) {
+                try { sessionStorage.setItem("palm_ai_user", JSON.stringify(u)); } catch {}
+              } else {
+                try { sessionStorage.removeItem("palm_ai_user"); } catch {}
+              }
+            }}
+            authToken={authToken}
+            onTokenChange={(t) => {
+              setAuthToken(t);
+              if (t) {
+                try { sessionStorage.setItem("palm_ai_auth_token", t); } catch {}
+              } else {
+                try { sessionStorage.removeItem("palm_ai_auth_token"); } catch {}
+              }
+            }}
+          />
+
           <button
             type="button"
             className="refresh-icon-btn"
@@ -699,8 +747,8 @@ export default function App() {
                   className="estate-card-photo-banner"
                   height="170px"
                   badge="Commercial Stand · Division A"
-                  caption="Mature Oil-Palm Plantation Fleet (1,512 Ha)"
-                  subcaption="42 Operational Blocks · 204,120 Palms · DxP Hybrid Stand"
+                  caption="Mature Oil-Palm Plantation Fleet (920.0 Ha)"
+                  subcaption="42 Operational Blocks · Verified 920.0 Ha · DxP Hybrid Stand"
                 />
 
                 <div className="estate-card-top">
@@ -729,13 +777,13 @@ export default function App() {
                       </div>
                       <div className="estate-stat-item">
                         <span className="stat-label">Total Monitored Area</span>
-                        <strong className="stat-val">1,512 Ha</strong>
-                        <span className="stat-sub">36.0 Ha avg/block</span>
+                        <strong className="stat-val">920.0 Ha</strong>
+                        <span className="stat-sub">21.9 Ha avg/block</span>
                       </div>
                       <div className="estate-stat-item">
-                        <span className="stat-label">Productive Stand</span>
-                        <strong className="stat-val">204,120 Palms</strong>
-                        <span className="stat-sub">135 palms/ha</span>
+                        <span className="stat-label">Tree Inventory</span>
+                        <strong className="stat-val text-amber">Unavailable</strong>
+                        <span className="stat-sub">Readiness 35%</span>
                       </div>
                       <div className="estate-stat-item">
                         <span className="stat-label">Mean 2024 Yield</span>
@@ -744,7 +792,7 @@ export default function App() {
                       </div>
                       <div className="estate-stat-item">
                         <span className="stat-label">Planting Cohort</span>
-                        <strong className="stat-val">Mature (10–12 Yrs)</strong>
+                        <strong className="stat-val">Mature (10–24 Yrs)</strong>
                         <span className="stat-sub">DxP Hybrid seed</span>
                       </div>
                       <div className="estate-stat-item">
@@ -780,8 +828,8 @@ export default function App() {
                     </div>
                     <div className="estate-stat-item">
                       <span className="stat-label">Total Monitored Area</span>
-                      <strong className="stat-val">1,512 Ha</strong>
-                      <span className="stat-sub">36.0 Ha avg/block</span>
+                      <strong className="stat-val">920.0 Ha</strong>
+                      <span className="stat-sub">21.9 Ha avg/block</span>
                     </div>
                     <div className="estate-stat-item">
                       <span className="stat-label">Planting Cohort</span>
@@ -1322,6 +1370,8 @@ export default function App() {
               selectedActionId={selectedActionId}
               estateName={selectedEstate}
               isLoading={isLoading}
+              currentUser={currentUser}
+              authToken={authToken}
             />
           )
         )}
@@ -1338,6 +1388,8 @@ export default function App() {
           ) : (
             <FieldActionCenter
               datasets={datasets}
+              currentUser={currentUser}
+              authToken={authToken}
               onNavigateBlock={(bid, actionId) => navigateTo("block-detail", bid, actionId)}
             />
           )

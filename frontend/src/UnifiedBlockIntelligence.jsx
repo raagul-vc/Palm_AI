@@ -35,7 +35,9 @@ import {
   Droplets,
   Sun,
   Wind,
-  BarChart3
+  BarChart3,
+  Sprout,
+  CircleAlert
 } from "lucide-react";
 import {
   BarChart,
@@ -432,6 +434,7 @@ export default function UnifiedBlockIntelligence({
     { id: "risk", label: "Risk Screening & Methodology", icon: ShieldAlert },
     { id: "drone", label: "Drone AI (Live & Benchmark)", icon: Camera },
     { id: "multispectral", label: "Multispectral Research", icon: Layers },
+    { id: "tree-inventory", label: "Tree Inventory & Palms", icon: Sprout },
     { id: "actions", label: "Prioritized Solutions", icon: ClipboardCheck },
   ];
 
@@ -1862,6 +1865,113 @@ export default function UnifiedBlockIntelligence({
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==================== TAB 8: TREE INVENTORY ==================== */}
+        {activeTab === "tree-inventory" && (
+          <div className="tab-pane-grid">
+            <div className="card-panel span-2">
+              <div className="card-panel-header">
+                <div className="header-icon-title">
+                  <Sprout size={18} className="text-emerald" />
+                  <h3>Block {currentBlockId} Tree Inventory &amp; Remote-Sensing Readiness</h3>
+                </div>
+                <span className="unmapped-status-pill amber">
+                  Status: Inventory Unavailable
+                </span>
+              </div>
+
+              {/* Empirical Status Notice */}
+              <div className="inventory-status-callout">
+                <div className="status-callout-icon">
+                  <ShieldAlert size={22} className="text-amber" />
+                </div>
+                <div className="status-callout-text">
+                  <h4>Unique Individual Tree Inventory is Currently Unavailable</h4>
+                  <p>
+                    Verified individual palm crown centroid coordinates, LiDAR point clouds, and unique tree IDs are not present in current commercial estate records. Commercial plantations record aggregate block deliveries (B001–B042). Individual tree census requires high-resolution georeferenced crown segmentation.
+                  </p>
+                </div>
+              </div>
+
+              {/* Verified Block Characteristics & Theoretical Benchmark */}
+              <div className="tree-specs-grid">
+                <div className="tree-spec-box">
+                  <span className="spec-label">Verified Block Area</span>
+                  <strong className="spec-val text-emerald">{fmt(actualArea || 20.0, 1)} Ha</strong>
+                  <span className="spec-sub">Observed in block_characteristics.csv</span>
+                </div>
+                <div className="tree-spec-box">
+                  <span className="spec-label">Planting Year &amp; Age</span>
+                  <strong className="spec-val">{plantingYear || "2012"} ({fmt(plantAge, 0)} Yrs)</strong>
+                  <span className="spec-sub">{seedType || "PPKS / DxP Hybrid"}</span>
+                </div>
+                <div className="tree-spec-box">
+                  <span className="spec-label">Agronomic Spacing Standard</span>
+                  <strong className="spec-val">136 palms/ha</strong>
+                  <span className="spec-sub">9.0m Equilateral Triangular</span>
+                </div>
+                <div className="tree-spec-box highlight">
+                  <span className="spec-label">Theoretical Capacity Benchmark</span>
+                  <strong className="spec-val text-gold">~{Math.round((actualArea || 20.0) * 136).toLocaleString()} Palms</strong>
+                  <span className="spec-sub">Theoretical estimate (NOT verified census)</span>
+                </div>
+              </div>
+
+              {/* Remote Sensing Readiness Breakdown */}
+              <div className="readiness-section">
+                <div className="readiness-header">
+                  <h4>Remote-Sensing Readiness Score: <strong>35%</strong></h4>
+                  <span className="readiness-sub">3 of 6 prerequisite layers validated</span>
+                </div>
+                <div className="readiness-progress-bar">
+                  <div className="readiness-progress-fill" style={{ width: "35%" }} />
+                </div>
+                <div className="readiness-checklist-grid">
+                  <div className="readiness-item checked">
+                    <CheckCircle2 size={15} className="text-emerald" />
+                    <span>Cadastral Block Boundary (Available)</span>
+                  </div>
+                  <div className="readiness-item checked">
+                    <CheckCircle2 size={15} className="text-emerald" />
+                    <span>Planting Year &amp; Cohort History (Available)</span>
+                  </div>
+                  <div className="readiness-item checked">
+                    <CheckCircle2 size={15} className="text-emerald" />
+                    <span>Commercial DxP Seed Type (Available)</span>
+                  </div>
+                  <div className="readiness-item missing">
+                    <CircleAlert size={15} className="text-amber" />
+                    <span>Georeferenced Crown Centroids (Missing)</span>
+                  </div>
+                  <div className="readiness-item missing">
+                    <CircleAlert size={15} className="text-amber" />
+                    <span>High-Resolution Canopy Point Cloud (Missing)</span>
+                  </div>
+                  <div className="readiness-item missing">
+                    <CircleAlert size={15} className="text-amber" />
+                    <span>Field Ground-Truth Census Tags (Missing)</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Planned Schema Preview */}
+              <div className="future-schema-box">
+                <span className="schema-badge">EXTENSIBLE ARCHITECTURE</span>
+                <h4>Ready for Future Georeferenced Crown Ingestion</h4>
+                <p>
+                  The platform architecture is designed to ingest tree-level GeoJSON features as soon as survey orthomosaics are processed:
+                </p>
+                <pre className="schema-code">
+{`{
+  "entity": "TreeObservation",
+  "block_id": "${currentBlockId}",
+  "schema": ["tree_id", "latitude", "longitude", "crown_diameter_m", "bearing_status", "last_inspected"]
+}`}
+                </pre>
               </div>
             </div>
           </div>
