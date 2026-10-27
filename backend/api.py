@@ -337,8 +337,12 @@ def weather_correlation_data():
     return jsonify(dataframe_records(df))
 
 
+_cached_feature_importance = None
+
+
 @app.route("/api/model-validation")
 def model_validation_data():
+    global _cached_feature_importance
     metrics_name = "time_based_validation_metrics.csv"
     yearly_name = "time_based_validation_summary.csv"
     metrics = load_csv(metrics_name)
@@ -348,28 +352,30 @@ def model_validation_data():
     if missing:
         return unavailable_object({"metrics": [], "yearly": [], "feature_importance": []}, f"Optional validation output(s) missing: {', '.join(missing)}")
 
-    feature_importance = []
-    model_path = BASE_DIR / "models" / "yield_forecast_model.pkl"
-    if model_path.exists():
-        try:
-            import joblib
+    if _cached_feature_importance is None:
+        feature_importance = []
+        model_path = BASE_DIR / "models" / "yield_forecast_model.pkl"
+        if model_path.exists():
+            try:
+                import joblib
 
-            pipeline = joblib.load(model_path)
-            preprocessor = pipeline.named_steps["preprocessor"]
-            estimator = pipeline.named_steps["model"]
-            names = preprocessor.get_feature_names_out()
-            feature_importance = [
-                {"Feature": str(names[index]).replace("numeric__", "").replace("categorical__", ""),
-                 "Importance": float(estimator.feature_importances_[index])}
-                for index in np.argsort(estimator.feature_importances_)[::-1][:12]
-            ]
-        except (OSError, ValueError, KeyError, AttributeError, ImportError) as error:
-            app.logger.warning("Unable to load feature importance: %s", error)
+                pipeline = joblib.load(model_path)
+                preprocessor = pipeline.named_steps["preprocessor"]
+                estimator = pipeline.named_steps["model"]
+                names = preprocessor.get_feature_names_out()
+                feature_importance = [
+                    {"Feature": str(names[index]).replace("numeric__", "").replace("categorical__", ""),
+                     "Importance": float(estimator.feature_importances_[index])}
+                    for index in np.argsort(estimator.feature_importances_)[::-1][:12]
+                ]
+            except (OSError, ValueError, KeyError, AttributeError, ImportError) as error:
+                app.logger.warning("Unable to load feature importance: %s", error)
+        _cached_feature_importance = feature_importance
 
     return jsonify({
         "metrics": dataframe_records(metrics),
         "yearly": dataframe_records(yearly),
-        "feature_importance": feature_importance,
+        "feature_importance": _cached_feature_importance,
     })
 
 

@@ -8604,5 +8604,94 @@ html, body {
   max-width: 380px;
 }
 
+/* Callout on Estates View (Fresh Incognito Session) */
+.estate-mandatory-callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.mandatory-callout-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mandatory-callout-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.estate-mandatory-callout .mandatory-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-main, #f8fafc);
+}
+
+.estate-mandatory-callout .mandatory-description {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted, #94a3b8);
+  line-height: 1.5;
+}
+
+.estate-card.unselected {
+  cursor: default;
+}
+
+.estate-card.unselected:hover {
+  transform: none;
+  border-color: var(--border-card);
+}
+
+.estate-stats-grid.prospective {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.select-estate-cta-btn.explicit-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #10b981;
+  color: #03140b;
+  font-weight: 700;
+  font-size: 13.5px;
+  padding: 12px 22px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.select-estate-cta-btn.explicit-cta:hover {
+  background: #34d399;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+}
+
+/* Ensure chart parent grid cards have min-width: 0 to prevent Recharts collapse */
+.card-panel,
+.analytics-card {
+  min-width: 0 !important;
+}
+
+.tab-pane-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
 
 

@@ -223,11 +223,11 @@ export default function App() {
     };
   };
 
-  // Load all 20 API endpoints
+  // Load API endpoints progressively so essential telemetry (productivity, risk, etc.)
+  // renders immediately without waiting for heavy background audit endpoints.
   const loadSources = useCallback(async () => {
     setIsLoading(true);
     const unavail = [];
-    const newDatasets = { ...emptyDatasets };
 
     await Promise.all(
       Object.entries(sourcePaths).map(async ([key, path]) => {
@@ -235,26 +235,29 @@ export default function App() {
           const { data, available } = await fetchPayload(path);
           if (!available) unavail.push(key);
 
-          if (key === "modelValidation") {
-            newDatasets.modelMetrics = data?.metrics || [];
-            newDatasets.yearlyValidation = data?.yearly || [];
-            newDatasets.featureImportance = data?.feature_importance || [];
-          } else if (key === "dataQuality") {
-            newDatasets.dataQuality = data;
-          } else if (key === "droneVisualizations") {
-            newDatasets.droneVisualizations = data?.visualizations || [];
-          } else if (key === "multispectralVisualizations") {
-            newDatasets.multispectralVisualizations = data || [];
-          } else {
-            newDatasets[key] = data;
-          }
+          setDatasets((prev) => {
+            const updated = { ...prev };
+            if (key === "modelValidation") {
+              updated.modelMetrics = data?.metrics || [];
+              updated.yearlyValidation = data?.yearly || [];
+              updated.featureImportance = data?.feature_importance || [];
+            } else if (key === "dataQuality") {
+              updated.dataQuality = data;
+            } else if (key === "droneVisualizations") {
+              updated.droneVisualizations = data?.visualizations || [];
+            } else if (key === "multispectralVisualizations") {
+              updated.multispectralVisualizations = data || [];
+            } else {
+              updated[key] = data;
+            }
+            return updated;
+          });
         } catch (err) {
           unavail.push(key);
         }
       })
     );
 
-    setDatasets(newDatasets);
     setUnavailableSources(unavail);
     setIsLoading(false);
   }, []);
@@ -627,6 +630,22 @@ export default function App() {
         {/* ======================================================== */}
         {viewLevel === "estates" && (
           <div className="view-container estate-list-view">
+            {/* MANDATORY ESTATE SELECTION PROMPT ON FRESH SESSION */}
+            {!selectedEstate && (
+              <div className="estate-mandatory-callout">
+                <div className="mandatory-callout-icon">
+                  <MapPin size={22} className="text-emerald" />
+                </div>
+                <div className="mandatory-callout-content">
+                  <span className="mandatory-eyebrow">ESTATE SELECTION REQUIRED</span>
+                  <h2 className="mandatory-title">Select an estate to view plantation intelligence.</h2>
+                  <p className="mandatory-description">
+                    Operational KPIs, 42-block fleet health, historical yield curves, foliar diagnostics, and field action directives are only displayed after selecting an operational estate.
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="view-hero-banner">
               <div>
                 <span className="hero-eyebrow">COMMERCIAL ESTATE INTELLIGENCE</span>
@@ -644,14 +663,7 @@ export default function App() {
             {/* Real Estate Cards Grid */}
             <div className="estate-cards-grid">
               <div
-                className={`estate-card ${selectedEstate === "North Estate (PT Palm Indo)" ? "is-selected" : ""}`}
-                onClick={() => {
-                  if (selectedEstate === "North Estate (PT Palm Indo)") {
-                    navigateTo("blocks");
-                  } else {
-                    handleSelectEstate("North Estate (PT Palm Indo)");
-                  }
-                }}
+                className={`estate-card ${selectedEstate === "North Estate (PT Palm Indo)" ? "is-selected" : "unselected"}`}
               >
                 {/* Real Commercial Oil-Palm Plantation Photographic Banner */}
                 <PlantationImage
@@ -679,55 +691,84 @@ export default function App() {
                   Commercial oil-palm plantation monitoring 42 contiguous management blocks across mature planting cohorts. Fully integrated with multi-source yield, foliar, weather, and UAV inference data.
                 </p>
 
-                {/* 6 Key Estate Metrics */}
-                <div className="estate-stats-grid">
-                  <div className="estate-stat-item">
-                    <span className="stat-label">Monitored Blocks</span>
-                    <strong className="stat-val">{riskCounts.total} Blocks</strong>
-                    <span className="stat-sub">B001 – B042 (Natural Order)</span>
-                  </div>
-                  <div className="estate-stat-item">
-                    <span className="stat-label">Total Monitored Area</span>
-                    <strong className="stat-val">1,512 Ha</strong>
-                    <span className="stat-sub">36.0 Ha avg/block</span>
-                  </div>
-                  <div className="estate-stat-item">
-                    <span className="stat-label">Productive Stand</span>
-                    <strong className="stat-val">204,120 Palms</strong>
-                    <span className="stat-sub">135 palms/ha</span>
-                  </div>
-                  <div className="estate-stat-item">
-                    <span className="stat-label">Mean 2024 Yield</span>
-                    <strong className="stat-val text-emerald">{fmt(meanYield)} t/ha</strong>
-                    <span className="stat-sub">Annual harvest</span>
-                  </div>
-                  <div className="estate-stat-item">
-                    <span className="stat-label">Planting Cohort</span>
-                    <strong className="stat-val">Mature (10–12 Yrs)</strong>
-                    <span className="stat-sub">DxP Hybrid seed</span>
-                  </div>
-                  <div className="estate-stat-item">
-                    <span className="stat-label">Data History</span>
-                    <strong className="stat-val">13 Years</strong>
-                    <span className="stat-sub">2012 – 2024 Window</span>
-                  </div>
-                </div>
+                {/* Conditional Metrics & Risk: Rendered ONLY when estate is explicitly selected */}
+                {selectedEstate === "North Estate (PT Palm Indo)" ? (
+                  <>
+                    {/* 6 Key Estate Operational Metrics */}
+                    <div className="estate-stats-grid">
+                      <div className="estate-stat-item">
+                        <span className="stat-label">Monitored Blocks</span>
+                        <strong className="stat-val">{riskCounts.total} Blocks</strong>
+                        <span className="stat-sub">B001 – B042 (Natural Order)</span>
+                      </div>
+                      <div className="estate-stat-item">
+                        <span className="stat-label">Total Monitored Area</span>
+                        <strong className="stat-val">1,512 Ha</strong>
+                        <span className="stat-sub">36.0 Ha avg/block</span>
+                      </div>
+                      <div className="estate-stat-item">
+                        <span className="stat-label">Productive Stand</span>
+                        <strong className="stat-val">204,120 Palms</strong>
+                        <span className="stat-sub">135 palms/ha</span>
+                      </div>
+                      <div className="estate-stat-item">
+                        <span className="stat-label">Mean 2024 Yield</span>
+                        <strong className="stat-val text-emerald">{fmt(meanYield)} t/ha</strong>
+                        <span className="stat-sub">Annual harvest</span>
+                      </div>
+                      <div className="estate-stat-item">
+                        <span className="stat-label">Planting Cohort</span>
+                        <strong className="stat-val">Mature (10–12 Yrs)</strong>
+                        <span className="stat-sub">DxP Hybrid seed</span>
+                      </div>
+                      <div className="estate-stat-item">
+                        <span className="stat-label">Data History</span>
+                        <strong className="stat-val">13 Years</strong>
+                        <span className="stat-sub">2012 – 2024 Window</span>
+                      </div>
+                    </div>
 
-                {/* Risk Distribution Bar */}
-                <div className="estate-risk-summary-bar">
-                  <span className="risk-summary-title">Canonical Risk Screening Distribution:</span>
-                  <div className="risk-pills-row">
-                    <span className="risk-chip high">
-                      <strong>{riskCounts.high}</strong> High Risk ({(riskCounts.high / riskCounts.total * 100).toFixed(1)}%)
-                    </span>
-                    <span className="risk-chip medium">
-                      <strong>{riskCounts.medium}</strong> Medium Risk ({(riskCounts.medium / riskCounts.total * 100).toFixed(1)}%)
-                    </span>
-                    <span className="risk-chip low">
-                      <strong>{riskCounts.low}</strong> Low Risk ({(riskCounts.low / riskCounts.total * 100).toFixed(1)}%)
-                    </span>
+                    {/* Risk Distribution Bar */}
+                    <div className="estate-risk-summary-bar">
+                      <span className="risk-summary-title">Canonical Risk Screening Distribution:</span>
+                      <div className="risk-pills-row">
+                        <span className="risk-chip high">
+                          <strong>{riskCounts.high}</strong> High Risk ({(riskCounts.high / riskCounts.total * 100).toFixed(1)}%)
+                        </span>
+                        <span className="risk-chip medium">
+                          <strong>{riskCounts.medium}</strong> Medium Risk ({(riskCounts.medium / riskCounts.total * 100).toFixed(1)}%)
+                        </span>
+                        <span className="risk-chip low">
+                          <strong>{riskCounts.low}</strong> Low Risk ({(riskCounts.low / riskCounts.total * 100).toFixed(1)}%)
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  /* Unselected State: Prospective Fleet Profile Overview */
+                  <div className="estate-stats-grid prospective">
+                    <div className="estate-stat-item">
+                      <span className="stat-label">Monitored Blocks</span>
+                      <strong className="stat-val">42 Blocks</strong>
+                      <span className="stat-sub">B001 – B042 (Natural Order)</span>
+                    </div>
+                    <div className="estate-stat-item">
+                      <span className="stat-label">Total Monitored Area</span>
+                      <strong className="stat-val">1,512 Ha</strong>
+                      <span className="stat-sub">36.0 Ha avg/block</span>
+                    </div>
+                    <div className="estate-stat-item">
+                      <span className="stat-label">Planting Cohort</span>
+                      <strong className="stat-val">Mature Stand</strong>
+                      <span className="stat-sub">DxP Hybrid seed</span>
+                    </div>
+                    <div className="estate-stat-item">
+                      <span className="stat-label">Data Ledger</span>
+                      <strong className="stat-val">13 Years</strong>
+                      <span className="stat-sub">2012 – 2024 Historical</span>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Provenance Disclosure Note */}
                 <div className="estate-provenance-note">
@@ -737,7 +778,7 @@ export default function App() {
                   </span>
                 </div>
 
-                {/* Card CTA */}
+                {/* Card CTA: Requires explicit button click to enter dashboard */}
                 <div className="estate-card-action">
                   {selectedEstate === "North Estate (PT Palm Indo)" ? (
                     <div className="estate-selected-action-row">
@@ -770,15 +811,12 @@ export default function App() {
                   ) : (
                     <button
                       type="button"
-                      className="open-estate-btn select-estate-primary-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleSelectEstate("North Estate (PT Palm Indo)");
-                      }}
+                      className="select-estate-cta-btn explicit-cta"
+                      onClick={() => handleSelectEstate("North Estate (PT Palm Indo)")}
                     >
                       <CheckCircle2 size={16} />
                       <span>Select Estate & Enter Dashboard</span>
-                      <ArrowRight size={15} />
+                      <ArrowRight size={16} />
                     </button>
                   )}
                 </div>
@@ -863,11 +901,11 @@ export default function App() {
 
                   <div className="chart-container-wrap">
                     {estateYieldTrend && estateYieldTrend.length > 0 ? (
-                      <ResponsiveContainer width="100%" height={260} minWidth={0}>
+                      <ResponsiveContainer width="100%" height={260} minWidth={0} debounce={50}>
                         <LineChart data={estateYieldTrend} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.07)" />
                           <XAxis dataKey="year" stroke="#94a3b8" tick={{ fontSize: 11 }} />
-                          <YAxis stroke="#94a3b8" tick={{ fontSize: 11 }} domain={[0, 26]} unit=" t" />
+                          <YAxis stroke="#94a3b8" tick={{ fontSize: 11 }} domain={[0, (dataMax) => Math.max(26, Math.ceil(dataMax + 2))]} unit=" t" />
                           <Tooltip
                             contentStyle={{
                               backgroundColor: "#061a10",
@@ -887,6 +925,7 @@ export default function App() {
                             name="meanYield"
                             stroke="#10b981"
                             strokeWidth={3}
+                            isAnimationActive={false}
                             dot={{ r: 4, fill: "#10b981" }}
                             activeDot={{ r: 7, stroke: "#061a10", strokeWidth: 2 }}
                           />
@@ -897,6 +936,7 @@ export default function App() {
                             stroke="#d97706"
                             strokeWidth={1.5}
                             strokeDasharray="4 4"
+                            isAnimationActive={false}
                             dot={false}
                           />
                         </LineChart>
@@ -1242,16 +1282,23 @@ export default function App() {
         {/* VIEW 5: MULTI-SOURCE EVIDENCE REGISTRY & DATA AUDIT      */}
         {/* ======================================================== */}
         {viewLevel === "multi-source" && (
-          <MultiSourceEvidencePage
-            datasets={datasets}
-            navigate={(view) => {
-              if (view === "drone") navigateTo("drone-health");
-              else if (view === "multispectral") navigateTo("multispectral");
-              else if (view === "actions") navigateTo("field-actions");
-              else if (view === "blocks") navigateTo("blocks");
-              else navigateTo("estates");
-            }}
-          />
+          !selectedEstate ? (
+            <EstateMandatoryPrompt
+              onSelectEstate={handleSelectEstate}
+              onGoToEstates={() => navigateTo("estates")}
+            />
+          ) : (
+            <MultiSourceEvidencePage
+              datasets={datasets}
+              navigate={(view) => {
+                if (view === "drone") navigateTo("drone-health");
+                else if (view === "multispectral") navigateTo("multispectral");
+                else if (view === "actions") navigateTo("field-actions");
+                else if (view === "blocks") navigateTo("blocks");
+                else navigateTo("estates");
+              }}
+            />
+          )
         )}
 
         {/* ======================================================== */}

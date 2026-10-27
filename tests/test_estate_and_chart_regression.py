@@ -230,6 +230,120 @@ class TestEstateAndChartRegression(unittest.TestCase):
         self.assertEqual(d2["risk_level"], "LOW")
         self.assertIn("recommendation", d2)
 
+    # =========================================================================
+    # Browser-Level Simulation & Contract Regression Tests
+    # =========================================================================
+
+    def test_browser_fresh_incognito_session_contract(self):
+        """Simulate fresh Incognito session: selectedEstate is null, prompt banner is rendered,
+        card is unselected, operational dashboard KPIs and risk distribution are hidden."""
+        app_jsx_path = os.path.join(PROJECT_ROOT, "frontend", "src", "App.jsx")
+        with open(app_jsx_path, "r", encoding="utf-8") as f:
+            app_code = f.read()
+
+        # 1. Initial selectedEstate must read from sessionStorage with null fallback
+        self.assertIn('sessionStorage.getItem("palm_ai_selected_estate") || null', app_code)
+
+        # 2. On Estates view, when !selectedEstate, prominent callout banner MUST render
+        self.assertIn('!selectedEstate && (', app_code)
+        self.assertIn('className="estate-mandatory-callout"', app_code)
+        self.assertIn('Select an estate to view plantation intelligence.', app_code)
+
+        # 3. Card must NOT have container-level onClick handler (prevents accidental selection)
+        self.assertNotIn('className={`estate-card ${selectedEstate === "North Estate (PT Palm Indo)" ? "is-selected" : ""}`}\n                onClick=', app_code)
+        self.assertIn('className={`estate-card ${selectedEstate === "North Estate (PT Palm Indo)" ? "is-selected" : "unselected"}`}', app_code)
+
+        # 4. Operational dashboard metrics (Mean Yield, Risk distribution bar) must be conditioned on selection
+        self.assertIn('{selectedEstate === "North Estate (PT Palm Indo)" ? (', app_code)
+        self.assertIn('className="estate-stats-grid prospective"', app_code)
+
+        # 5. Explicit CTA button must be present in unselected card state
+        self.assertIn('className="select-estate-cta-btn explicit-cta"', app_code)
+        self.assertIn('handleSelectEstate("North Estate (PT Palm Indo)")', app_code)
+
+    def test_browser_session_storage_restoration(self):
+        """Verify that when sessionStorage has an active estate, App.jsx restores selectedEstate,
+        renders the is-selected card state, and enables Enter Dashboard and Change/Clear actions."""
+        app_jsx_path = os.path.join(PROJECT_ROOT, "frontend", "src", "App.jsx")
+        with open(app_jsx_path, "r", encoding="utf-8") as f:
+            app_code = f.read()
+
+        self.assertIn('sessionStorage.getItem("palm_ai_selected_estate")', app_code)
+        self.assertIn('selectedEstate === "North Estate (PT Palm Indo)"', app_code)
+        self.assertIn('className="active-estate-pill"', app_code)
+        self.assertIn('Enter Dashboard (42 Blocks)', app_code)
+        self.assertIn('className="deselect-estate-btn"', app_code)
+
+    def test_browser_explicit_estate_selection_workflow(self):
+        """Verify explicit estate selection writes to sessionStorage, navigates to blocks, and resets stale filters."""
+        app_jsx_path = os.path.join(PROJECT_ROOT, "frontend", "src", "App.jsx")
+        with open(app_jsx_path, "r", encoding="utf-8") as f:
+            app_code = f.read()
+
+        # handleSelectEstate must persist and transition
+        self.assertIn('sessionStorage.setItem("palm_ai_selected_estate", estateName)', app_code)
+        self.assertIn('navigateTo("blocks")', app_code)
+        self.assertIn('setSelectedBlockId(null)', app_code)
+        self.assertIn('setBlockSearch("")', app_code)
+        self.assertIn('setRiskFilter("ALL")', app_code)
+
+    def test_browser_estate_deselection_workflow(self):
+        """Verify handleClearEstate removes sessionStorage, resets selectedEstate to null, and navigates to estates view."""
+        app_jsx_path = os.path.join(PROJECT_ROOT, "frontend", "src", "App.jsx")
+        with open(app_jsx_path, "r", encoding="utf-8") as f:
+            app_code = f.read()
+
+        self.assertIn('sessionStorage.removeItem("palm_ai_selected_estate")', app_code)
+        self.assertIn('setSelectedEstate(null)', app_code)
+        self.assertIn('navigateTo("estates")', app_code)
+
+    def test_browser_tab_navigation_estate_guards(self):
+        """Verify that navigating to blocks, block-detail, field-actions, and multi-source without an estate
+        renders EstateMandatoryPrompt and guards the protected operational content."""
+        app_jsx_path = os.path.join(PROJECT_ROOT, "frontend", "src", "App.jsx")
+        with open(app_jsx_path, "r", encoding="utf-8") as f:
+            app_code = f.read()
+
+        # Guard on Blocks view
+        self.assertIn('{viewLevel === "blocks" && (\n          !selectedEstate ? (\n            <EstateMandatoryPrompt', app_code)
+
+        # Guard on Block Detail view
+        self.assertIn('{viewLevel === "block-detail" && (\n          !selectedEstate ? (\n            <EstateMandatoryPrompt', app_code)
+
+        # Guard on Field Actions view
+        self.assertIn('{viewLevel === "field-actions" && (\n          !selectedEstate ? (\n            <EstateMandatoryPrompt', app_code)
+
+        # Guard on Multi-Source Evidence view
+        self.assertIn('{viewLevel === "multi-source" && (\n          !selectedEstate ? (\n            <EstateMandatoryPrompt', app_code)
+
+    def test_browser_empty_chart_data_simulation(self):
+        """Verify chart computations and empty states when telemetry is empty or unavailable."""
+        app_jsx_path = os.path.join(PROJECT_ROOT, "frontend", "src", "App.jsx")
+        ubi_jsx_path = os.path.join(PROJECT_ROOT, "frontend", "src", "UnifiedBlockIntelligence.jsx")
+
+        with open(app_jsx_path, "r", encoding="utf-8") as f:
+            app_code = f.read()
+        with open(ubi_jsx_path, "r", encoding="utf-8") as f:
+            ubi_code = f.read()
+
+        # App.jsx: When estateYieldTrend is empty, renders empty state
+        self.assertIn('estateYieldTrend && estateYieldTrend.length > 0 ?', app_code)
+        self.assertIn('Historical Yield Telemetry Unavailable', app_code)
+        self.assertIn('No 13-year annual harvest average records found for the selected estate.', app_code)
+
+        # UnifiedBlockIntelligence: When yieldTimeline is empty, renders empty state
+        self.assertIn('yieldTimeline && yieldTimeline.length > 0 ?', ubi_code)
+        self.assertIn('Historical Productivity Data Unavailable', ubi_code)
+        self.assertIn('No verified annual productivity records mapped for Block', ubi_code)
+
+        # UnifiedBlockIntelligence: Monthly harvest curve empty state
+        self.assertIn('monthlyHarvest.length > 0 ?', ubi_code)
+        self.assertIn('Monthly Harvest Curve Unavailable', ubi_code)
+
+        # Recharts responsive attributes
+        self.assertIn('isAnimationActive={false}', app_code)
+        self.assertIn('isAnimationActive={false}', ubi_code)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -735,17 +735,17 @@ export default function UnifiedBlockIntelligence({
               </div>
               <div className="chart-container-wrap">
                 {yieldTimeline && yieldTimeline.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={280} minWidth={0}>
+                  <ResponsiveContainer width="100%" height={280} minWidth={0} debounce={50}>
                     <BarChart data={yieldTimeline} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.06)" />
                       <XAxis dataKey="Year" tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} domain={[0, 26]} />
+                      <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} domain={[0, (dataMax) => Math.max(26, Math.ceil(dataMax + 2))]} />
                       <Tooltip
                         formatter={(v, name) => [`${fmt(v)} t/ha`, name === "Actual" ? "Actual Harvest" : "Forecast Model (Annual Sum)"]}
                         contentStyle={{ backgroundColor: "#0d2317", borderRadius: "8px", color: "#f8fafc", border: "1px solid rgba(255,255,255,0.1)" }}
                       />
-                      <Bar dataKey="Actual" fill="#10b981" radius={[4, 4, 0, 0]} name="Actual" />
-                      <Bar dataKey="Forecast" fill="#d97706" radius={[4, 4, 0, 0]} name="Forecast" />
+                      <Bar dataKey="Actual" fill="#10b981" radius={[4, 4, 0, 0]} name="Actual" isAnimationActive={false} />
+                      <Bar dataKey="Forecast" fill="#d97706" radius={[4, 4, 0, 0]} name="Forecast" isAnimationActive={false} />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
@@ -836,7 +836,7 @@ export default function UnifiedBlockIntelligence({
               </div>
               {monthlyHarvest.length > 0 ? (
                 <div className="chart-container-wrap">
-                  <ResponsiveContainer width="100%" height={200} minWidth={0}>
+                  <ResponsiveContainer width="100%" height={200} minWidth={0} debounce={50}>
                     <LineChart data={monthlyHarvest} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.06)" />
                       <XAxis dataKey="Month" tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} />
@@ -845,7 +845,7 @@ export default function UnifiedBlockIntelligence({
                         formatter={(v, name) => [`${fmt(v)} ${name === "FFB" ? "tonnes" : "t/ha"}`, name]}
                         contentStyle={{ backgroundColor: "#0d2317", borderRadius: "8px", color: "#f8fafc", border: "1px solid rgba(255,255,255,0.1)" }}
                       />
-                      <Line type="monotone" dataKey="FFB" stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} name="FFB" />
+                      <Line type="monotone" dataKey="FFB" stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} name="FFB" isAnimationActive={false} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
