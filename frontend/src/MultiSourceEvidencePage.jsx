@@ -1,11 +1,22 @@
+import React, { useState } from "react";
 import {
-  ArrowDown, ArrowRight, CheckCircle2,
+  ArrowDown, ArrowRight, CheckCircle2, ChevronDown, ChevronUp,
   Compass, Database, FileText, GitMerge, Globe,
   Hash, Info, Layers, MapPin, Scan,
   ShieldAlert, ShieldCheck, TrendingUp, Workflow, XCircle,
 } from "lucide-react";
 
 export default function MultiSourceEvidencePage({ datasets, navigate }) {
+  const [expanded, setExpanded] = useState({
+    palm: false,
+    rgb: false,
+    multispectral: false,
+  });
+
+  const toggleExpand = (key) => {
+    setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
   const _summary = datasets.multiSourceSummary || {
     palm: {
       status: "available",
@@ -172,322 +183,315 @@ export default function MultiSourceEvidencePage({ datasets, navigate }) {
         </div>
       </section>
 
-      {/* DATA COVERAGE & MAPPING STATUS OVERVIEW PANEL */}
-      <section className="panel coverage-status-panel">
+      {/* 2. PROGRESSIVE-DISCLOSURE EVIDENCE MATRIX (CONCISE INITIAL SUMMARIES) */}
+      <section className="panel evidence-matrix-panel" aria-label="Evidence Matrix">
         <div className="panel-heading">
           <div>
-            <p className="panel-eyebrow">DATA GOVERNANCE &amp; SPATIAL PROVENANCE</p>
-            <h2>Data Coverage &amp; Mapping Status</h2>
+            <p className="panel-eyebrow">DIAGNOSTIC ARCHITECTURE &amp; EVIDENCE PILLARS</p>
+            <h2>Multi-Source Evidence Matrix</h2>
           </div>
-          <span className="operational-tag">Zero Synthetic Spatial Links</span>
+          <span className="operational-tag">Progressive Disclosure Protocol</span>
         </div>
         <p className="panel-subtitle">
-          Verified separation between active agronomic operational records and independent benchmark UAV layers:
+          Three independent diagnostic pillars with strict spatial decoupling safeguards. Click "View Details &amp; Technical Audit" on any pillar to inspect model metrics, sensor wavelengths, and provenance metadata.
         </p>
 
-        <div className="coverage-status-grid">
-          {/* Coverage Card 1: Agronomic */}
-          <div className="coverage-card card-agronomic">
-            <div className="cov-card-header">
-              <span className="cov-badge active">
-                <CheckCircle2 size={12} />
-                100% NATIVE MAPPED
-              </span>
-              <span className="cov-source-tag">PILLAR 1 · OPERATIONAL</span>
-            </div>
-            <div className="cov-card-body">
-              <h3>Palm Agronomic Evidence</h3>
-              <p className="cov-provenance-text">
-                <strong>Provenance:</strong> Oil Palm Plantation Division A (2012–2024, 6,552 records).
-              </p>
-              <div className="cov-stats-row">
-                <div className="cov-stat">
-                  <span className="cov-stat-label">TOTAL UNITS</span>
-                  <strong>42 Blocks</strong>
-                </div>
-                <div className="cov-stat">
-                  <span className="cov-stat-label">MAPPING STATUS</span>
-                  <strong className="text-positive">42 / 42 Mapped</strong>
-                </div>
-                <div className="cov-stat">
-                  <span className="cov-stat-label">CANONICAL RISK</span>
-                  <strong className="text-positive">100% Weight</strong>
+        <div className="evidence-summary-grid">
+          {/* A. Palm Agronomic Evidence */}
+          <article className="evidence-summary-card available">
+            <div className="summary-card-header">
+              <div className="header-left">
+                <span className="pillar-letter-badge available">A</span>
+                <div className="pillar-title-block">
+                  <span className="pillar-kicker">OPERATIONAL PLANTATION PILLAR</span>
+                  <h3>Palm Agronomic Evidence</h3>
                 </div>
               </div>
+              <span className="evidence-status-pill available">
+                <CheckCircle2 size={13} />
+                Status: Available
+              </span>
             </div>
-            <div className="cov-card-footer">
-              <small>Sole quantitative driver for estate fertilizer and harvest intervention plans.</small>
-            </div>
-          </div>
 
-          {/* Coverage Card 2: RGB Drone */}
-          <div className="coverage-card card-rgb">
-            <div className="cov-card-header">
-              <span className="cov-badge isolated">
-                <XCircle size={12} />
-                UNMAPPED BENCHMARK
-              </span>
-              <span className="cov-source-tag">PILLAR 2 · INDEPENDENT</span>
-            </div>
-            <div className="cov-card-body">
-              <h3>RGB Drone UAV Imagery</h3>
-              <p className="cov-provenance-text">
-                <strong>Provenance:</strong> MOPAD Site 2 Aerial Benchmark (Oil Palm Canopy RGB).
-              </p>
-              <div className="cov-stats-row">
-                <div className="cov-stat">
-                  <span className="cov-stat-label">TOTAL UNITS</span>
-                  <strong>500 Images</strong>
+            {/* Concise Initial Summary */}
+            <div className="summary-card-body">
+              <div className="summary-meta-grid">
+                <div className="meta-item">
+                  <span className="meta-label">Coverage</span>
+                  <strong className="meta-value">42 blocks</strong>
                 </div>
-                <div className="cov-stat">
-                  <span className="cov-stat-label">MAPPING STATUS</span>
-                  <strong className="text-amber">0 / 42 Blocks Mapped</strong>
-                </div>
-                <div className="cov-stat">
-                  <span className="cov-stat-label">CANONICAL RISK</span>
-                  <strong className="text-neutral">0% (Isolated)</strong>
+                <div className="meta-item">
+                  <span className="meta-label">Period</span>
+                  <strong className="meta-value">2012–2024</strong>
                 </div>
               </div>
+              <div className="summary-meaning-box">
+                <span className="meaning-label">Meaning:</span>
+                <p className="meaning-text">
+                  Historical productivity and available field measurements.
+                </p>
+              </div>
             </div>
-            <div className="cov-card-footer">
-              <small>Standalone visual health evidence; not merged into block-level risk scores.</small>
-            </div>
-          </div>
 
-          {/* Coverage Card 3: Multispectral */}
-          <div className="coverage-card card-multispectral">
-            <div className="cov-card-header">
-              <span className="cov-badge isolated">
-                <XCircle size={12} />
-                GERMAN BENCHMARK
-              </span>
-              <span className="cov-source-tag">PILLAR 3 · BENCHMARK ONLY</span>
+            {/* Expand / Collapse Button */}
+            <div className="summary-card-actions">
+              <button
+                type="button"
+                className="toggle-details-btn"
+                onClick={() => toggleExpand("palm")}
+                aria-expanded={expanded.palm}
+              >
+                <span>{expanded.palm ? "Hide Details" : "View Details & Technical Audit"}</span>
+                {expanded.palm ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+              </button>
             </div>
-            <div className="cov-card-body">
-              <h3>Multispectral UAV Rasters</h3>
-              <p className="cov-provenance-text">
-                <strong>Provenance:</strong> MSUAV500K Benchmark · Hullerbusch Beech Forest (Germany).
-              </p>
-              <div className="cov-stats-row">
-                <div className="cov-stat">
-                  <span className="cov-stat-label">TOTAL UNITS</span>
-                  <strong>34 Tiles</strong>
+
+            {/* Progressive Disclosure Section */}
+            {expanded.palm && (
+              <div className="summary-expanded-drawer">
+                <div className="expanded-spec-grid">
+                  <div className="exp-spec-item">
+                    <span className="exp-label">EVIDENCE LEVEL</span>
+                    <strong>Block Level (B001–B042)</strong>
+                  </div>
+                  <div className="exp-spec-item">
+                    <span className="exp-label">CANONICAL RISK WEIGHT</span>
+                    <strong className="text-emerald">100% Core Quantitative Driver</strong>
+                  </div>
+                  <div className="exp-spec-item">
+                    <span className="exp-label">DATASET PROVENANCE</span>
+                    <strong>Oil Palm Plantation Division A (2012–2024, 6,552 records)</strong>
+                  </div>
+                  <div className="exp-spec-item">
+                    <span className="exp-label">LAND COVER</span>
+                    <strong>Commercial Oil Palm Plantation (Elaeis guineensis)</strong>
+                  </div>
                 </div>
-                <div className="cov-stat">
-                  <span className="cov-stat-label">MAPPING STATUS</span>
-                  <strong className="text-amber">0 / 42 Blocks Mapped</strong>
+
+                <div className="expanded-indicators-box">
+                  <span className="exp-box-title">VALIDATED PRIMARY INDICATORS</span>
+                  <p>
+                    Monthly FFB Weighbridge Production · Expected Cohort Deviations · Frond 17 Leaf Nutrients (N, P, K, Ca, Mg, B) · DRIS Nutritional Balance Indices · Soil Chemistry (7 sampled index blocks, 35 unavailable)
+                  </p>
                 </div>
-                <div className="cov-stat">
-                  <span className="cov-stat-label">CANONICAL RISK</span>
-                  <strong className="text-neutral">0% (Isolated)</strong>
+
+                <div className="expanded-footer-row">
+                  <div className="audit-note">
+                    <ShieldCheck size={14} className="text-emerald" />
+                    <span>Sole quantitative source governing screening scores and fertilizer prescriptions.</span>
+                  </div>
+                  {navigate && (
+                    <button
+                      type="button"
+                      className="expanded-nav-btn"
+                      onClick={() => navigate("risk-analysis")}
+                    >
+                      <span>Explore Risk Screening</span>
+                      <ArrowRight size={13} />
+                    </button>
+                  )}
                 </div>
               </div>
+            )}
+          </article>
+
+          {/* B. RGB Drone Evidence */}
+          <article className="evidence-summary-card unmapped">
+            <div className="summary-card-header">
+              <div className="header-left">
+                <span className="pillar-letter-badge unmapped">B</span>
+                <div className="pillar-title-block">
+                  <span className="pillar-kicker">INDEPENDENT VISUAL BENCHMARK</span>
+                  <h3>RGB Drone Evidence</h3>
+                </div>
+              </div>
+              <span className="evidence-status-pill unmapped">
+                <Info size={13} />
+                Status: Unmapped
+              </span>
             </div>
-            <div className="cov-card-footer">
-              <small>Temperate deciduous European beech forest; strictly non-oil-palm data.</small>
+
+            {/* Concise Initial Summary */}
+            <div className="summary-card-body">
+              <div className="summary-meta-grid">
+                <div className="meta-item">
+                  <span className="meta-label">Coverage</span>
+                  <strong className="meta-value">500 survey images</strong>
+                </div>
+                <div className="meta-item">
+                  <span className="meta-label">Period</span>
+                  <strong className="meta-value">Aerial Survey Flight</strong>
+                </div>
+              </div>
+              <div className="summary-meaning-box">
+                <span className="meaning-label">Meaning:</span>
+                <p className="meaning-text">
+                  Visual detections cannot yet be assigned reliably to plantation blocks.
+                </p>
+              </div>
             </div>
-          </div>
+
+            {/* Expand / Collapse Button */}
+            <div className="summary-card-actions">
+              <button
+                type="button"
+                className="toggle-details-btn"
+                onClick={() => toggleExpand("rgb")}
+                aria-expanded={expanded.rgb}
+              >
+                <span>{expanded.rgb ? "Hide Details" : "View Details & Technical Audit"}</span>
+                {expanded.rgb ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+              </button>
+            </div>
+
+            {/* Progressive Disclosure Section */}
+            {expanded.rgb && (
+              <div className="summary-expanded-drawer">
+                <div className="expanded-spec-grid">
+                  <div className="exp-spec-item">
+                    <span className="exp-label">EVIDENCE LEVEL</span>
+                    <strong>Image Level (1024×1024 px Aerial Crops)</strong>
+                  </div>
+                  <div className="exp-spec-item">
+                    <span className="exp-label">CANONICAL RISK WEIGHT</span>
+                    <strong className="text-amber">0% (Decoupled / Isolated)</strong>
+                  </div>
+                  <div className="exp-spec-item">
+                    <span className="exp-label">BLOCK MAPPING</span>
+                    <strong className="text-amber">0 / 42 Blocks Mapped (Lacks Shapefile Bounds)</strong>
+                  </div>
+                  <div className="exp-spec-item">
+                    <span className="exp-label">DATASET PROVENANCE</span>
+                    <strong>MOPAD Site 2 Aerial Survey Dataset</strong>
+                  </div>
+                </div>
+
+                <div className="expanded-indicators-box">
+                  <span className="exp-box-title">VALIDATED MODEL DETECTIONS (YOLO11n)</span>
+                  <p>
+                    43,599 total palms detected across 500 images: Healthy Palms (78.28%) · Small / Replanted (20.28%) · Dead / Stunted (0.19%) · Mean Drone Health Score: 75.81%
+                  </p>
+                </div>
+
+                <div className="expanded-footer-row">
+                  <div className="audit-note">
+                    <ShieldAlert size={14} className="text-amber" />
+                    <span>Visual confirmation tool. Strictly decoupled from block screening formulas.</span>
+                  </div>
+                  {navigate && (
+                    <button
+                      type="button"
+                      className="expanded-nav-btn"
+                      onClick={() => navigate("drone-health")}
+                    >
+                      <span>Explore Drone Health</span>
+                      <ArrowRight size={13} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </article>
+
+          {/* C. Multispectral Evidence */}
+          <article className="evidence-summary-card benchmark">
+            <div className="summary-card-header">
+              <div className="header-left">
+                <span className="pillar-letter-badge benchmark">C</span>
+                <div className="pillar-title-block">
+                  <span className="pillar-kicker">SENSOR RESEARCH BENCHMARK</span>
+                  <h3>Multispectral Evidence</h3>
+                </div>
+              </div>
+              <span className="evidence-status-pill benchmark">
+                <ShieldAlert size={13} />
+                Status: Demo benchmark only
+              </span>
+            </div>
+
+            {/* Concise Initial Summary */}
+            <div className="summary-card-body">
+              <div className="summary-meta-grid">
+                <div className="meta-item">
+                  <span className="meta-label">Coverage</span>
+                  <strong className="meta-value">34 tiles</strong>
+                </div>
+                <div className="meta-item">
+                  <span className="meta-label">Period</span>
+                  <strong className="meta-value">Sensor Benchmark</strong>
+                </div>
+              </div>
+              <div className="summary-meaning-box">
+                <span className="meaning-label">Meaning:</span>
+                <p className="meaning-text">
+                  Data represents a German beech forest, not an oil-palm plantation.
+                </p>
+              </div>
+            </div>
+
+            {/* Expand / Collapse Button */}
+            <div className="summary-card-actions">
+              <button
+                type="button"
+                className="toggle-details-btn"
+                onClick={() => toggleExpand("multispectral")}
+                aria-expanded={expanded.multispectral}
+              >
+                <span>{expanded.multispectral ? "Hide Details" : "View Details & Technical Audit"}</span>
+                {expanded.multispectral ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+              </button>
+            </div>
+
+            {/* Progressive Disclosure Section */}
+            {expanded.multispectral && (
+              <div className="summary-expanded-drawer">
+                <div className="expanded-spec-grid">
+                  <div className="exp-spec-item">
+                    <span className="exp-label">EVIDENCE LEVEL</span>
+                    <strong>Tile Level (8.91M Calibrated Pixels)</strong>
+                  </div>
+                  <div className="exp-spec-item">
+                    <span className="exp-label">CANONICAL RISK WEIGHT</span>
+                    <strong className="text-purple">0% (Decoupled / Isolated)</strong>
+                  </div>
+                  <div className="exp-spec-item">
+                    <span className="exp-label">SENSOR WAVELENGTHS</span>
+                    <strong>5-Band Calibrated: 475nm, 560nm, 668nm, 705nm, 842nm</strong>
+                  </div>
+                  <div className="exp-spec-item">
+                    <span className="exp-label">TRUE PROVENANCE</span>
+                    <strong className="text-purple">Hullerbusch Beech Forest, Germany (Zenodo 16743975)</strong>
+                  </div>
+                </div>
+
+                <div className="expanded-indicators-box">
+                  <span className="exp-box-title">VALIDATED SPECTRAL INDICES &amp; ECOSYSTEM DISCLAIMER</span>
+                  <p>
+                    Canopy NDVI: 0.8977 · Red-Edge NDRE: 0.5129 · Canopy Cover: 93.62% · Uniformity: 90.48 · MHS: 92.00. <strong>Demonstrates 5-band sensor mechanics; strictly European beech forest (Fagus sylvatica), NOT oil-palm plantation data.</strong>
+                  </p>
+                </div>
+
+                <div className="expanded-footer-row">
+                  <div className="audit-note">
+                    <ShieldAlert size={14} className="text-purple" />
+                    <span>Demo benchmark only. Strictly excluded from operational block risk.</span>
+                  </div>
+                  {navigate && (
+                    <button
+                      type="button"
+                      className="expanded-nav-btn"
+                      onClick={() => navigate("multispectral-health")}
+                    >
+                      <span>Explore Multispectral</span>
+                      <ArrowRight size={13} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </article>
         </div>
       </section>
-
-      {/* THREE LARGE EVIDENCE PILLAR CARDS */}
-      <div className="evidence-pillars-grid">
-        {/* PILLAR 1: PALM AGRONOMIC */}
-        <article className="pillar-hero-card palm-pillar">
-          <div className="pillar-header">
-            <div className="pillar-icon-box palm">
-              <TrendingUp size={22} />
-            </div>
-            <div className="pillar-title-wrap">
-              <span className="pillar-tag">PILLAR 1 · PRIMARY SYSTEM</span>
-              <h3>Palm Agronomic Evidence</h3>
-            </div>
-            <span className="status-badge-available">AVAILABLE</span>
-          </div>
-
-          <div className="pillar-body">
-            <div className="pillar-spec-grid">
-              <div className="spec-item">
-                <span className="spec-label">EVIDENCE LEVEL</span>
-                <strong>BLOCK LEVEL</strong>
-              </div>
-              <div className="spec-item">
-                <span className="spec-label">COVERAGE</span>
-                <strong>42 Plantation Blocks</strong>
-              </div>
-              <div className="spec-item">
-                <span className="spec-label">TEMPORAL RANGE</span>
-                <strong>2012–2024 (13 Years)</strong>
-              </div>
-              <div className="spec-item">
-                <span className="spec-label">BLOCK MAPPING</span>
-                <strong className="text-green-bold">NATIVE BLOCK_ID</strong>
-              </div>
-            </div>
-
-            <div className="pillar-indicators-box">
-              <span className="box-title">VALIDATED PRIMARY INDICATORS</span>
-              <p>
-                Monthly FFB Production · Expected Yield Deviations · Foliar Nutrients (N, P, K, Ca, Mg, B) · DRIS Balance Indices · Soil Chemistry
-              </p>
-            </div>
-
-            <div className="pillar-risk-status active">
-              <ShieldCheck size={16} />
-              <div>
-                <strong>Canonical Risk: ACTIVE (100%)</strong>
-                <small>Sole quantitative driver of plantation management risk</small>
-              </div>
-            </div>
-          </div>
-
-          <div className="pillar-footer">
-            {navigate && (
-              <button
-                type="button"
-                className="button-secondary pillar-nav-btn"
-                onClick={() => navigate("risk-analysis")}
-              >
-                <span>Explore Risk Analysis</span>
-                <ArrowRight size={13} />
-              </button>
-            )}
-          </div>
-        </article>
-
-        {/* PILLAR 2: RGB DRONE */}
-        <article className="pillar-hero-card rgb-pillar">
-          <div className="pillar-header">
-            <div className="pillar-icon-box rgb">
-              <Scan size={22} />
-            </div>
-            <div className="pillar-title-wrap">
-              <span className="pillar-tag">PILLAR 2 · INDEPENDENT EVIDENCE</span>
-              <h3>RGB Drone UAV Evidence</h3>
-            </div>
-            <span className="status-badge-available">AVAILABLE</span>
-          </div>
-
-          <div className="pillar-body">
-            <div className="pillar-spec-grid">
-              <div className="spec-item">
-                <span className="spec-label">EVIDENCE LEVEL</span>
-                <strong>IMAGE LEVEL</strong>
-              </div>
-              <div className="spec-item">
-                <span className="spec-label">COVERAGE</span>
-                <strong>500 Survey Images</strong>
-              </div>
-              <div className="spec-item">
-                <span className="spec-label">YOLO PALMS</span>
-                <strong>43,599 Palms</strong>
-              </div>
-              <div className="spec-item">
-                <span className="spec-label">BLOCK MAPPING</span>
-                <strong className="text-amber-bold">UNAVAILABLE</strong>
-              </div>
-            </div>
-
-            <div className="pillar-indicators-box">
-              <span className="box-title">VALIDATED PRIMARY INDICATORS</span>
-              <p>
-                YOLO11n Object Detections · Healthy Palms (78.28%) · Dead Palms (0.19%) · Small/Replanted (20.28%) · Drone Health Score (75.81%)
-              </p>
-            </div>
-
-            <div className="pillar-risk-status isolated">
-              <XCircle size={16} />
-              <div>
-                <strong>Canonical Risk: ISOLATED (0%)</strong>
-                <small>Standalone visual evidence; not merged into block risk</small>
-              </div>
-            </div>
-          </div>
-
-          <div className="pillar-footer">
-            {navigate && (
-              <button
-                type="button"
-                className="button-secondary pillar-nav-btn"
-                onClick={() => navigate("drone-health")}
-              >
-                <span>Explore Drone Health</span>
-                <ArrowRight size={13} />
-              </button>
-            )}
-          </div>
-        </article>
-
-        {/* PILLAR 3: MULTISPECTRAL */}
-        <article className="pillar-hero-card ms-pillar">
-          <div className="pillar-header">
-            <div className="pillar-icon-box ms">
-              <Layers size={22} />
-            </div>
-            <div className="pillar-title-wrap">
-              <span className="pillar-tag">PILLAR 3 · INDEPENDENT BENCHMARK</span>
-              <h3>Multispectral UAV Evidence</h3>
-            </div>
-            <span className="status-badge-available">BENCHMARK</span>
-          </div>
-
-          <div className="pillar-body">
-            <div className="pillar-spec-grid">
-              <div className="spec-item">
-                <span className="spec-label">EVIDENCE LEVEL</span>
-                <strong>TILE LEVEL</strong>
-              </div>
-              <div className="spec-item">
-                <span className="spec-label">COVERAGE</span>
-                <strong>34 Calibrated Tiles</strong>
-              </div>
-              <div className="spec-item">
-                <span className="spec-label">PROVENANCE</span>
-                <strong className="text-purple-bold">Hullerbusch, Germany</strong>
-              </div>
-              <div className="spec-item">
-                <span className="spec-label">BLOCK MAPPING</span>
-                <strong className="text-amber-bold">UNMAPPED (0/42)</strong>
-              </div>
-            </div>
-
-            <div className="pillar-benchmark-notice">
-              <span className="prov-notice-tag">BENCHMARK PROVENANCE</span>
-              <p>
-                <strong>MSUAV500K Benchmark</strong> (Zenodo 16743975). European temperate beech forest (<em>Fagus sylvatica</em>) in Mecklenburg-Vorpommern, Germany. Demonstrates 5-band sensor mechanics; <strong>NOT oil-palm plantation data</strong>.
-              </p>
-            </div>
-
-            <div className="pillar-indicators-box">
-              <span className="box-title">VALIDATED PRIMARY INDICATORS</span>
-              <p>
-                Canopy NDVI (0.8977) · Red-Edge NDRE (0.5129) · Canopy Cover (93.62%) · Uniformity (90.48) · Multispectral Health Score (92.00)
-              </p>
-            </div>
-
-            <div className="pillar-risk-status isolated">
-              <XCircle size={16} />
-              <div>
-                <strong>Canonical Risk: ISOLATED (0%)</strong>
-                <small>Standalone spectral benchmark; not merged into block risk</small>
-              </div>
-            </div>
-          </div>
-
-          <div className="pillar-footer">
-            {navigate && (
-              <button
-                type="button"
-                className="button-secondary pillar-nav-btn"
-                onClick={() => navigate("multispectral-health")}
-              >
-                <span>Explore Multispectral</span>
-                <ArrowRight size={13} />
-              </button>
-            )}
-          </div>
-        </article>
-      </div>
 
       {/* EVIDENCE ARCHITECTURE VISUAL FLOW */}
       <section className="panel evidence-flow-panel">

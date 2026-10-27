@@ -213,6 +213,7 @@ export default function App() {
     if (/^B\d{3}$/i.test(hash)) return hash.toUpperCase();
     return null;
   });
+  const [selectedActionId, setSelectedActionId] = useState(null);
 
   const [blockSearch, setBlockSearch] = useState("");
   const [riskFilter, setRiskFilter] = useState("ALL");
@@ -316,8 +317,11 @@ export default function App() {
   }, []);
 
   // Update hash when viewLevel or selectedBlockId changes
-  const navigateTo = (level, blockId = null) => {
+  const navigateTo = (level, blockId = null, actionId = null) => {
     setViewLevel(level);
+    if (actionId !== undefined) {
+      setSelectedActionId(actionId);
+    }
     if (level === "estates") {
       window.history.pushState(null, "", "#estates");
     } else if (level === "blocks") {
@@ -347,6 +351,7 @@ export default function App() {
     }
     setSelectedEstate(estateName);
     setSelectedBlockId(null);
+    setSelectedActionId(null);
     setBlockSearch("");
     setRiskFilter("ALL");
     navigateTo("blocks");
@@ -360,6 +365,7 @@ export default function App() {
     }
     setSelectedEstate(null);
     setSelectedBlockId(null);
+    setSelectedActionId(null);
     setBlockSearch("");
     setRiskFilter("ALL");
     navigateTo("estates");
@@ -572,6 +578,15 @@ export default function App() {
           {/* Sub-crumb for Block Details */}
           {selectedEstate && viewLevel === "block-detail" && selectedBlockId && (
             <div className="topbar-subcrumb">
+              <span className="crumb-chevron"><ChevronRight size={14} /></span>
+              <button
+                type="button"
+                className="topbar-crumb-link"
+                onClick={() => navigateTo("field-actions")}
+                title="Return to Field Action Queue"
+              >
+                Action Queue
+              </button>
               <span className="crumb-chevron"><ChevronRight size={14} /></span>
               <strong className="crumb-current">Block {selectedBlockId}</strong>
             </div>
@@ -1016,23 +1031,54 @@ export default function App() {
 
                 {/* Concise Recommended-Action Panel */}
                 <div className="estate-action-panel">
-                  <h4 className="action-panel-title">
-                    <Sparkles size={14} className="text-emerald" />
-                    Estate Recommended Actions
-                  </h4>
+                  <div className="action-panel-header-row">
+                    <h4 className="action-panel-title">
+                      <Sparkles size={14} className="text-emerald" />
+                      Priority Operational Directives
+                    </h4>
+                    <button
+                      type="button"
+                      className="open-fac-link-btn"
+                      onClick={() => navigateTo("field-actions")}
+                      title="Open full Field Action Center queue"
+                    >
+                      <span>Action Queue (42)</span>
+                      <ArrowRight size={12} />
+                    </button>
+                  </div>
 
                   <div className="action-directive-item critical">
-                    <span className="directive-tag critical">Critical (B001)</span>
-                    <p>Conduct emergency joint agronomy audit for Block B001. Frond 17 re-sampling and field drainage assessment to resolve foliar nutrient imbalance.</p>
+                    <div className="directive-item-top">
+                      <span className="directive-tag critical">Critical Directive · Block B001</span>
+                      <button
+                        type="button"
+                        className="directive-jump-btn"
+                        onClick={() => navigateTo("block-detail", "B001", "block-B001")}
+                      >
+                        Inspect & Resolve B001 →
+                      </button>
+                    </div>
+                    <p>Conduct emergency joint agronomy audit for Block B001 (-47.1% yield gap). Frond 17 foliar re-sampling and field drainage assessment to resolve severe potassium/nitrogen imbalance.</p>
                   </div>
 
                   <div className="action-directive-item moderate">
-                    <span className="directive-tag moderate">Medium Watch (6 Blocks)</span>
+                    <div className="directive-item-top">
+                      <span className="directive-tag moderate">Medium Watch (6 Blocks)</span>
+                      <button
+                        type="button"
+                        className="directive-jump-btn secondary"
+                        onClick={() => navigateTo("field-actions")}
+                      >
+                        View Watch Items →
+                      </button>
+                    </div>
                     <p>Audit fertilizer broadcast uniformity across B005, B031, B028, B030, B019, B029 to close negative yield gap variances (-22% to -30%).</p>
                   </div>
 
                   <div className="action-directive-item routine">
-                    <span className="directive-tag routine">Routine (35 Blocks)</span>
+                    <div className="directive-item-top">
+                      <span className="directive-tag routine">Routine Maintenance (35 Blocks)</span>
+                    </div>
                     <p>Maintain standard circular weeding, canopy upkeep, and standard fertilizer schedule across cohort-aligned low-risk blocks.</p>
                   </div>
                 </div>
@@ -1272,6 +1318,8 @@ export default function App() {
               }}
               datasets={datasets}
               onBackToGrid={() => navigateTo("blocks")}
+              onBackToActionQueue={() => navigateTo("field-actions")}
+              selectedActionId={selectedActionId}
               estateName={selectedEstate}
               isLoading={isLoading}
             />
@@ -1290,7 +1338,7 @@ export default function App() {
           ) : (
             <FieldActionCenter
               datasets={datasets}
-              onNavigateBlock={(bid) => navigateTo("block-detail", bid)}
+              onNavigateBlock={(bid, actionId) => navigateTo("block-detail", bid, actionId)}
             />
           )
         )}

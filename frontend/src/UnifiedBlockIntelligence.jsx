@@ -96,6 +96,8 @@ export default function UnifiedBlockIntelligence({
   onSelectBlock,
   datasets,
   onBackToGrid,
+  onBackToActionQueue,
+  selectedActionId,
   estateName = "North Estate (PT Palm Indo)",
   isLoading = false,
 }) {
@@ -113,6 +115,70 @@ export default function UnifiedBlockIntelligence({
 
   const bKey = (id) => String(id ?? "").trim().toUpperCase();
   const currentBlockId = bKey(blockId || "B012");
+
+  // Field Action Workflow & Persistent Inspection State
+  const ACTION_STORAGE_KEY = "palm-ai-field-action-status-v2";
+  const actionKey = selectedActionId || `block-${currentBlockId}`;
+  const [actionRecords, setActionRecords] = useState(() => {
+    try {
+      return JSON.parse(window.localStorage.getItem("palm-ai-field-action-status-v2") || "{}");
+    } catch {
+      return {};
+    }
+  });
+
+  const [actionStatus, setActionStatus] = useState("OPEN");
+  const [inspectorName, setInspectorName] = useState("");
+  const [inspectionDate, setInspectionDate] = useState(new Date().toISOString().slice(0, 10));
+  const [physicalFindings, setPhysicalFindings] = useState("");
+  const [followUpNotes, setFollowUpNotes] = useState("");
+  const [saveFeedback, setSaveFeedback] = useState(null);
+
+  // Sync inspection form state whenever selected block or action changes
+  useEffect(() => {
+    try {
+      const recs = JSON.parse(window.localStorage.getItem(ACTION_STORAGE_KEY) || "{}");
+      setActionRecords(recs);
+      const rec = recs[actionKey] || {};
+      setActionStatus(rec.status || "OPEN");
+      setInspectorName(rec.inspector || "");
+      setInspectionDate(rec.inspectionDate || new Date().toISOString().slice(0, 10));
+      setPhysicalFindings(rec.findings || "");
+      setFollowUpNotes(rec.notes || "");
+      setSaveFeedback(null);
+    } catch {
+      // Fallback
+    }
+  }, [actionKey, currentBlockId]);
+
+  const handleSaveInspection = (newStatus = actionStatus) => {
+    const updated = {
+      ...actionRecords,
+      [actionKey]: {
+        ...(actionRecords[actionKey] || {}),
+        status: newStatus,
+        inspector: inspectorName.trim(),
+        inspectionDate: inspectionDate,
+        findings: physicalFindings.trim(),
+        notes: followUpNotes.trim(),
+        updatedAt: new Date().toISOString(),
+        completedAt: newStatus === "COMPLETED" ? (actionRecords[actionKey]?.completedAt || new Date().toLocaleString()) : null,
+      }
+    };
+    setActionRecords(updated);
+    setActionStatus(newStatus);
+    try {
+      window.localStorage.setItem(ACTION_STORAGE_KEY, JSON.stringify(updated));
+      setSaveFeedback(
+        newStatus === "COMPLETED"
+          ? "✓ Field inspection verified and marked COMPLETED in field queue."
+          : "✓ Inspection record saved to field action queue."
+      );
+      setTimeout(() => setSaveFeedback(null), 4000);
+    } catch (e) {
+      console.error("Failed to save action record:", e);
+    }
+  };
 
   // Live / Deterministic AI Recommendations API State
   const [recommendations, setRecommendations] = useState(null);
@@ -159,6 +225,8 @@ export default function UnifiedBlockIntelligence({
     .filter((r) => bKey(r.Block_ID) === currentBlockId)
     .sort((a, b) => Number(b.Year || 0) - Number(a.Year || 0))[0] || null;
   const soilRow = (datasets.soil || []).find((r) => bKey(r.Block_ID) === currentBlockId) || null;
+  const SAMPLED_SOIL_BLOCKS = ["B004", "B006", "B008", "B015", "B026", "B031", "B041"];
+  const hasSampledSoil = SAMPLED_SOIL_BLOCKS.includes(currentBlockId) && (soilRow?.status === "observed" || soilRow?.pH_H2O != null);
 
   // 13-year productivity history (2012-2024)
   const blockHistory = useMemo(() => {
@@ -372,6 +440,17 @@ export default function UnifiedBlockIntelligence({
       {/* 1. COMPACT BLOCK HEADER WITH BREADCRUMB & SWITCHER */}
       <div className="block-context-header">
         <div className="block-context-left">
+          {onBackToActionQueue && (
+            <button
+              type="button"
+              className="back-queue-btn"
+              onClick={onBackToActionQueue}
+              title="Return to Field Action Queue"
+            >
+              <ClipboardCheck size={15} />
+              <span>Action Queue</span>
+            </button>
+          )}
           <button
             type="button"
             className="back-grid-btn"
@@ -393,11 +472,27 @@ export default function UnifiedBlockIntelligence({
           <div className="context-breadcrumb-trail">
             <span className="crumb-dim">{estateName}</span>
             <span className="crumb-sep">/</span>
+            {onBackToActionQueue ? (
+              <>
+                <button
+                  type="button"
+                  className="crumb-btn-link"
+                  onClick={onBackToActionQueue}
+                >
+                  Action Queue
+                </button>
+                <span className="crumb-sep">/</span>
+              </>
+            ) : null}
             <strong className="crumb-active">Block {currentBlockId}</strong>
           </div>
           <span className={`risk-badge-compact ${riskLevel.toLowerCase()}`}>
             <span className="badge-dot" />
             {riskLevel} RISK ({riskScore != null ? fmt(riskScore, 1) : "N/A"})
+          </span>
+          <span className={`field-status-badge ${actionStatus.toLowerCase().replace(/\s+/g, "-")}`}>
+            <Clock3 size={12} />
+            {actionStatus}
           </span>
           <span className="data-period-badge">
             <Calendar size={12} />
@@ -424,6 +519,299 @@ export default function UnifiedBlockIntelligence({
           </select>
         </div>
       </div>
+
+      {/* 1B. ACTIVE FIELD ACTION WORKFLOW PANEL (BLOCK-CENTRIC RESOLUTION FLOW)
+          Action Queue → Select Action → Open Related Block → Understand Issue → Review Evidence → Recommended Solution → Record Field Inspection → Verify → Complete */}
+      <section className="block-action-workflow-card" aria-label="Field Action Operational Workflow">
+        {/* Workflow Header with Directive Banner */}
+        <div className="workflow-stepper-header">
+          <div className="workflow-title-group">
+            <span className="workflow-pill-label">OPERATIONAL FIELD DIRECTIVE</span>
+            <h3 className="workflow-heading">
+              Field Action Resolution for Block {currentBlockId}
+            </h3>
+          </div>
+          <div className="workflow-actions-top">
+            <span className={`workflow-status-pill ${actionStatus.toLowerCase().replace(/\s+/g, "-")}`}>
+              {actionStatus === "COMPLETED" ? <CheckCircle2 size={13} /> : <Clock3 size={13} />}
+              Status: {actionStatus}
+            </span>
+            {onBackToActionQueue && (
+              <button
+                type="button"
+                className="workflow-back-queue-btn"
+                onClick={onBackToActionQueue}
+                title="Return to Action Queue"
+              >
+                <ArrowLeft size={13} />
+                <span>Back to Action Queue</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* 5-Step Process Stepper */}
+        <div className="workflow-step-progress">
+          <div className="step-node active">
+            <span className="step-num">1</span>
+            <span className="step-label">Block {currentBlockId} Selected</span>
+          </div>
+          <div className="step-arrow"><ChevronRight size={14} /></div>
+          <div className="step-node active">
+            <span className="step-num">2</span>
+            <span className="step-label">Understand Issue</span>
+          </div>
+          <div className="step-arrow"><ChevronRight size={14} /></div>
+          <div className="step-node active">
+            <span className="step-num">3</span>
+            <span className="step-label">Review Evidence</span>
+          </div>
+          <div className="step-arrow"><ChevronRight size={14} /></div>
+          <div className="step-node active">
+            <span className="step-num">4</span>
+            <span className="step-label">Recommended Solution</span>
+          </div>
+          <div className="step-arrow"><ChevronRight size={14} /></div>
+          <div className={`step-node ${actionStatus === "COMPLETED" ? "completed" : "current"}`}>
+            <span className="step-num">{actionStatus === "COMPLETED" ? "✓" : "5"}</span>
+            <span className="step-label">Record Inspection &amp; Verify</span>
+          </div>
+        </div>
+
+        {/* Workflow Main Content Grid: 2 Columns */}
+        <div className="workflow-body-grid">
+          {/* Left Column: Diagnostics, Evidence & Grounded Solution */}
+          <div className="workflow-intel-col">
+            {/* Step 2: Understand Flagged Issue */}
+            <div className="workflow-subcard">
+              <div className="subcard-header">
+                <span className="subcard-step-badge">STEP 2</span>
+                <h4>Understand Flagged Issue &amp; Real Risk Contributors</h4>
+              </div>
+              <div className="subcard-content">
+                <div className="issue-highlight-row">
+                  <div className="issue-metric">
+                    <span className="metric-label">Observed Issue Contributor</span>
+                    <strong className="text-warning">
+                      {multiRiskRow?.Main_Contributing_Indicators || riskRow?.Risk_Contributor || "Yield Gap Variance"}
+                    </strong>
+                  </div>
+                  <div className="issue-metric">
+                    <span className="metric-label">Canonical Risk Score</span>
+                    <strong className={riskLevel === "HIGH" ? "text-ruby" : "text-amber"}>
+                      {riskScore != null ? fmt(riskScore, 1) : "N/A"} / 100 ({riskLevel} RISK)
+                    </strong>
+                  </div>
+                </div>
+                <p className="subcard-explanation">
+                  <strong>Why flagged:</strong> Block {currentBlockId} recorded <strong>{fmt(actualYield)} t/ha</strong> actual productivity against an age-cohort benchmark of <strong>{fmt(expectedYield)} t/ha</strong> (yield gap variance: <strong>{fmt(yieldGap)}%</strong>). Plant age is {fmt(plantAge, 0)} years ({seedType}, planted {plantingYear}). Foliar chemistry shows {nutrientsRow?.Nutrient_Concern || "variations recorded"} with DRIS primary constraint of <strong>{drisRow?.Limitation_1 || "None"}</strong>.
+                </p>
+              </div>
+            </div>
+
+            {/* Step 3: Review Supporting Evidence */}
+            <div className="workflow-subcard">
+              <div className="subcard-header">
+                <span className="subcard-step-badge">STEP 3</span>
+                <h4>Review Supporting Evidence &amp; Missing Data</h4>
+              </div>
+              <div className="subcard-content">
+                <ul className="evidence-checklist">
+                  <li>
+                    <span className="check-bullet text-emerald">✓</span>
+                    <div>
+                      <strong>Historical Productivity (2012–2024):</strong>
+                      <span> {blockHistory.length} years of certified weighbridge FFB delivery records.</span>
+                    </div>
+                  </li>
+                  <li>
+                    <span className="check-bullet text-emerald">✓</span>
+                    <div>
+                      <strong>Frond 17 Foliar Assay ({nutrientsRow?.Year || nutrientsRow?.Leaf_Sampling_Year || 2022}):</strong>
+                      <span> N: {fmt(nutrientsRow?.N_pct, 2)}% | P: {fmt(nutrientsRow?.P_pct, 2)}% | K: {fmt(nutrientsRow?.K_pct, 2)}% | Mg: {fmt(nutrientsRow?.Mg_pct, 2)}% | Boron: {nutrientsRow?.B_ppm != null ? fmt(nutrientsRow?.B_ppm, 1) + " ppm" : "Unrecorded"}.</span>
+                    </div>
+                  </li>
+                  <li>
+                    <span className="check-bullet text-emerald">✓</span>
+                    <div>
+                      <strong>DRIS Diagnostic Balance:</strong>
+                      <span> Primary: {drisRow?.Limitation_1 || "Balanced"} · Secondary: {drisRow?.Limitation_2 || "None"}.</span>
+                    </div>
+                  </li>
+                  <li>
+                    <span className={`check-bullet ${hasSampledSoil ? "text-emerald" : "text-amber"}`}>
+                      {hasSampledSoil ? "✓" : "!"}
+                    </span>
+                    <div>
+                      <strong>Soil Sampling Status:</strong>
+                      {hasSampledSoil ? (
+                        <span> Observed Sample (pH: {fmt(soilRow?.pH_H2O, 2)}, C-Organic: {fmt(soilRow?.C_Organic_pct, 2)}%, Avail P: {fmt(soilRow?.P_Available_ppm, 1)} ppm).</span>
+                      ) : (
+                        <span className="text-amber"> Unavailable (Unsampled Block). Estate soil survey covered 7 index blocks only (B004, B006, B008, B015, B026, B031, B041). Block {currentBlockId} requires soil core collection.</span>
+                      )}
+                    </div>
+                  </li>
+                  <li>
+                    <span className="check-bullet text-muted">ℹ</span>
+                    <div>
+                      <strong>Decoupled UAV Layers:</strong>
+                      <span className="text-muted"> RGB Drone (500 survey images) and Multispectral (34 German beech forest tiles) are independent benchmarks with 0% contribution to block risk.</span>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Step 4: Recommended Solution */}
+            <div className="workflow-subcard highlight">
+              <div className="subcard-header">
+                <span className="subcard-step-badge">STEP 4</span>
+                <h4>Recommended Solution &amp; Verification Protocol</h4>
+              </div>
+              <div className="subcard-content">
+                <div className="prescription-box">
+                  <span className="prescription-title">Agreed Corrective Prescription:</span>
+                  <p className="prescription-text">
+                    {recommendations?.recommendation?.summary || drisRow?.Prescription || actionPlan[0]?.action}
+                  </p>
+                </div>
+                <div className="protocol-box">
+                  <span className="protocol-title">Field Follow-up &amp; Verification Protocol:</span>
+                  <p className="protocol-text">
+                    {riskLevel === "HIGH"
+                      ? "Conduct Frond 17 foliar re-sampling at 60–90 days; target quarterly bunch census count and verify drainage furrow clearance."
+                      : "Monitor monthly bunch delivery weights across the upcoming 3 harvest rounds."}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Step 5 Record Field Inspection Form */}
+          <div className="workflow-form-col">
+            <div className="workflow-subcard form-card">
+              <div className="subcard-header">
+                <span className="subcard-step-badge active">STEP 5</span>
+                <h4>Record Field Inspection &amp; Update Status</h4>
+              </div>
+              <div className="subcard-content">
+                {/* Status Toggle Row */}
+                <div className="form-group">
+                  <label className="form-label">Workflow Status:</label>
+                  <div className="status-button-group">
+                    {["OPEN", "IN REVIEW", "VERIFYING IN FIELD", "COMPLETED"].map((st) => (
+                      <button
+                        key={st}
+                        type="button"
+                        className={`status-select-btn ${st.toLowerCase().replace(/\s+/g, "-")} ${actionStatus === st ? "active" : ""}`}
+                        onClick={() => handleSaveInspection(st)}
+                      >
+                        {st}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Inspector and Date */}
+                <div className="form-row-2">
+                  <div className="form-group">
+                    <label htmlFor="inspector-name-input" className="form-label">
+                      Field Inspector / Agronomist:
+                    </label>
+                    <input
+                      id="inspector-name-input"
+                      type="text"
+                      className="form-input"
+                      value={inspectorName}
+                      onChange={(e) => setInspectorName(e.target.value)}
+                      placeholder="e.g. Budi Santoso (Agronomist)"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="inspection-date-input" className="form-label">
+                      Inspection Date:
+                    </label>
+                    <input
+                      id="inspection-date-input"
+                      type="date"
+                      className="form-input"
+                      value={inspectionDate}
+                      onChange={(e) => setInspectionDate(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {/* Ground Findings */}
+                <div className="form-group">
+                  <label htmlFor="field-findings-input" className="form-label">
+                    Observed Field Conditions &amp; Ground Findings:
+                  </label>
+                  <textarea
+                    id="field-findings-input"
+                    className="form-textarea"
+                    rows={3}
+                    value={physicalFindings}
+                    onChange={(e) => setPhysicalFindings(e.target.value)}
+                    placeholder="Document weed circle radius, frond yellowing, crown stunting, drainage clearance, or pest damage observed in field..."
+                  />
+                </div>
+
+                {/* Follow-up Notes */}
+                <div className="form-group">
+                  <label htmlFor="followup-notes-input" className="form-label">
+                    Follow-Up Notes &amp; Action Directives:
+                  </label>
+                  <textarea
+                    id="followup-notes-input"
+                    className="form-textarea"
+                    rows={2}
+                    value={followUpNotes}
+                    onChange={(e) => setFollowUpNotes(e.target.value)}
+                    placeholder="Enter corrective fertilizer round dispatch notes, re-sampling dates, or agronomist instructions..."
+                  />
+                </div>
+
+                {/* Save & Complete Actions */}
+                <div className="form-actions-row">
+                  <button
+                    type="button"
+                    className="save-inspection-btn"
+                    onClick={() => handleSaveInspection(actionStatus)}
+                  >
+                    <ClipboardCheck size={14} />
+                    <span>Save Inspection Record</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="complete-inspection-btn"
+                    onClick={() => handleSaveInspection("COMPLETED")}
+                    title="Explicitly verify and mark this field directive as completed"
+                  >
+                    <CheckCircle2 size={14} />
+                    <span>Confirm Verification &amp; Complete</span>
+                  </button>
+                </div>
+
+                {/* Save Feedback / Completed Notice */}
+                {saveFeedback && (
+                  <div className="save-feedback-banner">
+                    {saveFeedback}
+                  </div>
+                )}
+                {actionRecords[actionKey]?.completedAt && (
+                  <div className="completed-audit-notice">
+                    <CheckCircle2 size={13} className="text-emerald" />
+                    <span>
+                      Completed on <strong>{actionRecords[actionKey].completedAt}</strong>
+                      {actionRecords[actionKey]?.inspector ? ` by ${actionRecords[actionKey].inspector}` : ""}.
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* 2. COMPACT EXECUTIVE SUMMARY CARD (UNDERSTANDABLE IN 5 SECONDS) */}
       <div className="executive-summary-strip">

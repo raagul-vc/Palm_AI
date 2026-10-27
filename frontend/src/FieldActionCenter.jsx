@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   ClipboardCheck, Download, Filter, CheckCircle2, Clock3, CircleAlert,
-  Sprout, ScanSearch, Layers3, ArrowUpRight, RotateCcw, Sparkles,
+  Sprout, ScanSearch, Layers3, ArrowUpRight, ArrowRight, RotateCcw, Sparkles,
   ShieldAlert, Info, Calendar, ChevronRight, AlertTriangle, UserCheck,
-  FileText, ExternalLink, ShieldCheck, CheckSquare, Square, Search
+  FileText, ExternalLink, ShieldCheck, CheckSquare, Square, Search, XCircle
 } from "lucide-react";
 import "./FieldActionCenter.css";
 
@@ -446,6 +446,26 @@ export default function FieldActionCenter({ datasets, onNavigateBlock }) {
             Turn verified empirical evidence into actionable field inspection directives. Track verification progress, record agronomist findings, and export audit-ready handoffs for field teams.
           </p>
 
+          {/* Block-Centric Operational Workflow Stepper */}
+          <div className="fac-workflow-stepper">
+            <span className="stepper-title">Operational Workflow:</span>
+            <div className="stepper-track">
+              <span className="step-pill current">1. Action Queue</span>
+              <span className="step-arrow">→</span>
+              <span className="step-pill">2. Select Block</span>
+              <span className="step-arrow">→</span>
+              <span className="step-pill">3. Understand Issue</span>
+              <span className="step-arrow">→</span>
+              <span className="step-pill">4. Review Evidence</span>
+              <span className="step-arrow">→</span>
+              <span className="step-pill">5. Recommended Solution</span>
+              <span className="step-arrow">→</span>
+              <span className="step-pill">6. Record Inspection</span>
+              <span className="step-arrow">→</span>
+              <span className="step-pill">7. Complete</span>
+            </div>
+          </div>
+
           <div className="fac-boundary-notice">
             <Info size={15} className="text-amber" />
             <span>
@@ -571,17 +591,27 @@ export default function FieldActionCenter({ datasets, onNavigateBlock }) {
                     <span className={`fac-source-badge ${item.sourceType}`}>
                       {item.source}
                     </span>
-                    <h3 className="fac-target-title">{item.target}</h3>
-                    {item.blockId && onNavigateBlock && (
+                    <h3
+                      className={`fac-target-title ${item.blockId ? "clickable" : ""}`}
+                      onClick={() => item.blockId && onNavigateBlock && onNavigateBlock(item.blockId, item.id)}
+                      title={item.blockId ? `Click to open Block ${item.blockId} Detail View` : undefined}
+                    >
+                      {item.target}
+                    </h3>
+                    {item.blockId && onNavigateBlock ? (
                       <button
                         type="button"
                         className="fac-open-block-link"
-                        onClick={() => onNavigateBlock(item.blockId)}
-                        title={`Open complete Unified Intelligence panel for Block ${item.blockId}`}
+                        onClick={() => onNavigateBlock(item.blockId, item.id)}
+                        title={`Open complete inspection and resolution workflow for Block ${item.blockId}`}
                       >
-                        <span>Inspect Block</span>
-                        <ArrowUpRight size={13} />
+                        <span>Open Block {item.blockId}</span>
+                        <ArrowRight size={13} />
                       </button>
+                    ) : (
+                      <span className="fac-unmapped-tag" title="This research benchmark is not georeferenced to operational blocks">
+                        Unmapped Benchmark
+                      </span>
                     )}
                   </div>
 
@@ -726,11 +756,29 @@ export default function FieldActionCenter({ datasets, onNavigateBlock }) {
                   )}
                 </div>
 
-                {/* CARD FOOTER: INTERACTIVE WORKFLOW STATUS & AGronomist Notes */}
+                {/* CARD FOOTER: INTERACTIVE WORKFLOW STATUS & Agronomist Notes */}
                 <div className="fac-card-footer">
                   <div className="fac-status-workflow-row">
+                    {/* Primary Block Workflow CTA */}
+                    {item.blockId && onNavigateBlock ? (
+                      <button
+                        type="button"
+                        className="fac-workflow-primary-btn"
+                        onClick={() => onNavigateBlock(item.blockId, item.id)}
+                        title={`Open block detail view and execute inspection workflow for Block ${item.blockId}`}
+                      >
+                        <Sprout size={14} />
+                        <span>Inspect Block {item.blockId} & Record Findings →</span>
+                      </button>
+                    ) : (
+                      <div className="fac-unmapped-pill-note">
+                        <XCircle size={13} className="text-amber" />
+                        <span>Unmapped Benchmark · Not linked to blocks B001–B042</span>
+                      </div>
+                    )}
+
                     <div className="fac-status-selector">
-                      <span className="fac-status-label">Follow-up Status:</span>
+                      <span className="fac-status-label">Status:</span>
                       <select
                         value={currentStatus}
                         onChange={(e) => updateStatus(item.id, e.target.value)}
