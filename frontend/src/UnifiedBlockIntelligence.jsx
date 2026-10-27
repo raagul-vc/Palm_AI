@@ -97,6 +97,7 @@ export default function UnifiedBlockIntelligence({
   datasets,
   onBackToGrid,
   estateName = "North Estate (PT Palm Indo)",
+  isLoading = false,
 }) {
   const [activeTab, setActiveTab] = useState("productivity");
   const [showFormulaModal, setShowFormulaModal] = useState(false);
@@ -729,19 +730,24 @@ export default function UnifiedBlockIntelligence({
                   <h3>13-Year Historical Productivity Trajectory (2012–2024)</h3>
                 </div>
                 <div className="legend-pills">
-                  <span className="legend-chip"><i className="dot-green" /> Observed Yield (t/ha)</span>
-                  <span className="legend-chip"><i className="dot-orange" /> Forecast Model</span>
+                  <span className="legend-chip"><i className="dot-green" /> Observed Harvest (t/ha/yr)</span>
+                  <span className="legend-chip"><i className="dot-orange" /> Forecast Model (Annual Sum)</span>
                 </div>
               </div>
               <div className="chart-container-wrap">
-                {yieldTimeline && yieldTimeline.length > 0 ? (
+                {isLoading ? (
+                  <div className="chart-loading-state">
+                    <RefreshCw size={20} className="animate-spin text-emerald" />
+                    <span>Loading Block {currentBlockId} productivity trajectory…</span>
+                  </div>
+                ) : yieldTimeline && yieldTimeline.length > 0 ? (
                   <ResponsiveContainer width="100%" height={280} minWidth={0} debounce={50}>
                     <BarChart data={yieldTimeline} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.06)" />
                       <XAxis dataKey="Year" tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} domain={[0, (dataMax) => Math.max(26, Math.ceil(dataMax + 2))]} />
+                      <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} domain={[0, (dataMax) => Math.max(26, Math.ceil(dataMax + 2))]} unit=" t/ha/yr" />
                       <Tooltip
-                        formatter={(v, name) => [`${fmt(v)} t/ha`, name === "Actual" ? "Actual Harvest" : "Forecast Model (Annual Sum)"]}
+                        formatter={(v, name) => [`${fmt(v)} t/ha/yr`, name === "Actual" ? "Observed Harvest (12-Mo Sum)" : "Forecast Model (Annual Sum)"]}
                         contentStyle={{ backgroundColor: "#0d2317", borderRadius: "8px", color: "#f8fafc", border: "1px solid rgba(255,255,255,0.1)" }}
                       />
                       <Bar dataKey="Actual" fill="#10b981" radius={[4, 4, 0, 0]} name="Actual" isAnimationActive={false} />
@@ -760,7 +766,7 @@ export default function UnifiedBlockIntelligence({
                 <Info size={16} className="text-emerald" />
                 <p>
                   <strong>Productivity Analysis:</strong> Block {currentBlockId} (planted in {plantingYear}, standing age {fmt(plantAge, 0)} years) yielded{" "}
-                  <strong>{fmt(actualYield)} t/ha</strong> in 2024 vs cohort baseline of <strong>{fmt(expectedYield)} t/ha</strong> (Yield Gap:{" "}
+                  <strong>{fmt(actualYield)} t/ha/yr</strong> in 2024 vs cohort baseline of <strong>{fmt(expectedYield)} t/ha/yr</strong> (Yield Gap:{" "}
                   <strong>{fmt(yieldGap)}%</strong>). Historical records indicate maximum production was reached during mature phase.
                 </p>
               </div>
@@ -776,12 +782,12 @@ export default function UnifiedBlockIntelligence({
               </div>
               <div className="metric-stack">
                 <div className="metric-stack-row">
-                  <span>Actual Latest Yield</span>
-                  <strong>{fmt(actualYield)} t/ha</strong>
+                  <span>Actual Latest Yield (2024)</span>
+                  <strong>{fmt(actualYield)} t/ha/yr</strong>
                 </div>
                 <div className="metric-stack-row">
                   <span>Expected Cohort Benchmark</span>
-                  <strong>{fmt(expectedYield)} t/ha</strong>
+                  <strong>{fmt(expectedYield)} t/ha/yr</strong>
                 </div>
                 <div className="metric-stack-row">
                   <span>Yield Gap vs Cohort</span>
@@ -834,15 +840,20 @@ export default function UnifiedBlockIntelligence({
                   <span className="subtle-badge">12 Months Verified</span>
                 )}
               </div>
-              {monthlyHarvest.length > 0 ? (
+              {isLoading ? (
+                <div className="chart-loading-state compact">
+                  <RefreshCw size={18} className="animate-spin text-emerald" />
+                  <span>Loading 2024 monthly harvest curve…</span>
+                </div>
+              ) : monthlyHarvest.length > 0 ? (
                 <div className="chart-container-wrap">
                   <ResponsiveContainer width="100%" height={200} minWidth={0} debounce={50}>
                     <LineChart data={monthlyHarvest} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.06)" />
                       <XAxis dataKey="Month" tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} unit=" t" />
                       <Tooltip
-                        formatter={(v, name) => [`${fmt(v)} ${name === "FFB" ? "tonnes" : "t/ha"}`, name]}
+                        formatter={(v, name) => [`${fmt(v)} ${name === "FFB" ? "tonnes (monthly harvest total)" : "t/ha/mo"}`, name === "FFB" ? "Monthly Harvest Total" : name]}
                         contentStyle={{ backgroundColor: "#0d2317", borderRadius: "8px", color: "#f8fafc", border: "1px solid rgba(255,255,255,0.1)" }}
                       />
                       <Line type="monotone" dataKey="FFB" stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} name="FFB" isAnimationActive={false} />

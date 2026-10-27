@@ -175,11 +175,21 @@ function EstateMandatoryPrompt({ onSelectEstate, onGoToEstates }) {
   );
 }
 
+const VALID_ESTATES = ["North Estate (PT Palm Indo)"];
+
 export default function App() {
-  // Selected Estate: MUST NOT default to an estate on fresh session unless user has intentionally selected one.
+  // Selected Estate: MUST NOT default to an estate on fresh session unless user has intentionally selected a valid one.
   const [selectedEstate, setSelectedEstate] = useState(() => {
     try {
-      return sessionStorage.getItem("palm_ai_selected_estate") || null;
+      const stored = sessionStorage.getItem("palm_ai_selected_estate");
+      if (stored && VALID_ESTATES.includes(stored)) {
+        return stored;
+      }
+      // Purge invalid or unrecognized saved estate ID
+      if (stored) {
+        sessionStorage.removeItem("palm_ai_selected_estate");
+      }
+      return null;
     } catch {
       return null;
     }
@@ -329,6 +339,7 @@ export default function App() {
 
   // Explicit estate selection and deselection handlers
   const handleSelectEstate = useCallback((estateName) => {
+    if (!VALID_ESTATES.includes(estateName)) return;
     try {
       sessionStorage.setItem("palm_ai_selected_estate", estateName);
     } catch {
@@ -559,7 +570,7 @@ export default function App() {
           </nav>
 
           {/* Sub-crumb for Block Details */}
-          {viewLevel === "block-detail" && (
+          {selectedEstate && viewLevel === "block-detail" && selectedBlockId && (
             <div className="topbar-subcrumb">
               <span className="crumb-chevron"><ChevronRight size={14} /></span>
               <strong className="crumb-current">Block {selectedBlockId}</strong>
@@ -594,7 +605,7 @@ export default function App() {
             </div>
           )}
 
-          {viewLevel === "block-detail" && (
+          {selectedEstate && viewLevel === "block-detail" && (
             <button
               type="button"
               className="quick-back-grid-btn"
@@ -900,12 +911,17 @@ export default function App() {
                   </div>
 
                   <div className="chart-container-wrap">
-                    {estateYieldTrend && estateYieldTrend.length > 0 ? (
+                    {isLoading ? (
+                      <div className="chart-loading-state">
+                        <RefreshCw size={20} className="animate-spin text-emerald" />
+                        <span>Loading 13-year harvest productivity telemetry…</span>
+                      </div>
+                    ) : estateYieldTrend && estateYieldTrend.length > 0 ? (
                       <ResponsiveContainer width="100%" height={260} minWidth={0} debounce={50}>
                         <LineChart data={estateYieldTrend} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.07)" />
                           <XAxis dataKey="year" stroke="#94a3b8" tick={{ fontSize: 11 }} />
-                          <YAxis stroke="#94a3b8" tick={{ fontSize: 11 }} domain={[0, (dataMax) => Math.max(26, Math.ceil(dataMax + 2))]} unit=" t" />
+                          <YAxis stroke="#94a3b8" tick={{ fontSize: 11 }} domain={[0, (dataMax) => Math.max(26, Math.ceil(dataMax + 2))]} unit=" t/ha/yr" />
                           <Tooltip
                             contentStyle={{
                               backgroundColor: "#061a10",
@@ -915,8 +931,8 @@ export default function App() {
                               fontSize: "12px",
                             }}
                             formatter={(val, name) => [
-                              `${Number(val).toFixed(2)} t/ha`,
-                              name === "meanYield" ? "Estate Harvest Average" : "Maturity Benchmark",
+                              `${Number(val).toFixed(2)} t/ha/yr`,
+                              name === "meanYield" ? "Estate Harvest Average (12-Mo Sum)" : "Maturity Benchmark",
                             ]}
                           />
                           <Line
@@ -953,9 +969,9 @@ export default function App() {
                   </div>
 
                 <div className="chart-footer-legend">
-                  <span className="legend-chip"><i className="legend-dot bg-emerald" /> 42-Block Annual Harvest Mean (Actuals)</span>
+                  <span className="legend-chip"><i className="legend-dot bg-emerald" /> 42-Block Annual Harvest Mean (12-Mo Cumulative Actuals)</span>
                   <span className="legend-chip"><i className="legend-dot bg-gold dashed" /> Cohort Age Yield Expectation</span>
-                  <span className="legend-note">Immature (2012–2015) → Prime Peak (2018–2022) → Mature Plateau (2023–2024)</span>
+                  <span className="legend-note">Annual Cumulative Yield (Mean 17.90 t/ha/yr in 2024; monthly avg 1.49 t/ha/mo)</span>
                 </div>
               </div>
 
@@ -1257,6 +1273,7 @@ export default function App() {
               datasets={datasets}
               onBackToGrid={() => navigateTo("blocks")}
               estateName={selectedEstate}
+              isLoading={isLoading}
             />
           )
         )}

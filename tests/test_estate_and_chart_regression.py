@@ -56,8 +56,9 @@ class TestEstateAndChartRegression(unittest.TestCase):
         self.assertIn("EstateMandatoryPrompt", content)
         # Verify sessionStorage key is used to persist only intentional selection
         self.assertIn("palm_ai_selected_estate", content)
-        # Verify default selectedEstate is not hardcoded to an estate
-        self.assertIn('sessionStorage.getItem("palm_ai_selected_estate") || null', content)
+        # Verify invalid saved estate ID is purged and defaults to null
+        self.assertIn("VALID_ESTATES", content)
+        self.assertIn('sessionStorage.removeItem("palm_ai_selected_estate")', content)
 
     def test_estate_change_resets_stale_selections(self):
         """Verify handleClearEstate and handleSelectEstate reset block and search selections."""
@@ -241,8 +242,9 @@ class TestEstateAndChartRegression(unittest.TestCase):
         with open(app_jsx_path, "r", encoding="utf-8") as f:
             app_code = f.read()
 
-        # 1. Initial selectedEstate must read from sessionStorage with null fallback
-        self.assertIn('sessionStorage.getItem("palm_ai_selected_estate") || null', app_code)
+        # 1. Initial selectedEstate must validate against VALID_ESTATES with null fallback
+        self.assertIn('VALID_ESTATES.includes(stored)', app_code)
+        self.assertIn('sessionStorage.getItem("palm_ai_selected_estate")', app_code)
 
         # 2. On Estates view, when !selectedEstate, prominent callout banner MUST render
         self.assertIn('!selectedEstate && (', app_code)
@@ -343,6 +345,57 @@ class TestEstateAndChartRegression(unittest.TestCase):
         # Recharts responsive attributes
         self.assertIn('isAnimationActive={false}', app_code)
         self.assertIn('isAnimationActive={false}', ubi_code)
+
+    def test_chart_loading_skeletons_and_compact_empty_states(self):
+        """Verify that charts render compact loading skeletons and avoid reserving blank boxes."""
+        app_jsx_path = os.path.join(PROJECT_ROOT, "frontend", "src", "App.jsx")
+        ubi_jsx_path = os.path.join(PROJECT_ROOT, "frontend", "src", "UnifiedBlockIntelligence.jsx")
+        css_path = os.path.join(PROJECT_ROOT, "frontend", "src", "App.css")
+
+        with open(app_jsx_path, "r", encoding="utf-8") as f:
+            app_code = f.read()
+        with open(ubi_jsx_path, "r", encoding="utf-8") as f:
+            ubi_code = f.read()
+        with open(css_path, "r", encoding="utf-8") as f:
+            css_code = f.read()
+
+        # Loading skeleton in App.jsx
+        self.assertIn('className="chart-loading-state"', app_code)
+        self.assertIn('Loading 13-year harvest productivity telemetry…', app_code)
+
+        # Loading skeleton in UnifiedBlockIntelligence.jsx
+        self.assertIn('className="chart-loading-state"', ubi_code)
+        self.assertIn('Loading Block {currentBlockId} productivity trajectory…', ubi_code)
+        self.assertIn('Loading 2024 monthly harvest curve…', ubi_code)
+
+        # CSS definitions for loading skeleton
+        self.assertIn('.chart-loading-state', css_code)
+        self.assertIn('.chart-loading-state.compact', css_code)
+
+        # Space elimination: tall-plantation-panel max-height/min-height constrained
+        self.assertIn('min-height: 280px;', css_code)
+        self.assertIn('max-height: 380px;', css_code)
+
+    def test_annual_vs_monthly_productivity_units_reconciliation(self):
+        """Verify that annual charts explicitly state t/ha/yr (12-month cumulative harvest) and
+        reconcile the 17.90 t/ha/yr annual mean with the 1.49 t/ha/mo monthly average."""
+        app_jsx_path = os.path.join(PROJECT_ROOT, "frontend", "src", "App.jsx")
+        ubi_jsx_path = os.path.join(PROJECT_ROOT, "frontend", "src", "UnifiedBlockIntelligence.jsx")
+
+        with open(app_jsx_path, "r", encoding="utf-8") as f:
+            app_code = f.read()
+        with open(ubi_jsx_path, "r", encoding="utf-8") as f:
+            ubi_code = f.read()
+
+        # App.jsx: annual units and explanatory note
+        self.assertIn('unit=" t/ha/yr"', app_code)
+        self.assertIn('12-Mo Sum', app_code)
+        self.assertIn('Mean 17.90 t/ha/yr in 2024; monthly avg 1.49 t/ha/mo', app_code)
+
+        # UBI: annual units and observed harvest
+        self.assertIn('Observed Harvest (t/ha/yr)', ubi_code)
+        self.assertIn('Forecast Model (Annual Sum)', ubi_code)
+        self.assertIn('Actual Latest Yield (2024)', ubi_code)
 
 
 if __name__ == "__main__":
