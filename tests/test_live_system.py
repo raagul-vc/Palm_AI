@@ -6,14 +6,19 @@ import os
 API_BASE = os.environ.get('PALM_AI_TEST_API_BASE', 'http://127.0.0.1:5000').rstrip('/')
 FRONTEND_URL = os.environ.get('PALM_AI_TEST_FRONTEND_URL', 'http://localhost:5173/')
 
-def probe_endpoint(url, timeout=5.0):
-    try:
-        req = urllib.request.Request(url)
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            data = resp.read()
-            return resp.status, len(data), resp.headers.get('Content-Type')
-    except Exception as e:
-        return 'ERROR', str(e), None
+def probe_endpoint(url, timeout=10.0):
+    last_err = None
+    for _ in range(3):
+        try:
+            req = urllib.request.Request(url)
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                data = resp.read()
+                return resp.status, len(data), resp.headers.get('Content-Type')
+        except Exception as e:
+            last_err = e
+            import time
+            time.sleep(0.5)
+    return 'ERROR', str(last_err), None
 
 def is_backend_live():
     status, _, _ = probe_endpoint(f"{API_BASE}/api/health", timeout=0.8)

@@ -31,7 +31,16 @@ const DEMO_ACCOUNTS = [
   }
 ];
 
-export default function AuthManager({ currentUser, onUserChange, authToken, onTokenChange }) {
+export default function AuthManager({
+  currentUser,
+  onUserChange,
+  authToken,
+  onTokenChange,
+  externalShowAudit = false,
+  onCloseAudit = null,
+  externalShowUser = false,
+  onCloseUser = null
+}) {
   const [showModal, setShowModal] = useState(false);
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
@@ -49,6 +58,19 @@ export default function AuthManager({ currentUser, onUserChange, authToken, onTo
   const [newUserPassword, setNewUserPassword] = useState("");
   const [newUserRole, setNewUserRole] = useState("WORKER");
   const [userCreateSuccess, setUserCreateSuccess] = useState("");
+
+  const isAuditOpen = showAuditModal || externalShowAudit;
+  const isUserOpen = showUserModal || externalShowUser;
+
+  const handleCloseAudit = () => {
+    setShowAuditModal(false);
+    if (onCloseAudit) onCloseAudit();
+  };
+
+  const handleCloseUser = () => {
+    setShowUserModal(false);
+    if (onCloseUser) onCloseUser();
+  };
 
   // Handle direct login submission
   const handleLogin = async (email, password) => {
@@ -355,8 +377,8 @@ export default function AuthManager({ currentUser, onUserChange, authToken, onTo
       )}
 
       {/* Admin Audit Logs Modal */}
-      {showAuditModal && (
-        <div className="modal-backdrop" onClick={() => setShowAuditModal(false)}>
+      {isAuditOpen && (
+        <div className="modal-backdrop" onClick={handleCloseAudit}>
           <div className="audit-modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="audit-modal-header">
               <div className="audit-modal-title">
@@ -366,7 +388,7 @@ export default function AuthManager({ currentUser, onUserChange, authToken, onTo
               <button
                 type="button"
                 className="close-modal-btn"
-                onClick={() => setShowAuditModal(false)}
+                onClick={handleCloseAudit}
               >
                 <X size={18} />
               </button>
@@ -408,8 +430,8 @@ export default function AuthManager({ currentUser, onUserChange, authToken, onTo
       )}
 
       {/* Admin User Management Modal */}
-      {showUserModal && (
-        <div className="modal-backdrop" onClick={() => setShowUserModal(false)}>
+      {isUserOpen && (
+        <div className="modal-backdrop" onClick={handleCloseUser}>
           <div className="user-modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="user-modal-header">
               <div className="user-modal-title">
@@ -419,7 +441,7 @@ export default function AuthManager({ currentUser, onUserChange, authToken, onTo
               <button
                 type="button"
                 className="close-modal-btn"
-                onClick={() => setShowUserModal(false)}
+                onClick={handleCloseUser}
               >
                 <X size={18} />
               </button>

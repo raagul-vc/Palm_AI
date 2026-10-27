@@ -29,7 +29,8 @@ import {
   HelpCircle,
   Clock,
   ClipboardCheck,
-  Database
+  Database,
+  LogOut
 } from "lucide-react";
 import {
   LineChart,
@@ -54,6 +55,8 @@ import estateOverviewImg from "./assets/images/estate_canopy_overview.jpg";
 import fruitBunchImg from "./assets/images/oil_palm_fruit_bunch.jpg";
 import droneCanopyImg from "./assets/images/drone_canopy_inspection.jpg";
 import AuthManager from "./AuthManager";
+import LoginPortal from "./LoginPortal";
+import RoleDashboard from "./RoleDashboard";
 import "./AuthManager.css";
 import "./App.css";
 
@@ -197,26 +200,6 @@ export default function App() {
     }
   });
 
-  // Navigation State: 'estates' | 'blocks' | 'block-detail' | 'field-actions' | 'multi-source' | 'drone-health' | 'multispectral'
-  const [viewLevel, setViewLevel] = useState(() => {
-    const hash = window.location.hash.replace(/^#/, "").trim();
-    if (hash === "blocks" || hash === "estate") return "blocks";
-    if (hash === "field-actions" || hash === "actions") return "field-actions";
-    if (hash === "multi-source" || hash === "evidence") return "multi-source";
-    if (hash === "drone-health" || hash === "drone") return "drone-health";
-    if (hash === "multispectral" || hash === "spectral") return "multispectral";
-    if (hash.startsWith("block/") || /^B\d{3}$/i.test(hash)) return "block-detail";
-    return "estates";
-  });
-
-  const [selectedBlockId, setSelectedBlockId] = useState(() => {
-    const hash = window.location.hash.replace(/^#/, "").trim();
-    if (hash.startsWith("block/")) return hash.replace("block/", "").toUpperCase();
-    if (/^B\d{3}$/i.test(hash)) return hash.toUpperCase();
-    return null;
-  });
-  const [selectedActionId, setSelectedActionId] = useState(null);
-
   // Enterprise Role-Based Authentication State
   const [authToken, setAuthToken] = useState(() => {
     try {
@@ -229,18 +212,41 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState(() => {
     try {
       const stored = sessionStorage.getItem("palm_ai_user");
-      return stored ? JSON.parse(stored) : {
-        id: "USR-MGR-01",
-        email: "manager@palmai.com",
-        full_name: "Estate Agronomy Operations Manager",
-        role: "MANAGER",
-        estate_permissions: ["North Estate (PT Palm Indo)"],
-        block_permissions: ["*"]
-      };
+      return stored ? JSON.parse(stored) : null;
     } catch {
       return null;
     }
   });
+
+  // Navigation State: 'login' | 'dashboard' | 'estates' | 'blocks' | 'block-detail' | 'field-actions' | 'multi-source' | 'drone-health' | 'multispectral'
+  const [viewLevel, setViewLevel] = useState(() => {
+    const storedUser = sessionStorage.getItem("palm_ai_user");
+    const hash = window.location.hash.replace(/^#/, "").trim();
+    if (!storedUser && hash !== "guest") {
+      return "login";
+    }
+    if (hash === "login") return "login";
+    if (hash === "dashboard" || !hash) return "dashboard";
+    if (hash === "estates") return "estates";
+    if (hash === "blocks" || hash === "estate") return "blocks";
+    if (hash === "field-actions" || hash === "actions") return "field-actions";
+    if (hash === "multi-source" || hash === "evidence") return "multi-source";
+    if (hash === "drone-health" || hash === "drone") return "drone-health";
+    if (hash === "multispectral" || hash === "spectral") return "multispectral";
+    if (hash.startsWith("block/") || /^B\d{3}$/i.test(hash)) return "block-detail";
+    return "dashboard";
+  });
+
+  const [selectedBlockId, setSelectedBlockId] = useState(() => {
+    const hash = window.location.hash.replace(/^#/, "").trim();
+    if (hash.startsWith("block/")) return hash.replace("block/", "").toUpperCase();
+    if (/^B\d{3}$/i.test(hash)) return hash.toUpperCase();
+    return null;
+  });
+  const [selectedActionId, setSelectedActionId] = useState(null);
+
+  const [showAuditModal, setShowAuditModal] = useState(false);
+  const [showUserModal, setShowUserModal] = useState(false);
 
   const [blockSearch, setBlockSearch] = useState("");
   const [riskFilter, setRiskFilter] = useState("ALL");
@@ -316,7 +322,17 @@ export default function App() {
   useEffect(() => {
     const handleHash = () => {
       const hash = window.location.hash.replace(/^#/, "").trim();
-      if (!hash || hash === "estates") {
+      const storedUser = sessionStorage.getItem("palm_ai_user");
+      if (!storedUser && hash !== "guest") {
+        setViewLevel("login");
+        return;
+      }
+
+      if (!hash || hash === "dashboard") {
+        setViewLevel("dashboard");
+      } else if (hash === "login") {
+        setViewLevel("login");
+      } else if (hash === "estates") {
         setViewLevel("estates");
       } else if (hash === "blocks" || hash === "estate") {
         setViewLevel("blocks");
@@ -349,7 +365,11 @@ export default function App() {
     if (actionId !== undefined) {
       setSelectedActionId(actionId);
     }
-    if (level === "estates") {
+    if (level === "login") {
+      window.history.pushState(null, "", "#login");
+    } else if (level === "dashboard") {
+      window.history.pushState(null, "", "#dashboard");
+    } else if (level === "estates") {
       window.history.pushState(null, "", "#estates");
     } else if (level === "blocks") {
       window.history.pushState(null, "", "#blocks");
@@ -366,6 +386,42 @@ export default function App() {
     } else if (level === "multispectral") {
       window.history.pushState(null, "", "#multispectral");
     }
+  };
+
+  const handleLoginSuccess = (user, token) => {
+    setCurrentUser(user);
+    setAuthToken(token);
+    try {
+      sessionStorage.setItem("palm_ai_user", JSON.stringify(user));
+      if (token) sessionStorage.setItem("palm_ai_auth_token", token);
+    } catch {}
+    setViewLevel("dashboard");
+    window.history.pushState(null, "", "#dashboard");
+  };
+
+  const handleGuestLogin = () => {
+    const guestUser = {
+      id: "USR-GUEST-01",
+      email: "guest@palmai.com",
+      full_name: "Guest Agronomy Evaluator",
+      role: "MANAGER",
+      estate_permissions: ["North Estate (PT Palm Indo)"],
+      block_permissions: ["*"]
+    };
+    handleLoginSuccess(guestUser, "guest-token-eval");
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setAuthToken(null);
+    try {
+      sessionStorage.removeItem("palm_ai_user");
+      sessionStorage.removeItem("palm_ai_auth_token");
+      sessionStorage.removeItem("palm_ai_selected_estate");
+    } catch {}
+    setSelectedEstate(null);
+    setViewLevel("login");
+    window.history.pushState(null, "", "#login");
   };
 
   // Explicit estate selection and deselection handlers
@@ -516,6 +572,39 @@ export default function App() {
     });
   }, [processedBlocks, blockSearch, riskFilter]);
 
+  if (viewLevel === "login" || !currentUser) {
+    return (
+      <div className="palm-app">
+        <header className="global-topbar">
+          <div className="topbar-left">
+            <div className="brand-cluster">
+              <div className="brand-logo-icon">
+                <Sprout size={18} className="text-emerald" />
+              </div>
+              <div className="brand-text-stack">
+                <strong className="brand-title">PALM AI</strong>
+                <span className="brand-sub">Enterprise Plantation Intelligence</span>
+              </div>
+            </div>
+          </div>
+          <div className="topbar-right">
+            <div className="telemetry-pill">
+              <span className="telemetry-dot" />
+              <span className="telemetry-text">Enterprise Authentication Portal</span>
+            </div>
+          </div>
+        </header>
+
+        <main className="single-screen-content">
+          <LoginPortal
+            onLoginSuccess={handleLoginSuccess}
+            onGuestLogin={handleGuestLogin}
+          />
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="palm-app">
       {/* GLOBAL ENTERPRISE TOPBAR (NO SIDEBAR EVER) */}
@@ -524,8 +613,8 @@ export default function App() {
           {/* Logo Brand */}
           <div
             className="brand-cluster clickable"
-            onClick={() => navigateTo("estates")}
-            title="Return to Estate Fleet Overview"
+            onClick={() => navigateTo("dashboard")}
+            title="Return to Role Command Dashboard"
           >
             <div className="brand-logo-icon">
               <Sprout size={18} className="text-emerald" />
@@ -542,11 +631,21 @@ export default function App() {
           <nav className="topbar-nav-tabs">
             <button
               type="button"
+              className={`topbar-tab ${viewLevel === "dashboard" ? "active" : ""}`}
+              onClick={() => navigateTo("dashboard")}
+              title="Role Command Dashboard"
+            >
+              <LayoutDashboard size={14} />
+              <span>Dashboard</span>
+            </button>
+
+            <button
+              type="button"
               className={`topbar-tab ${viewLevel === "estates" ? "active" : ""}`}
               onClick={() => navigateTo("estates")}
               title="Estate Fleet Overview"
             >
-              <LayoutDashboard size={14} />
+              <MapPin size={14} />
               <span>Estates</span>
             </button>
 
@@ -661,7 +760,7 @@ export default function App() {
           <div className="telemetry-pill">
             <span className="telemetry-dot" />
             <span className="telemetry-text">
-              {isLoading ? "Synchronizing Telemetry…" : "42 Blocks Monitored (2012–2024)"}
+              {isLoading ? "Synchronizing Telemetry…" : "PALM AI v2.6 Enterprise · 42 Blocks Monitored"}
             </span>
           </div>
 
@@ -672,7 +771,7 @@ export default function App() {
               if (u) {
                 try { sessionStorage.setItem("palm_ai_user", JSON.stringify(u)); } catch {}
               } else {
-                try { sessionStorage.removeItem("palm_ai_user"); } catch {}
+                handleLogout();
               }
             }}
             authToken={authToken}
@@ -684,7 +783,21 @@ export default function App() {
                 try { sessionStorage.removeItem("palm_ai_auth_token"); } catch {}
               }
             }}
+            externalShowAudit={showAuditModal}
+            onCloseAudit={() => setShowAuditModal(false)}
+            externalShowUser={showUserModal}
+            onCloseUser={() => setShowUserModal(false)}
           />
+
+          <button
+            type="button"
+            className="topbar-signout-btn"
+            onClick={handleLogout}
+            title="Sign out of enterprise session"
+          >
+            <LogOut size={13} />
+            <span>Sign Out</span>
+          </button>
 
           <button
             type="button"
@@ -699,6 +812,30 @@ export default function App() {
 
       {/* SINGLE-SCREEN MAIN VIEW WORKSPACE */}
       <main className="single-screen-content">
+        {/* ======================================================== */}
+        {/* VIEW 0: ROLE COMMAND DASHBOARD                           */}
+        {/* ======================================================== */}
+        {viewLevel === "dashboard" && (
+          <RoleDashboard
+            currentUser={currentUser}
+            selectedEstate={selectedEstate}
+            onSelectEstate={handleSelectEstate}
+            onNavigate={navigateTo}
+            onOpenBlock={(blockId) => {
+              setSelectedBlockId(blockId);
+              if (!selectedEstate) {
+                setSelectedEstate("North Estate (PT Palm Indo)");
+                try { sessionStorage.setItem("palm_ai_selected_estate", "North Estate (PT Palm Indo)"); } catch {}
+              }
+              navigateTo("block-detail", blockId);
+            }}
+            riskCounts={riskCounts}
+            meanYield={fmt(meanYield, 1)}
+            onOpenAuditModal={() => setShowAuditModal(true)}
+            onOpenUserModal={() => setShowUserModal(true)}
+          />
+        )}
+
         {/* ======================================================== */}
         {/* VIEW 1: INITIAL SCREEN — ESTATE LIST                     */}
         {/* ======================================================== */}
