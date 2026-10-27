@@ -9,7 +9,12 @@ import os
 import io
 import base64
 
+import sys
+
 BASE_DIR = Path(__file__).resolve().parent.parent
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
+
 FRONTEND_DIST_DIR = BASE_DIR / "frontend" / "dist"
 
 app = Flask(__name__, static_folder=None)
@@ -2365,6 +2370,8 @@ def api_multispectral_pipeline():
         "pipeline_status": "OPERATIONAL_BENCHMARK"
     })
 
+
+if __name__ == "__main__":
     app.run(
         host=os.environ.get("HOST", "0.0.0.0"),
         port=int(os.environ.get("PORT", "5000")),
