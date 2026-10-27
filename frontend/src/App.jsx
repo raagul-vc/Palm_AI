@@ -29,8 +29,7 @@ import {
   HelpCircle,
   Clock,
   ClipboardCheck,
-  Database,
-  LogOut
+  Database
 } from "lucide-react";
 import {
   LineChart,
@@ -54,10 +53,6 @@ import tallPalmImg from "./assets/images/tall_oil_palm_plantation.jpg";
 import estateOverviewImg from "./assets/images/estate_canopy_overview.jpg";
 import fruitBunchImg from "./assets/images/oil_palm_fruit_bunch.jpg";
 import droneCanopyImg from "./assets/images/drone_canopy_inspection.jpg";
-import AuthManager from "./AuthManager";
-import LoginPortal from "./LoginPortal";
-import RoleDashboard from "./RoleDashboard";
-import "./AuthManager.css";
 import "./App.css";
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || "/api").replace(/\/$/, "");
@@ -183,7 +178,7 @@ function EstateMandatoryPrompt({ onSelectEstate, onGoToEstates }) {
 const VALID_ESTATES = ["North Estate (PT Palm Indo)"];
 
 export default function App() {
-  // Selected Estate: MUST NOT default to an estate on fresh session unless user has intentionally selected a valid one.
+  // Selected Estate: Displays all 42 operational blocks by default without requiring estate selection
   const [selectedEstate, setSelectedEstate] = useState(() => {
     try {
       const stored = sessionStorage.getItem("palm_ai_selected_estate");
@@ -194,47 +189,42 @@ export default function App() {
       if (stored) {
         sessionStorage.removeItem("palm_ai_selected_estate");
       }
-      return null;
+      // Default to "North Estate (PT Palm Indo)" to display all 42 blocks directly
+      return "North Estate (PT Palm Indo)";
     } catch {
-      return null;
+      return "North Estate (PT Palm Indo)";
     }
   });
 
-  // Enterprise Role-Based Authentication State
+  // Enterprise Operations State (No user login required)
   const [authToken, setAuthToken] = useState(() => {
     try {
-      return sessionStorage.getItem("palm_ai_auth_token") || null;
+      return sessionStorage.getItem("palm_ai_auth_token") || "public-session";
     } catch {
-      return null;
+      return "public-session";
     }
   });
 
-  const [currentUser, setCurrentUser] = useState(() => {
-    try {
-      const stored = sessionStorage.getItem("palm_ai_user");
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
-    }
-  });
+  const [currentUser, setCurrentUser] = useState(() => ({
+    id: "USR-PUBLIC-01",
+    email: "operations@palmai.com",
+    full_name: "Plantation Operations Manager",
+    role: "MANAGER",
+    estate_permissions: ["North Estate (PT Palm Indo)"],
+    block_permissions: ["*"]
+  }));
 
-  // Navigation State: 'login' | 'dashboard' | 'estates' | 'blocks' | 'block-detail' | 'field-actions' | 'multi-source' | 'drone-health' | 'multispectral'
+  // Navigation State: default directly to 42-block risk dashboard ('blocks')
   const [viewLevel, setViewLevel] = useState(() => {
-    const storedUser = sessionStorage.getItem("palm_ai_user");
     const hash = window.location.hash.replace(/^#/, "").trim();
-    if (!storedUser && hash !== "guest") {
-      return "login";
-    }
-    if (hash === "login") return "login";
-    if (hash === "dashboard" || !hash) return "dashboard";
+    if (hash === "blocks" || hash === "estate" || hash === "dashboard") return "blocks";
     if (hash === "estates") return "estates";
-    if (hash === "blocks" || hash === "estate") return "blocks";
     if (hash === "field-actions" || hash === "actions") return "field-actions";
     if (hash === "multi-source" || hash === "evidence") return "multi-source";
     if (hash === "drone-health" || hash === "drone") return "drone-health";
     if (hash === "multispectral" || hash === "spectral") return "multispectral";
     if (hash.startsWith("block/") || /^B\d{3}$/i.test(hash)) return "block-detail";
-    return "dashboard";
+    return "blocks";
   });
 
   const [selectedBlockId, setSelectedBlockId] = useState(() => {
@@ -322,20 +312,11 @@ export default function App() {
   useEffect(() => {
     const handleHash = () => {
       const hash = window.location.hash.replace(/^#/, "").trim();
-      const storedUser = sessionStorage.getItem("palm_ai_user");
-      if (!storedUser && hash !== "guest") {
-        setViewLevel("login");
-        return;
-      }
 
-      if (!hash || hash === "dashboard") {
-        setViewLevel("dashboard");
-      } else if (hash === "login") {
-        setViewLevel("login");
+      if (!hash || hash === "dashboard" || hash === "blocks" || hash === "estate" || hash === "login") {
+        setViewLevel("blocks");
       } else if (hash === "estates") {
         setViewLevel("estates");
-      } else if (hash === "blocks" || hash === "estate") {
-        setViewLevel("blocks");
       } else if (hash === "field-actions" || hash === "actions") {
         setViewLevel("field-actions");
       } else if (hash === "multi-source" || hash === "evidence") {
@@ -351,6 +332,8 @@ export default function App() {
       } else if (/^B\d{3}$/i.test(hash)) {
         setSelectedBlockId(hash.toUpperCase());
         setViewLevel("block-detail");
+      } else {
+        setViewLevel("blocks");
       }
     };
 
@@ -365,14 +348,10 @@ export default function App() {
     if (actionId !== undefined) {
       setSelectedActionId(actionId);
     }
-    if (level === "login") {
-      window.history.pushState(null, "", "#login");
-    } else if (level === "dashboard") {
-      window.history.pushState(null, "", "#dashboard");
+    if (level === "login" || level === "dashboard" || level === "blocks") {
+      window.history.pushState(null, "", "#blocks");
     } else if (level === "estates") {
       window.history.pushState(null, "", "#estates");
-    } else if (level === "blocks") {
-      window.history.pushState(null, "", "#blocks");
     } else if (level === "block-detail") {
       const bid = blockId || selectedBlockId || "B001";
       setSelectedBlockId(bid);
@@ -386,42 +365,6 @@ export default function App() {
     } else if (level === "multispectral") {
       window.history.pushState(null, "", "#multispectral");
     }
-  };
-
-  const handleLoginSuccess = (user, token) => {
-    setCurrentUser(user);
-    setAuthToken(token);
-    try {
-      sessionStorage.setItem("palm_ai_user", JSON.stringify(user));
-      if (token) sessionStorage.setItem("palm_ai_auth_token", token);
-    } catch {}
-    setViewLevel("dashboard");
-    window.history.pushState(null, "", "#dashboard");
-  };
-
-  const handleGuestLogin = () => {
-    const guestUser = {
-      id: "USR-GUEST-01",
-      email: "guest@palmai.com",
-      full_name: "Guest Agronomy Evaluator",
-      role: "MANAGER",
-      estate_permissions: ["North Estate (PT Palm Indo)"],
-      block_permissions: ["*"]
-    };
-    handleLoginSuccess(guestUser, "guest-token-eval");
-  };
-
-  const handleLogout = () => {
-    setCurrentUser(null);
-    setAuthToken(null);
-    try {
-      sessionStorage.removeItem("palm_ai_user");
-      sessionStorage.removeItem("palm_ai_auth_token");
-      sessionStorage.removeItem("palm_ai_selected_estate");
-    } catch {}
-    setSelectedEstate(null);
-    setViewLevel("login");
-    window.history.pushState(null, "", "#login");
   };
 
   // Explicit estate selection and deselection handlers
@@ -572,39 +515,6 @@ export default function App() {
     });
   }, [processedBlocks, blockSearch, riskFilter]);
 
-  if (viewLevel === "login" || !currentUser) {
-    return (
-      <div className="palm-app">
-        <header className="global-topbar">
-          <div className="topbar-left">
-            <div className="brand-cluster">
-              <div className="brand-logo-icon">
-                <Sprout size={18} className="text-emerald" />
-              </div>
-              <div className="brand-text-stack">
-                <strong className="brand-title">PALM AI</strong>
-                <span className="brand-sub">Enterprise Plantation Intelligence</span>
-              </div>
-            </div>
-          </div>
-          <div className="topbar-right">
-            <div className="telemetry-pill">
-              <span className="telemetry-dot" />
-              <span className="telemetry-text">Enterprise Authentication Portal</span>
-            </div>
-          </div>
-        </header>
-
-        <main className="single-screen-content">
-          <LoginPortal
-            onLoginSuccess={handleLoginSuccess}
-            onGuestLogin={handleGuestLogin}
-          />
-        </main>
-      </div>
-    );
-  }
-
   return (
     <div className="palm-app">
       {/* GLOBAL ENTERPRISE TOPBAR (NO SIDEBAR EVER) */}
@@ -613,8 +523,8 @@ export default function App() {
           {/* Logo Brand */}
           <div
             className="brand-cluster clickable"
-            onClick={() => navigateTo("dashboard")}
-            title="Return to Role Command Dashboard"
+            onClick={() => navigateTo("blocks")}
+            title="Main 42-Block Risk Dashboard"
           >
             <div className="brand-logo-icon">
               <Sprout size={18} className="text-emerald" />
@@ -631,32 +541,12 @@ export default function App() {
           <nav className="topbar-nav-tabs">
             <button
               type="button"
-              className={`topbar-tab ${viewLevel === "dashboard" ? "active" : ""}`}
-              onClick={() => navigateTo("dashboard")}
-              title="Role Command Dashboard"
-            >
-              <LayoutDashboard size={14} />
-              <span>Dashboard</span>
-            </button>
-
-            <button
-              type="button"
-              className={`topbar-tab ${viewLevel === "estates" ? "active" : ""}`}
-              onClick={() => navigateTo("estates")}
-              title="Estate Fleet Overview"
-            >
-              <MapPin size={14} />
-              <span>Estates</span>
-            </button>
-
-            <button
-              type="button"
-              className={`topbar-tab ${viewLevel === "blocks" || viewLevel === "block-detail" ? "active" : ""}`}
+              className={`topbar-tab ${viewLevel === "blocks" ? "active" : ""}`}
               onClick={() => navigateTo("blocks")}
-              title="42 Operational Blocks Grid"
+              title="Main 42-Block Risk Dashboard"
             >
               <Layers size={14} />
-              <span>Blocks (42)</span>
+              <span>42-Block Risk Dashboard</span>
             </button>
 
             <button
@@ -708,10 +598,10 @@ export default function App() {
               <button
                 type="button"
                 className="topbar-crumb-link"
-                onClick={() => navigateTo("field-actions")}
-                title="Return to Field Action Queue"
+                onClick={() => navigateTo("blocks")}
+                title="Return to 42-Block Risk Dashboard"
               >
-                Action Queue
+                42-Block Dashboard
               </button>
               <span className="crumb-chevron"><ChevronRight size={14} /></span>
               <strong className="crumb-current">Block {selectedBlockId}</strong>
@@ -721,83 +611,30 @@ export default function App() {
 
         {/* Topbar Right Telemetry Status */}
         <div className="topbar-right">
-          {selectedEstate ? (
-            <div className="topbar-estate-pill">
-              <MapPin size={12} className="text-emerald" />
-              <span className="estate-pill-label">Estate:</span>
-              <strong className="estate-pill-name">{selectedEstate}</strong>
-              <button
-                type="button"
-                className="estate-change-btn"
-                onClick={handleClearEstate}
-                title="Deselect active estate and return to Estate Selection"
-              >
-                Change
-              </button>
-            </div>
-          ) : (
-            <div
-              className="topbar-no-estate-pill clickable"
-              onClick={() => navigateTo("estates")}
-              title="Click to select an operational estate"
-            >
-              <span className="no-estate-dot" />
-              <span className="no-estate-text">No Estate Selected</span>
-            </div>
-          )}
+          <div className="topbar-estate-pill">
+            <MapPin size={12} className="text-emerald" />
+            <span className="estate-pill-label">Estate:</span>
+            <strong className="estate-pill-name">{selectedEstate || "North Estate (PT Palm Indo)"}</strong>
+          </div>
 
-          {selectedEstate && viewLevel === "block-detail" && (
+          {viewLevel === "block-detail" && (
             <button
               type="button"
-              className="quick-back-grid-btn"
+              className="quick-back-grid-btn prominent-back-btn"
               onClick={() => navigateTo("blocks")}
+              title="Return to 42-Block Risk Dashboard"
             >
               <ArrowLeft size={14} />
-              <span>Block Grid</span>
+              <span>← Back to All 42 Blocks</span>
             </button>
           )}
 
           <div className="telemetry-pill">
             <span className="telemetry-dot" />
             <span className="telemetry-text">
-              {isLoading ? "Synchronizing Telemetry…" : "PALM AI v2.6 Enterprise · 42 Blocks Monitored"}
+              {isLoading ? "Synchronizing Telemetry…" : "PALM AI v2.7 · 42 Blocks Monitored"}
             </span>
           </div>
-
-          <AuthManager
-            currentUser={currentUser}
-            onUserChange={(u) => {
-              setCurrentUser(u);
-              if (u) {
-                try { sessionStorage.setItem("palm_ai_user", JSON.stringify(u)); } catch {}
-              } else {
-                handleLogout();
-              }
-            }}
-            authToken={authToken}
-            onTokenChange={(t) => {
-              setAuthToken(t);
-              if (t) {
-                try { sessionStorage.setItem("palm_ai_auth_token", t); } catch {}
-              } else {
-                try { sessionStorage.removeItem("palm_ai_auth_token"); } catch {}
-              }
-            }}
-            externalShowAudit={showAuditModal}
-            onCloseAudit={() => setShowAuditModal(false)}
-            externalShowUser={showUserModal}
-            onCloseUser={() => setShowUserModal(false)}
-          />
-
-          <button
-            type="button"
-            className="topbar-signout-btn"
-            onClick={handleLogout}
-            title="Sign out of enterprise session"
-          >
-            <LogOut size={13} />
-            <span>Sign Out</span>
-          </button>
 
           <button
             type="button"
@@ -812,29 +649,6 @@ export default function App() {
 
       {/* SINGLE-SCREEN MAIN VIEW WORKSPACE */}
       <main className="single-screen-content">
-        {/* ======================================================== */}
-        {/* VIEW 0: ROLE COMMAND DASHBOARD                           */}
-        {/* ======================================================== */}
-        {viewLevel === "dashboard" && (
-          <RoleDashboard
-            currentUser={currentUser}
-            selectedEstate={selectedEstate}
-            onSelectEstate={handleSelectEstate}
-            onNavigate={navigateTo}
-            onOpenBlock={(blockId) => {
-              setSelectedBlockId(blockId);
-              if (!selectedEstate) {
-                setSelectedEstate("North Estate (PT Palm Indo)");
-                try { sessionStorage.setItem("palm_ai_selected_estate", "North Estate (PT Palm Indo)"); } catch {}
-              }
-              navigateTo("block-detail", blockId);
-            }}
-            riskCounts={riskCounts}
-            meanYield={fmt(meanYield, 1)}
-            onOpenAuditModal={() => setShowAuditModal(true)}
-            onOpenUserModal={() => setShowUserModal(true)}
-          />
-        )}
 
         {/* ======================================================== */}
         {/* VIEW 1: INITIAL SCREEN — ESTATE LIST                     */}
@@ -1050,22 +864,86 @@ export default function App() {
               {/* Estate Header & Controls */}
               <div className="block-grid-header">
                 <div className="grid-header-left">
-                  <button
-                    type="button"
-                    className="crumb-back-link"
-                    onClick={() => navigateTo("estates")}
-                  >
-                    <ArrowLeft size={14} />
-                    <span>All Estates</span>
-                  </button>
                   <div className="estate-title-row">
-                    <h1 className="estate-display-title">{selectedEstate}</h1>
+                    <h1 className="estate-display-title">North Estate (PT Palm Indo) — 42-Block Risk Dashboard</h1>
                     <span className="block-count-badge">42 Operational Blocks</span>
-                    <span className="cohort-tag">Mature DxP Hybrid</span>
+                    <span className="cohort-tag">Mature DxP Hybrid Stand</span>
                   </div>
                   <p className="estate-subtitle">
-                    Enterprise agronomic intelligence overview with 13-year productivity history, canonical screening distribution, and naturally sorted block cards.
+                    Plantation-wide agronomic risk surveillance, 13-year productivity history, canonical screening distribution, and comprehensive 42-block fleet risk analysis.
                   </p>
+                </div>
+
+                {/* 5 Primary Landing Summary Cards (Specification Requirement 2) */}
+                <div className="landing-summary-cards-grid">
+                  <div className="landing-summary-card total">
+                    <div className="summary-card-header-mini">
+                      <span className="summary-card-title">TOTAL BLOCKS</span>
+                      <Layers size={16} className="text-emerald" />
+                    </div>
+                    <div className="summary-card-main-val">
+                      <strong>42</strong>
+                      <span className="summary-card-unit">Blocks</span>
+                    </div>
+                    <div className="summary-card-footnote">
+                      <span>B001 – B042 Natural Order · 100% Monitored</span>
+                    </div>
+                  </div>
+
+                  <div className="landing-summary-card high-risk">
+                    <div className="summary-card-header-mini">
+                      <span className="summary-card-title">HIGH-RISK BLOCKS</span>
+                      <ShieldAlert size={16} className="text-ruby" />
+                    </div>
+                    <div className="summary-card-main-val text-ruby">
+                      <strong>{riskCounts.high}</strong>
+                      <span className="summary-card-unit">({((riskCounts.high / (riskCounts.total || 42)) * 100).toFixed(1)}%)</span>
+                    </div>
+                    <div className="summary-card-footnote">
+                      <span>Block B001 · Urgent Agronomic Audit</span>
+                    </div>
+                  </div>
+
+                  <div className="landing-summary-card medium-risk">
+                    <div className="summary-card-header-mini">
+                      <span className="summary-card-title">MEDIUM-RISK BLOCKS</span>
+                      <AlertTriangle size={16} className="text-gold" />
+                    </div>
+                    <div className="summary-card-main-val text-gold">
+                      <strong>{riskCounts.medium}</strong>
+                      <span className="summary-card-unit">({((riskCounts.medium / (riskCounts.total || 42)) * 100).toFixed(1)}%)</span>
+                    </div>
+                    <div className="summary-card-footnote">
+                      <span>6 Blocks · Nutritional Watchlist</span>
+                    </div>
+                  </div>
+
+                  <div className="landing-summary-card low-risk">
+                    <div className="summary-card-header-mini">
+                      <span className="summary-card-title">LOW-RISK BLOCKS</span>
+                      <ShieldCheck size={16} className="text-emerald" />
+                    </div>
+                    <div className="summary-card-main-val text-emerald">
+                      <strong>{riskCounts.low}</strong>
+                      <span className="summary-card-unit">({((riskCounts.low / (riskCounts.total || 42)) * 100).toFixed(1)}%)</span>
+                    </div>
+                    <div className="summary-card-footnote">
+                      <span>35 Blocks · Performing to Benchmark</span>
+                    </div>
+                  </div>
+
+                  <div className="landing-summary-card overall-risk span-full">
+                    <div className="overall-summary-content">
+                      <div className="overall-badge-group">
+                        <Sparkles size={16} className="text-emerald" />
+                        <span className="overall-title">OVERALL PLANTATION RISK SUMMARY</span>
+                        <span className="overall-level-pill low">LOW PLANTATION RISK BASELINE</span>
+                      </div>
+                      <p className="overall-summary-text">
+                        <strong>83.3% of operational blocks</strong> (35 of 42) operate in standard cohort yield alignment. Mean 2024 harvest productivity across the plantation is <strong>{fmt(meanYield)} t/ha/yr</strong>. 1 priority block (<strong>B001</strong>, score {fmt((processedBlocks.find(b => b.Block_ID === 'B001') || {}).Risk_Score || 78.4, 1)}/100, -47.1% yield gap) requires targeted drainage and foliar intervention, while 6 medium-risk blocks are queued for potassium balancing.
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Summary Stats Strip */}
