@@ -1,0 +1,13 @@
+﻿File,Variable,Definition,Unit/Type
+productivity_monthly.csv,Block_ID,"Anonymous, stable block identifier used across relational tables",categorical
+productivity_monthly.csv,Productivity_t_Ha,Monthly FFB productivity,t/ha
+productivity_monthly.csv,FFB_Production_t,Monthly fresh fruit bunch production,tonnes
+leaf_sampling_event.csv,KCD_Event_ID,Anonymous leaf sampling event identifier; one event may represent multiple blocks,categorical
+leaf_sampling_event.csv,N_pct; P_pct; K_pct; Ca_pct; Mg_pct,Leaf nutrient concentrations retained at KCD-event level,%
+leaf_sampling_event.csv,B_ppm,Leaf boron concentration where reported,ppm
+kcd_block_membership.csv,Block_ID,Member block of the composite KCD event,categorical
+soil_sampling_event.csv,Soil_Event_ID,Anonymous composite soil laboratory sampling event identifier,categorical
+soil_sampling_event.csv,pH_H2O; pH_KCl,Soil reaction,pH
+soil_sampling_event.csv,C_Organic_pct; N_Total_pct,Soil organic carbon and total nitrogen,%
+soil_sampling_event.csv,P_Available_ppm,Available phosphorus,ppm
+soil_block_membership.csv,Block_ID,Afdeling/Division A block represented in the composite soil event,categorical

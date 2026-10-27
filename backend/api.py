@@ -1670,6 +1670,23 @@ def multi_source_evidence_data():
     }
     return jsonify(matrix)
 
+
+@app.route("/api/dataset-compatibility")
+def dataset_compatibility():
+    """Return comprehensive multi-source dataset audit and compatibility report."""
+    report_file = OUTPUT_DIR / "dataset_compatibility_report.json"
+    if report_file.exists():
+        try:
+            with open(report_file, "r", encoding="utf-8") as f:
+                return jsonify(json.load(f)), 200
+        except Exception as e:
+            app.logger.warning("Failed to read dataset compatibility report: %s", e)
+    return jsonify({
+        "status": "unavailable",
+        "message": "Dataset compatibility report is being compiled or not generated yet."
+    }), 200
+
+
 @app.route("/api/recommendations/<block_id>", methods=["GET", "POST"])
 def block_recommendations(block_id):
     """Generate secure, evidence-grounded agronomic recommendations for a specific block.
@@ -1681,6 +1698,7 @@ def block_recommendations(block_id):
     - Clearly distinguishes observed facts, model predictions, and AI-generated suggestions.
     - Never invents diseases, unmeasured deficiencies, or chemical dosages.
     - Preserves canonical screening scores as the immutable source of truth.
+    - If evidence is insufficient, explicitly returns an insufficient-evidence response.
     """
     canonical = load_canonical_risk()
     norm_id = str(block_id).strip().upper()
@@ -1719,6 +1737,41 @@ def block_recommendations(block_id):
     gap_str = f"{yield_gap:+.1f}%" if yield_gap is not None else "N/A"
     score_val = float(risk_score) if risk_score is not None else 0.0
 
+    # Explicit Insufficient Evidence Evaluation:
+    # If a block has no recorded yield AND fewer than 3 measured nutrients, evidence is insufficient.
+    if actual_yield is None and len(panel) < 3:
+        return jsonify({
+            "block_id": norm_id,
+            "risk_level": "UNKNOWN",
+            "risk_score": None,
+            "source": "deterministic_engine",
+            "model": "canonical_agronomic_rules",
+            "is_ai_generated": False,
+            "insufficient_evidence": True,
+            "insufficient_evidence_reason": f"Block {norm_id} lacks minimum empirical telemetry (no recorded harvest yield and fewer than 3 foliar nutrients) to formulate an agronomic recommendation.",
+            "note": "Insufficient field telemetry. Ground measurement required.",
+            "observed_facts": [
+                f"2024 FFB Yield: Unrecorded",
+                f"Foliar Nutrients: {len(panel)} measured (minimum 3 required for screening)",
+                f"Soil Status: {str(soil.get('status', 'unavailable')).title()}"
+            ],
+            "model_predictions": [
+                "Screening Score: Unavailable (insufficient data)",
+                "Risk Band: UNKNOWN"
+            ],
+            "recommendation": {
+                "priority": "Routine",
+                "urgency": "Deferred pending measurement",
+                "main_contributing_indicators": "Data insufficiency",
+                "observed_finding": f"Block {norm_id} lacks sufficient empirical observations for agronomic diagnosis.",
+                "agronomic_rationale": "Field recommendations require verified yield scale records or multi-nutrient foliar laboratory assays.",
+                "recommended_action": "Schedule comprehensive baseline field census, bunch count, and Frond 17 tissue sampling.",
+                "validation_protocol": "Establish baseline harvest scale and laboratory foliar sampling protocols.",
+                "data_coverage_limitations": ["Insufficient field telemetry for diagnostic analysis."]
+            },
+            "evidence_grounding": []
+        }), 200
+
     # 1. Compile immutable observed facts
     observed_facts = [
         f"2024 FFB Yield: {actual_str}",
@@ -1744,10 +1797,56 @@ def block_recommendations(block_id):
         {"layer": "Multi-Source Canonical", "source": "outputs/multi_source_block_risk.csv", "year": 2024, "status": "Screening Model"},
     ]
 
-    # 3. Determine priority
+    # 3. Determine priority and urgency
     priority = "Critical" if risk_level == "HIGH" else "Moderate" if risk_level == "MEDIUM" else "Routine"
+    urgency = "Immediate (Within 48 hours)" if priority == "Critical" else "Elevated (Within 14 days)" if priority == "Moderate" else "Routine (Scheduled Quarterly Review)"
+    main_indicators = b.get("risk_contributor") or (f"Yield gap: {gap_str}" if yield_gap is not None else "Balanced cohort trend")
 
-    # 4. Check for OpenAI API Key
+    # 4. Data Coverage Limitations
+    limitations = []
+    if panel.get("B_ppm") is None or panel.get("B_ppm") == "" or panel.get("B_ppm") == "N/A":
+        limitations.append("Boron (B) foliar measurement unrecorded for this sample round.")
+    if soil.get("status") != "observed":
+        limitations.append("No block-specific soil sample; estate chemical soil survey covered 7 index blocks only.")
+    limitations.append("Weather observations are estate-wide station averages; excluded from block discrimination.")
+    limitations.append("Drone RGB and multispectral UAV imagery are unmapped research benchmarks; excluded from block score.")
+
+    # 5. Supporting observations dictionary
+    supporting_observations = {
+        "yield_observation": {
+            "actual_yield_t_ha": actual_yield,
+            "expected_yield_t_ha": expected_yield,
+            "yield_gap_pct": yield_gap,
+            "observation_year": 2024,
+            "source": "outputs/block_health_risk.csv"
+        },
+        "foliar_observation": {
+            "sample_year": leaf_year,
+            "panel": panel,
+            "low_nutrients": low_nutrients,
+            "source": "outputs/block_nutrient_diagnostics.csv"
+        },
+        "dris_observation": {
+            "sample_year": dris.get("sample_year", 2024),
+            "limiting_nutrients": limiting,
+            "excess_nutrients": excess,
+            "prescription": prescription,
+            "source": "outputs/dris_prescription_analysis.csv"
+        },
+        "soil_observation": {
+            "status": str(soil.get("status", "unavailable")),
+            "note": soil.get("note", "No soil survey recorded for this block"),
+            "sample_year": soil.get("sample_year"),
+            "source": "data/raw_source/soil_sampling_event.csv"
+        },
+        "weather_context": {
+            "rainfall_mm_day": weather.get("Rainfall_mm_day"),
+            "temperature_c": weather.get("Temperature_C"),
+            "status": "Contextual estate-level average (excluded from block score)"
+        }
+    }
+
+    # 6. Check for OpenAI API Key
     openai_key = os.environ.get("OPENAI_API_KEY", "").strip()
     ai_generated = False
     source_name = "deterministic_engine"
@@ -1858,16 +1957,22 @@ def block_recommendations(block_id):
         "source": source_name,
         "model": model_name,
         "is_ai_generated": ai_generated,
+        "insufficient_evidence": False,
         "note": note,
         "observed_facts": observed_facts,
         "model_predictions": model_predictions,
         "recommendation": {
             "priority": priority,
+            "urgency": urgency,
+            "main_contributing_indicators": main_indicators,
             "observed_finding": finding,
             "agronomic_rationale": rationale,
             "recommended_action": action,
             "validation_protocol": validation,
+            "data_coverage_limitations": limitations
         },
+        "supporting_observations": supporting_observations,
+        "data_coverage_limitations": limitations,
         "evidence_grounding": evidence_grounding
     })
 

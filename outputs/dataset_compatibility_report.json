@@ -1,0 +1,560 @@
+{
+  "audit_timestamp": "2026-10-27T04:45:00Z",
+  "tabular_datasets": {
+    "productivity_monthly": {
+      "file": "data\\raw_source\\productivity_monthly.csv",
+      "record_count": 6552,
+      "columns": [
+        "Year",
+        "Month_Number",
+        "Month",
+        "Division_ID",
+        "Block_ID",
+        "Planting_Year",
+        "Plant_Age_Years",
+        "Plant_Status",
+        "Area_Ha",
+        "Productive_Palms",
+        "Palms_per_Ha",
+        "Seed_Type",
+        "Productivity_t_Ha",
+        "FFB_Production_kg",
+        "FFB_Production_t"
+      ],
+      "estate_division": [
+        "Division_A"
+      ],
+      "block_count": 42,
+      "blocks": [
+        "B001",
+        "B002",
+        "B003",
+        "B004",
+        "B005",
+        "B006",
+        "B007",
+        "B008",
+        "B009",
+        "B010",
+        "B011",
+        "B012",
+        "B013",
+        "B014",
+        "B015",
+        "B016",
+        "B017",
+        "B018",
+        "B019",
+        "B020",
+        "B021",
+        "B022",
+        "B023",
+        "B024",
+        "B025",
+        "B026",
+        "B027",
+        "B028",
+        "B029",
+        "B030",
+        "B031",
+        "B032",
+        "B033",
+        "B034",
+        "B035",
+        "B036",
+        "B037",
+        "B038",
+        "B039",
+        "B040",
+        "B041",
+        "B042"
+      ],
+      "block_range": "B001 - B042",
+      "year_range": "2012 - 2024 (13 years)",
+      "months_per_year": 12,
+      "missing_values": {},
+      "duplicate_records": 0,
+      "primary_key": [
+        "Year",
+        "Month_Number",
+        "Block_ID"
+      ],
+      "join_feasibility": "Canonical operational block primary key. 100% complete for all 42 blocks across 156 months (6,552 records).",
+      "provenance": "Long-Term Block-Level Oil Palm Productivity Dataset, Indonesian Commercial Estate (Division_A)."
+    },
+    "block_characteristics": {
+      "file": "data\\raw_source\\block_characteristics.csv",
+      "record_count": 42,
+      "columns": [
+        "Division_ID",
+        "Block_ID",
+        "Observed_Planting_Years",
+        "Observed_Seed_Types",
+        "Observed_Area_Ha"
+      ],
+      "block_count": 42,
+      "blocks": [
+        "B001",
+        "B002",
+        "B003",
+        "B004",
+        "B005",
+        "B006",
+        "B007",
+        "B008",
+        "B009",
+        "B010",
+        "B011",
+        "B012",
+        "B013",
+        "B014",
+        "B015",
+        "B016",
+        "B017",
+        "B018",
+        "B019",
+        "B020",
+        "B021",
+        "B022",
+        "B023",
+        "B024",
+        "B025",
+        "B026",
+        "B027",
+        "B028",
+        "B029",
+        "B030",
+        "B031",
+        "B032",
+        "B033",
+        "B034",
+        "B035",
+        "B036",
+        "B037",
+        "B038",
+        "B039",
+        "B040",
+        "B041",
+        "B042"
+      ],
+      "planting_years": [
+        2000,
+        2005,
+        2006,
+        2012,
+        2013,
+        2014,
+        2016
+      ],
+      "seed_types": [
+        "Lonsum",
+        "PPKS",
+        "PPKS/Sofc"
+      ],
+      "area_range_ha": [
+        10.0,
+        35.0
+      ],
+      "total_estate_area_ha": 920.0,
+      "missing_values": {},
+      "duplicate_records": 0,
+      "join_keys": [
+        "Block_ID"
+      ],
+      "join_success_rate": 1.0,
+      "provenance": "Derived from longitudinal plantation records for Division_A (42 blocks B001-B042)."
+    },
+    "leaf_sampling_event": {
+      "file": "data\\raw_source\\leaf_sampling_event.csv",
+      "record_count": 256,
+      "columns": [
+        "Sampling_Year",
+        "KCD_Event_ID",
+        "Planting_Year",
+        "Area_Ha",
+        "N_pct",
+        "P_pct",
+        "K_pct",
+        "Ca_pct",
+        "Mg_pct",
+        "B_ppm"
+      ],
+      "year_range": "2015 - 2022",
+      "kcd_events_count": 256,
+      "nutrients_measured": [
+        "N_pct",
+        "P_pct",
+        "K_pct",
+        "Ca_pct",
+        "Mg_pct",
+        "B_ppm"
+      ],
+      "missing_values": {
+        "B_ppm": 152
+      },
+      "boron_missing_count": 152,
+      "boron_missing_pct": 59.38,
+      "macro_nutrients_complete": true,
+      "provenance": "Annual foliar laboratory assays (Frond 17) conducted between 2015 and 2022."
+    },
+    "kcd_block_membership": {
+      "file": "data\\raw_source\\kcd_block_membership.csv",
+      "record_count": 294,
+      "columns": [
+        "Sampling_Year",
+        "KCD_Event_ID",
+        "Block_ID",
+        "Member_Count",
+        "Sampling_Type"
+      ],
+      "linked_blocks": [
+        "B001",
+        "B002",
+        "B003",
+        "B004",
+        "B005",
+        "B006",
+        "B007",
+        "B008",
+        "B009",
+        "B010",
+        "B011",
+        "B012",
+        "B013",
+        "B014",
+        "B015",
+        "B016",
+        "B017",
+        "B018",
+        "B019",
+        "B020",
+        "B021",
+        "B022",
+        "B023",
+        "B024",
+        "B025",
+        "B026",
+        "B027",
+        "B028",
+        "B029",
+        "B030",
+        "B031",
+        "B032",
+        "B033",
+        "B034",
+        "B035",
+        "B036",
+        "B037",
+        "B038",
+        "B039",
+        "B040",
+        "B041",
+        "B042"
+      ],
+      "linked_block_count": 42,
+      "sampling_types": {
+        "single-block": 218,
+        "multi-block composite": 76
+      },
+      "join_key": "KCD_Event_ID <-> leaf_sampling_event; Block_ID <-> productivity_monthly",
+      "join_success_rate": 1.0,
+      "relational_note": "Bridge table linking leaf laboratory events to individual blocks. Some KCD events represent 2-block composites."
+    },
+    "soil_sampling_event": {
+      "file": "data\\raw_source\\soil_sampling_event.csv",
+      "record_count": 23,
+      "columns": [
+        "Sampling_Year",
+        "Soil_Event_ID",
+        "Reported_Planting_Year",
+        "Sand_pct",
+        "Silt_pct",
+        "Clay_pct",
+        "pH_H2O",
+        "pH_KCl",
+        "C_Organic_pct",
+        "N_Total_pct",
+        "C_N",
+        "P_Available_ppm",
+        "K_exch_me_100g",
+        "Ca_exch_me_100g",
+        "Na_exch_me_100g",
+        "Mg_exch_me_100g",
+        "JKB_me_100g",
+        "CEC_KTK_me_100g",
+        "Base_Saturation_pct",
+        "Al_exch_me_100g"
+      ],
+      "sampling_years": [
+        2017,
+        2020
+      ],
+      "soil_events_count": 23,
+      "parameters_analyzed": [
+        "pH_H2O",
+        "pH_KCl",
+        "C_Organic_pct",
+        "N_Total_pct",
+        "C_N",
+        "P_Available_ppm",
+        "CEC_KTK_me_100g",
+        "Base_Saturation_pct",
+        "K_exch_me_100g",
+        "Ca_exch_me_100g",
+        "Mg_exch_me_100g",
+        "Al_exch_me_100g"
+      ],
+      "base_saturation_above_100_count": 2,
+      "base_saturation_outliers": [
+        {
+          "Soil_Event_ID": "SOIL_2020_015",
+          "Base_Saturation_pct": 108.5836067695253
+        },
+        {
+          "Soil_Event_ID": "SOIL_2020_019",
+          "Base_Saturation_pct": 106.52682805420264
+        }
+      ],
+      "provenance": "Periodic composite soil chemical surveys conducted in 2017 and 2020 across plantation divisions."
+    },
+    "soil_block_membership": {
+      "file": "data\\raw_source\\soil_block_membership.csv",
+      "record_count": 8,
+      "columns": [
+        "Sampling_Year",
+        "Soil_Event_ID",
+        "Division_ID",
+        "Block_ID",
+        "Member_Count",
+        "Sampling_Type"
+      ],
+      "division": [
+        "Division_A"
+      ],
+      "represented_blocks": [
+        "B004",
+        "B006",
+        "B008",
+        "B015",
+        "B026",
+        "B031",
+        "B041"
+      ],
+      "represented_block_count": 7,
+      "total_operational_blocks": 42,
+      "unrepresented_block_count": 35,
+      "coverage_percentage": 16.67,
+      "join_keys": [
+        "Soil_Event_ID",
+        "Block_ID"
+      ],
+      "join_success_rate": 1.0,
+      "agronomic_rule": "Soil sampling is sparse: exactly 7 blocks in Division_A have composite soil survey data (B004, B006, B008, B015, B026, B031, B041). The remaining 35 blocks are unmeasured and MUST report status 'unavailable' without blind imputation."
+    },
+    "data_dictionary": {
+      "file": "data\\raw_source\\data_dictionary.csv",
+      "variables_defined": 12,
+      "definitions": [
+        {
+          "File": "productivity_monthly.csv",
+          "Variable": "Block_ID",
+          "Definition": "Anonymous, stable block identifier used across relational tables",
+          "Unit/Type": "categorical"
+        },
+        {
+          "File": "productivity_monthly.csv",
+          "Variable": "Productivity_t_Ha",
+          "Definition": "Monthly FFB productivity",
+          "Unit/Type": "t/ha"
+        },
+        {
+          "File": "productivity_monthly.csv",
+          "Variable": "FFB_Production_t",
+          "Definition": "Monthly fresh fruit bunch production",
+          "Unit/Type": "tonnes"
+        },
+        {
+          "File": "leaf_sampling_event.csv",
+          "Variable": "KCD_Event_ID",
+          "Definition": "Anonymous leaf sampling event identifier; one event may represent multiple blocks",
+          "Unit/Type": "categorical"
+        },
+        {
+          "File": "leaf_sampling_event.csv",
+          "Variable": "N_pct; P_pct; K_pct; Ca_pct; Mg_pct",
+          "Definition": "Leaf nutrient concentrations retained at KCD-event level",
+          "Unit/Type": "%"
+        },
+        {
+          "File": "leaf_sampling_event.csv",
+          "Variable": "B_ppm",
+          "Definition": "Leaf boron concentration where reported",
+          "Unit/Type": "ppm"
+        },
+        {
+          "File": "kcd_block_membership.csv",
+          "Variable": "Block_ID",
+          "Definition": "Member block of the composite KCD event",
+          "Unit/Type": "categorical"
+        },
+        {
+          "File": "soil_sampling_event.csv",
+          "Variable": "Soil_Event_ID",
+          "Definition": "Anonymous composite soil laboratory sampling event identifier",
+          "Unit/Type": "categorical"
+        },
+        {
+          "File": "soil_sampling_event.csv",
+          "Variable": "pH_H2O; pH_KCl",
+          "Definition": "Soil reaction",
+          "Unit/Type": "pH"
+        },
+        {
+          "File": "soil_sampling_event.csv",
+          "Variable": "C_Organic_pct; N_Total_pct",
+          "Definition": "Soil organic carbon and total nitrogen",
+          "Unit/Type": "%"
+        },
+        {
+          "File": "soil_sampling_event.csv",
+          "Variable": "P_Available_ppm",
+          "Definition": "Available phosphorus",
+          "Unit/Type": "ppm"
+        },
+        {
+          "File": "soil_block_membership.csv",
+          "Variable": "Block_ID",
+          "Definition": "Afdeling/Division A block represented in the composite soil event",
+          "Unit/Type": "categorical"
+        }
+      ]
+    },
+    "weather_nasa_power": {
+      "file": "data\\NASA_POWER_Monthly_Weather_Clean.csv",
+      "record_count": 156,
+      "year_range": "2012 - 2024 (13 years, 156 monthly records)",
+      "spatial_resolution": "Single estate-level geographic centroid (lat 1.5, lon 101.5 approx). Repeated identically for all 42 blocks.",
+      "spatial_discrimination": "ZERO spatial discrimination across blocks. Cannot differentiate B001 from B042.",
+      "methodology_status": "Contextual evidence only. Strictly EXCLUDED from block-level screening risk calculation.",
+      "provenance": "NASA POWER Agroclimatology monthly surface meteorological archive."
+    },
+    "integrated_master_dataset": {
+      "file": "data\\Palm_AI_Master_FFB_Leaf_Soil_Weather.csv",
+      "record_count": 6552,
+      "columns_count": 63,
+      "blocks_count": 42,
+      "year_range": "2012 - 2024",
+      "leaf_flagged_rows": null,
+      "soil_flagged_rows": null,
+      "immature_tbm_rows": 1800,
+      "lineage": "Standardized denormalized master table combining monthly FFB yield, leaf sampling events, soil sampling events, and NASA POWER monthly weather."
+    }
+  },
+  "drone_rgb": {
+    "model_file": "drone\\models\\palm_yolo_best.pt",
+    "architecture": "YOLO11n (Ultralytics)",
+    "checkpoint_size_bytes": 5556442,
+    "supported_classes": {
+      "0": "Dead",
+      "1": "Healthy",
+      "2": "Grass",
+      "3": "Small",
+      "4": "Yellow"
+    },
+    "class_breakdown": {
+      "Dead": "Severe mortality / dead palm stump (Class 0)",
+      "Healthy": "Vigorous green full canopy (Class 1)",
+      "Grass": "Weeds, cover crops, ground grass infestation (Class 2)",
+      "Small": "Young, replanted, or severely stunted palm crown (Class 3)",
+      "Yellow": "Chlorotic, nutrient-deficient, or waterlogged palm crown (Class 4)"
+    },
+    "spatial_mapping_to_blocks": {
+      "status": "UNAVAILABLE",
+      "reason": "MOPAD Site 2 orthomosaic aerial survey was flown over an unindexed research area in Peninsular Malaysia. The images are 1024x1024 pixel canvas crops (e.g. 44000_16000_1013_87.jpg) without embedded EXIF GPS tags, ground survey telemetry, or operational block boundary shapefiles.",
+      "operational_block_assignment": "STRICTLY PROHIBITED without verified GIS shapefile and CRS intersection. Images are evaluated at the image-level only."
+    },
+    "features_summary": {
+      "file": "drone\\outputs\\drone_image_health_features.csv",
+      "validation_images_analyzed": 500,
+      "total_detections": 43779,
+      "palm_detections": 43599,
+      "healthy_detections": 34130,
+      "dead_detections": 83,
+      "small_detections": 8841,
+      "yellow_detections": 545,
+      "grass_detections": 180,
+      "mean_drone_health_score": 75.81,
+      "median_drone_health_score": 89.19,
+      "mean_confidence": 0.8608,
+      "confidence_threshold": 0.25
+    }
+  },
+  "multispectral": {
+    "data_directory": "drone\\multispectral\\data",
+    "tile_count": 34,
+    "dimensions": [
+      512,
+      512
+    ],
+    "band_count": 5,
+    "bands_specification": {
+      "Band 1": {
+        "name": "Blue",
+        "center_wavelength": "475 nm",
+        "bandwidth": "32 nm",
+        "calibration": "Calibrated surface reflectance (0.0 - 1.0)"
+      },
+      "Band 2": {
+        "name": "Green",
+        "center_wavelength": "560 nm",
+        "bandwidth": "27 nm",
+        "calibration": "Calibrated surface reflectance (0.0 - 1.0)"
+      },
+      "Band 3": {
+        "name": "Red",
+        "center_wavelength": "668 nm",
+        "bandwidth": "16 nm",
+        "calibration": "Calibrated surface reflectance (0.0 - 1.0)"
+      },
+      "Band 4": {
+        "name": "RedEdge",
+        "center_wavelength": "717 nm",
+        "bandwidth": "12 nm",
+        "calibration": "Calibrated surface reflectance (0.0 - 1.0)"
+      },
+      "Band 5": {
+        "name": "NIR",
+        "center_wavelength": "842 nm",
+        "bandwidth": "57 nm",
+        "calibration": "Calibrated surface reflectance (0.0 - 1.0)"
+      }
+    },
+    "sensor_platform": "MicaSense Altum 5-band multispectral sensor",
+    "provenance_verification": {
+      "dataset_origin": "MSUAV500K Benchmark Dataset (Zenodo DOI: 10.5281/zenodo.16743974)",
+      "target_ecosystem": "Hullerbusch Beech Forest (Mecklenburg-Vorpommern, Germany)",
+      "vegetation_type": "Temperate Deciduous Broadleaf Forest (Fagus sylvatica)",
+      "is_oil_palm": false,
+      "CRITICAL_VERDICT": "DO NOT PRESENT AS OIL PALM EVIDENCE. The tiles depict a European temperate beech forest in Germany, NOT a tropical oil palm plantation (Elaeis guineensis).",
+      "role_in_system": "TECHNICAL DEMO ONLY / BENCHMARK. Used to demonstrate pure-canopy NDVI/NDRE calculation capability. Strictly decoupled from plantation operational block risk scores."
+    },
+    "vegetation_indices_supported": {
+      "NDVI": "Normalized Difference Vegetation Index: (NIR - Red) / (NIR + Red). Technical capability verified.",
+      "NDRE": "Normalized Difference Red Edge: (NIR - RedEdge) / (NIR + RedEdge). Technical capability verified.",
+      "canopy_mask": "NDVI >= 0.3 pure photosynthetic canopy mask applied to isolate leaves from soil/shadow.",
+      "low_vigour_area": "Canopy NDVI < 0.6 classified as low vigour."
+    },
+    "block_mapping": {
+      "status": "UNMAPPED / DEMO ONLY",
+      "reason": "Geographically disconnected from Indonesian plantation blocks B001-B042. Zero spatial or temporal overlap."
+    },
+    "tile_features_summary": {
+      "file": "drone\\multispectral\\outputs\\multispectral_tile_health_features.csv",
+      "processed_tiles": 34,
+      "mean_canopy_ndvi": 0.8859,
+      "mean_canopy_ndre": 0.5069,
+      "mean_canopy_cover_pct": 93.62,
+      "mean_multispectral_health_score": 92.0
+    }
+  }
+}

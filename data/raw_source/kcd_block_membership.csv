@@ -1,0 +1,295 @@
+﻿Sampling_Year,KCD_Event_ID,Block_ID,Member_Count,Sampling_Type
+2015,KCD_2015_001,B001,1,single-block
+2015,KCD_2015_002,B002,1,single-block
+2015,KCD_2015_003,B003,1,single-block
+2015,KCD_2015_004,B004,1,single-block
+2015,KCD_2015_005,B005,1,single-block
+2015,KCD_2015_006,B006,1,single-block
+2015,KCD_2015_007,B007,1,single-block
+2015,KCD_2015_008,B008,2,multi-block composite
+2015,KCD_2015_008,B009,2,multi-block composite
+2015,KCD_2015_009,B010,1,single-block
+2015,KCD_2015_010,B011,1,single-block
+2015,KCD_2015_011,B012,2,multi-block composite
+2015,KCD_2015_011,B013,2,multi-block composite
+2015,KCD_2015_012,B014,1,single-block
+2015,KCD_2015_013,B015,1,single-block
+2015,KCD_2015_014,B016,1,single-block
+2015,KCD_2015_015,B017,2,multi-block composite
+2015,KCD_2015_015,B018,2,multi-block composite
+2015,KCD_2015_016,B020,1,single-block
+2015,KCD_2015_017,B020,1,single-block
+2015,KCD_2015_018,B021,1,single-block
+2015,KCD_2015_019,B022,1,single-block
+2015,KCD_2015_020,B023,1,single-block
+2015,KCD_2015_021,B024,1,single-block
+2015,KCD_2015_022,B025,1,single-block
+2015,KCD_2015_023,B026,1,single-block
+2015,KCD_2015_024,B027,1,single-block
+2016,KCD_2016_025,B001,1,single-block
+2016,KCD_2016_026,B002,1,single-block
+2016,KCD_2016_027,B003,1,single-block
+2016,KCD_2016_028,B004,1,single-block
+2016,KCD_2016_029,B005,1,single-block
+2016,KCD_2016_030,B006,1,single-block
+2016,KCD_2016_031,B007,1,single-block
+2016,KCD_2016_032,B008,2,multi-block composite
+2016,KCD_2016_032,B009,2,multi-block composite
+2016,KCD_2016_033,B010,1,single-block
+2016,KCD_2016_034,B011,1,single-block
+2016,KCD_2016_035,B012,2,multi-block composite
+2016,KCD_2016_035,B013,2,multi-block composite
+2016,KCD_2016_036,B014,1,single-block
+2016,KCD_2016_037,B015,1,single-block
+2016,KCD_2016_038,B016,1,single-block
+2016,KCD_2016_039,B017,2,multi-block composite
+2016,KCD_2016_039,B018,2,multi-block composite
+2016,KCD_2016_040,B019,1,single-block
+2016,KCD_2016_041,B020,1,single-block
+2016,KCD_2016_042,B021,1,single-block
+2016,KCD_2016_043,B022,1,single-block
+2016,KCD_2016_044,B023,1,single-block
+2016,KCD_2016_045,B024,1,single-block
+2016,KCD_2016_046,B025,1,single-block
+2016,KCD_2016_047,B026,1,single-block
+2016,KCD_2016_048,B027,1,single-block
+2016,KCD_2016_049,B028,1,single-block
+2016,KCD_2016_050,B029,1,single-block
+2016,KCD_2016_051,B030,1,single-block
+2016,KCD_2016_052,B031,1,single-block
+2017,KCD_2017_053,B001,1,single-block
+2017,KCD_2017_054,B002,1,single-block
+2017,KCD_2017_055,B003,1,single-block
+2017,KCD_2017_056,B004,1,single-block
+2017,KCD_2017_057,B005,1,single-block
+2017,KCD_2017_058,B006,1,single-block
+2017,KCD_2017_059,B007,1,single-block
+2017,KCD_2017_060,B008,2,multi-block composite
+2017,KCD_2017_060,B009,2,multi-block composite
+2017,KCD_2017_061,B010,1,single-block
+2017,KCD_2017_062,B011,1,single-block
+2017,KCD_2017_063,B012,2,multi-block composite
+2017,KCD_2017_063,B013,2,multi-block composite
+2017,KCD_2017_064,B014,1,single-block
+2017,KCD_2017_065,B015,1,single-block
+2017,KCD_2017_066,B016,1,single-block
+2017,KCD_2017_067,B017,2,multi-block composite
+2017,KCD_2017_067,B018,2,multi-block composite
+2017,KCD_2017_068,B019,1,single-block
+2017,KCD_2017_069,B020,1,single-block
+2017,KCD_2017_070,B021,1,single-block
+2017,KCD_2017_071,B022,1,single-block
+2017,KCD_2017_072,B023,1,single-block
+2017,KCD_2017_073,B024,1,single-block
+2017,KCD_2017_074,B025,1,single-block
+2017,KCD_2017_075,B026,1,single-block
+2017,KCD_2017_076,B027,1,single-block
+2017,KCD_2017_077,B028,1,single-block
+2017,KCD_2017_078,B029,1,single-block
+2017,KCD_2017_079,B030,1,single-block
+2017,KCD_2017_080,B031,1,single-block
+2018,KCD_2018_081,B001,1,single-block
+2018,KCD_2018_082,B002,1,single-block
+2018,KCD_2018_083,B003,1,single-block
+2018,KCD_2018_084,B004,1,single-block
+2018,KCD_2018_085,B005,1,single-block
+2018,KCD_2018_086,B006,1,single-block
+2018,KCD_2018_087,B007,1,single-block
+2018,KCD_2018_088,B008,2,multi-block composite
+2018,KCD_2018_088,B009,2,multi-block composite
+2018,KCD_2018_089,B010,1,single-block
+2018,KCD_2018_090,B011,1,single-block
+2018,KCD_2018_091,B012,2,multi-block composite
+2018,KCD_2018_091,B013,2,multi-block composite
+2018,KCD_2018_092,B014,1,single-block
+2018,KCD_2018_093,B015,1,single-block
+2018,KCD_2018_094,B016,1,single-block
+2018,KCD_2018_095,B017,2,multi-block composite
+2018,KCD_2018_095,B018,2,multi-block composite
+2018,KCD_2018_096,B019,1,single-block
+2018,KCD_2018_097,B020,1,single-block
+2018,KCD_2018_098,B021,1,single-block
+2018,KCD_2018_099,B022,1,single-block
+2018,KCD_2018_100,B023,1,single-block
+2018,KCD_2018_101,B024,1,single-block
+2018,KCD_2018_102,B026,1,single-block
+2018,KCD_2018_103,B027,1,single-block
+2018,KCD_2018_104,B028,1,single-block
+2018,KCD_2018_105,B029,1,single-block
+2018,KCD_2018_106,B030,1,single-block
+2018,KCD_2018_107,B031,1,single-block
+2018,KCD_2018_108,B032,2,multi-block composite
+2018,KCD_2018_108,B033,2,multi-block composite
+2018,KCD_2018_109,B034,1,single-block
+2018,KCD_2018_110,B035,1,single-block
+2018,KCD_2018_111,B036,2,multi-block composite
+2018,KCD_2018_111,B037,2,multi-block composite
+2018,KCD_2018_112,B038,1,single-block
+2018,KCD_2018_113,B039,1,single-block
+2018,KCD_2018_114,B040,1,single-block
+2018,KCD_2018_115,B041,2,multi-block composite
+2018,KCD_2018_115,B042,2,multi-block composite
+2019,KCD_2019_116,B001,1,single-block
+2019,KCD_2019_117,B002,1,single-block
+2019,KCD_2019_118,B003,1,single-block
+2019,KCD_2019_119,B004,1,single-block
+2019,KCD_2019_120,B005,1,single-block
+2019,KCD_2019_121,B006,1,single-block
+2019,KCD_2019_122,B007,1,single-block
+2019,KCD_2019_123,B008,2,multi-block composite
+2019,KCD_2019_123,B009,2,multi-block composite
+2019,KCD_2019_124,B010,1,single-block
+2019,KCD_2019_125,B011,1,single-block
+2019,KCD_2019_126,B012,2,multi-block composite
+2019,KCD_2019_126,B013,2,multi-block composite
+2019,KCD_2019_127,B014,1,single-block
+2019,KCD_2019_128,B015,1,single-block
+2019,KCD_2019_129,B016,1,single-block
+2019,KCD_2019_130,B017,2,multi-block composite
+2019,KCD_2019_130,B018,2,multi-block composite
+2019,KCD_2019_131,B019,1,single-block
+2019,KCD_2019_132,B020,1,single-block
+2019,KCD_2019_133,B021,1,single-block
+2019,KCD_2019_134,B022,1,single-block
+2019,KCD_2019_135,B023,1,single-block
+2019,KCD_2019_136,B024,1,single-block
+2019,KCD_2019_137,B025,1,single-block
+2019,KCD_2019_138,B026,1,single-block
+2019,KCD_2019_139,B027,1,single-block
+2019,KCD_2019_140,B028,1,single-block
+2019,KCD_2019_141,B029,1,single-block
+2019,KCD_2019_142,B030,1,single-block
+2019,KCD_2019_143,B031,1,single-block
+2019,KCD_2019_144,B032,2,multi-block composite
+2019,KCD_2019_144,B033,2,multi-block composite
+2019,KCD_2019_145,B034,1,single-block
+2019,KCD_2019_146,B035,1,single-block
+2019,KCD_2019_147,B036,2,multi-block composite
+2019,KCD_2019_147,B037,2,multi-block composite
+2019,KCD_2019_148,B038,1,single-block
+2019,KCD_2019_149,B039,1,single-block
+2019,KCD_2019_150,B040,1,single-block
+2019,KCD_2019_151,B041,2,multi-block composite
+2019,KCD_2019_151,B042,2,multi-block composite
+2020,KCD_2020_152,B003,1,single-block
+2020,KCD_2020_153,B004,1,single-block
+2020,KCD_2020_154,B005,1,single-block
+2020,KCD_2020_155,B006,1,single-block
+2020,KCD_2020_156,B007,1,single-block
+2020,KCD_2020_157,B008,2,multi-block composite
+2020,KCD_2020_157,B009,2,multi-block composite
+2020,KCD_2020_158,B010,1,single-block
+2020,KCD_2020_159,B011,1,single-block
+2020,KCD_2020_160,B012,2,multi-block composite
+2020,KCD_2020_160,B013,2,multi-block composite
+2020,KCD_2020_161,B014,1,single-block
+2020,KCD_2020_162,B015,1,single-block
+2020,KCD_2020_163,B016,1,single-block
+2020,KCD_2020_164,B017,2,multi-block composite
+2020,KCD_2020_164,B018,2,multi-block composite
+2020,KCD_2020_165,B019,1,single-block
+2020,KCD_2020_166,B020,1,single-block
+2020,KCD_2020_167,B021,1,single-block
+2020,KCD_2020_168,B022,1,single-block
+2020,KCD_2020_169,B023,1,single-block
+2020,KCD_2020_170,B024,1,single-block
+2020,KCD_2020_171,B025,1,single-block
+2020,KCD_2020_172,B026,1,single-block
+2020,KCD_2020_173,B027,1,single-block
+2020,KCD_2020_174,B028,1,single-block
+2020,KCD_2020_175,B029,1,single-block
+2020,KCD_2020_176,B030,1,single-block
+2020,KCD_2020_177,B031,1,single-block
+2020,KCD_2020_178,B032,2,multi-block composite
+2020,KCD_2020_178,B033,2,multi-block composite
+2020,KCD_2020_179,B034,1,single-block
+2020,KCD_2020_180,B035,1,single-block
+2020,KCD_2020_181,B036,2,multi-block composite
+2020,KCD_2020_181,B037,2,multi-block composite
+2020,KCD_2020_182,B038,1,single-block
+2020,KCD_2020_183,B039,1,single-block
+2020,KCD_2020_184,B040,1,single-block
+2020,KCD_2020_185,B041,2,multi-block composite
+2020,KCD_2020_185,B042,2,multi-block composite
+2021,KCD_2021_186,B001,1,single-block
+2021,KCD_2021_187,B002,1,single-block
+2021,KCD_2021_188,B003,1,single-block
+2021,KCD_2021_189,B004,1,single-block
+2021,KCD_2021_190,B005,1,single-block
+2021,KCD_2021_191,B006,1,single-block
+2021,KCD_2021_192,B007,1,single-block
+2021,KCD_2021_193,B008,2,multi-block composite
+2021,KCD_2021_193,B009,2,multi-block composite
+2021,KCD_2021_194,B010,1,single-block
+2021,KCD_2021_195,B011,1,single-block
+2021,KCD_2021_196,B012,2,multi-block composite
+2021,KCD_2021_196,B013,2,multi-block composite
+2021,KCD_2021_197,B014,1,single-block
+2021,KCD_2021_198,B015,1,single-block
+2021,KCD_2021_199,B016,1,single-block
+2021,KCD_2021_200,B017,2,multi-block composite
+2021,KCD_2021_200,B018,2,multi-block composite
+2021,KCD_2021_201,B019,1,single-block
+2021,KCD_2021_202,B020,1,single-block
+2021,KCD_2021_203,B021,1,single-block
+2021,KCD_2021_204,B022,1,single-block
+2021,KCD_2021_205,B023,1,single-block
+2021,KCD_2021_206,B024,1,single-block
+2021,KCD_2021_207,B025,1,single-block
+2021,KCD_2021_208,B026,1,single-block
+2021,KCD_2021_209,B027,1,single-block
+2021,KCD_2021_210,B028,1,single-block
+2021,KCD_2021_211,B029,1,single-block
+2021,KCD_2021_212,B030,1,single-block
+2021,KCD_2021_213,B031,1,single-block
+2021,KCD_2021_214,B032,1,single-block
+2021,KCD_2021_215,B033,1,single-block
+2021,KCD_2021_216,B034,1,single-block
+2021,KCD_2021_217,B035,1,single-block
+2021,KCD_2021_218,B036,2,multi-block composite
+2021,KCD_2021_218,B037,2,multi-block composite
+2021,KCD_2021_219,B038,1,single-block
+2021,KCD_2021_220,B039,1,single-block
+2021,KCD_2021_221,B040,1,single-block
+2021,KCD_2021_222,B041,2,multi-block composite
+2021,KCD_2021_222,B042,2,multi-block composite
+2022,KCD_2022_223,B003,1,single-block
+2022,KCD_2022_224,B004,1,single-block
+2022,KCD_2022_225,B005,1,single-block
+2022,KCD_2022_226,B006,1,single-block
+2022,KCD_2022_227,B007,1,single-block
+2022,KCD_2022_228,B008,2,multi-block composite
+2022,KCD_2022_228,B009,2,multi-block composite
+2022,KCD_2022_229,B010,1,single-block
+2022,KCD_2022_230,B011,1,single-block
+2022,KCD_2022_231,B012,2,multi-block composite
+2022,KCD_2022_231,B013,2,multi-block composite
+2022,KCD_2022_232,B014,1,single-block
+2022,KCD_2022_233,B015,1,single-block
+2022,KCD_2022_234,B016,1,single-block
+2022,KCD_2022_235,B017,2,multi-block composite
+2022,KCD_2022_235,B018,2,multi-block composite
+2022,KCD_2022_236,B019,1,single-block
+2022,KCD_2022_237,B020,1,single-block
+2022,KCD_2022_238,B021,1,single-block
+2022,KCD_2022_239,B022,1,single-block
+2022,KCD_2022_240,B023,1,single-block
+2022,KCD_2022_241,B024,1,single-block
+2022,KCD_2022_242,B025,1,single-block
+2022,KCD_2022_243,B026,1,single-block
+2022,KCD_2022_244,B027,1,single-block
+2022,KCD_2022_245,B028,1,single-block
+2022,KCD_2022_246,B029,1,single-block
+2022,KCD_2022_247,B030,1,single-block
+2022,KCD_2022_248,B031,1,single-block
+2022,KCD_2022_249,B032,2,multi-block composite
+2022,KCD_2022_249,B033,2,multi-block composite
+2022,KCD_2022_250,B034,1,single-block
+2022,KCD_2022_251,B035,1,single-block
+2022,KCD_2022_252,B036,2,multi-block composite
+2022,KCD_2022_252,B037,2,multi-block composite
+2022,KCD_2022_253,B038,1,single-block
+2022,KCD_2022_254,B039,1,single-block
+2022,KCD_2022_255,B040,1,single-block
+2022,KCD_2022_256,B041,2,multi-block composite
+2022,KCD_2022_256,B042,2,multi-block composite

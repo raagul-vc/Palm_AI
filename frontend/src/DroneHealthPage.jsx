@@ -1269,7 +1269,7 @@ export default function DroneHealthPage({ datasets, sourceStatus, loadSources })
                 Run live, in-memory single-image palm crown detection using the project's trained YOLO11n weights (<code>palm_yolo_best.pt</code>).
                 Detections classify visible crown morphology into 5 classes: <strong>Healthy</strong> (green canopy), <strong>Small</strong> (juvenile/stunted), <strong>Yellow</strong> (chlorotic stress), <strong>Dead</strong> (standing desiccated trunks), and <strong>Grass</strong> (ground weed cover).
                 This is visual RGB object detection and does <em>NOT</em> provide clinical pathology diagnosis (e.g. <em>Ganoderma</em> root rot).
-                Uploaded imagery is evaluated in-memory on CPU and is <strong>not mapped to any ALM AI management block</strong>.
+                Uploaded imagery is evaluated in-memory on CPU and is <strong>not mapped to any PALM AI management block</strong>.
               </p>
             </div>
           </div>

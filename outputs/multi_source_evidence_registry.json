@@ -1,100 +1,115 @@
 {
-  "registry_version": "1.0.0",
-  "generated_at": "2026-10-03T15:27:00Z",
-  "architecture": "Decoupled Multi-Pillar Evidence Architecture",
-  "rationale": "Direct row-level fusion is scientifically invalid due to disparate geographic origins (Malaysia vs Germany), lack of common spatial keys (Block_ID), and disjoint acquisition temporalities. Evidence pillars are maintained as independent diagnostic sources.",
-  "evidence_pillars": {
-    "palm_agronomic": {
-      "pillar_id": "pillar_1",
-      "name": "Palm Plantation Agronomic Risk",
-      "observation_level": "Block",
-      "granularity": "Monthly operational estate monitoring (aggregated annually for risk)",
-      "status": "Operationally usable",
-      "role": "Core risk model",
+  "version": "2.0.0",
+  "generated_timestamp": "2026-10-27T04:45:00Z",
+  "architecture": "Decoupled Three-Pillar Multi-Source Architecture",
+  "screening_risk_formula_unchanged": true,
+  "pillars": {
+    "pillar_1_palm_agronomic": {
+      "name": "Palm Operational Plantation Agronomic Intelligence",
+      "scope": "42 Operational Management Blocks (B001 - B042, Division_A)",
+      "status": "AVAILABLE",
       "block_mapping": "available",
-      "geographic_region": "Commercial Oil Palm Plantation Estate",
-      "spatial_unit": "Operational Block (B001 - B044, 42 active blocks)",
-      "temporal_coverage": "2012 - 2024 (13 years continuous monthly data)",
-      "total_records": 6552,
-      "block_count": 42,
-      "primary_indicators": {
-        "production": ["Productivity_t_Ha", "FFB_Production_t", "Productivity_Deviation_pct", "Yield_Gap_pct"],
-        "foliar_nutrients": ["N_pct", "P_pct", "K_pct", "Ca_pct", "Mg_pct", "B_ppm"],
-        "dris_balance": ["Potential_Limiting_Nutrients", "Potential_Excess_Nutrients", "Prescription_Recommendation"],
-        "soil_chemistry": ["pH_H2O", "C_Organic_pct", "P_Available_ppm", "K_exch_me_100g", "Mg_exch_me_100g", "Base_Saturation_pct"],
-        "weather_context": ["Rainfall_mm_day", "Temperature_C", "Relative_Humidity_pct", "Solar_Radiation_MJ_m2_day"]
+      "mapping_method": "Exact Primary Key (Block_ID)",
+      "observation_period": "2012-2024 (Monthly yield, foliar 2015-2022, soil 2017/2020)",
+      "spatial_resolution": "Block-level (10 - 35 ha per block)",
+      "data_quality": {
+        "yield_records_complete": "6,552 / 6,552 block-months (100% complete)",
+        "foliar_samples": "293 distinct block/year events (Boron sparse: 173 samples missing)",
+        "soil_samples": "7 of 42 blocks sampled (16.7% coverage; 35 blocks unavailable)",
+        "weather_data": "Estate-wide NASA POWER station average (excluded from block risk)"
       },
-      "risk_engine_integration": {
-        "contributes_to_block_risk": true,
-        "base_weights": {
-          "production_yield_risk": 0.40,
-          "foliar_nutrient_risk": 0.25,
-          "dris_imbalance_risk": 0.15,
-          "weather_risk": 0.00
-        },
-        "weather_inclusion_note": "Weather is excluded from block risk score calculation because master records repeat estate-wide averages for all blocks, offering zero spatial discrimination.",
-        "soil_inclusion_note": "Soil data is available for only 7 blocks; retained as qualitative observed evidence without blind imputation."
-      }
+      "role": "Exclusive foundation for canonical screening risk scores and yield models."
     },
-    "rgb_drone": {
-      "pillar_id": "pillar_2",
-      "name": "RGB Drone High-Resolution Detection",
-      "observation_level": "Image",
-      "granularity": "1024x1024 high-resolution orthophoto crop",
-      "status": "Feature-ready, spatially unmapped",
-      "role": "External visual evidence / demonstration module",
+    "pillar_2_rgb_drone": {
+      "name": "RGB Drone Aerial Survey Module",
+      "scope": "MOPAD Site 2 High-Resolution UAV Orthophotos (1024x1024 crops)",
+      "status": "UNMAPPED (IMAGE-LEVEL ONLY)",
       "block_mapping": "unavailable",
-      "geographic_region": "MOPAD Site 2, Malaysia",
-      "spatial_unit": "Canvas pixel tile (e.g. 44000_16000_1013_87; no plantation Block_ID)",
-      "total_records": 500,
-      "dataset_source": "MOPAD Site 2 YOLO11n Validation Set",
-      "model_checkpoint": "drone/models/palm_yolo_best.pt",
-      "model_metrics": {
-        "precision": 0.9598,
-        "recall": 0.9899,
-        "mAP50": 0.9799,
-        "mAP50_95": 0.8884
-      },
-      "summary_features": {
-        "drone_health_score_mean": 75.81,
-        "healthy_pct_mean": 75.81,
-        "dead_pct_mean": 0.53,
-        "yellow_pct_mean": 1.23,
-        "small_pct_mean": 22.43
-      },
-      "integration_condition": "Requires estate-flown georeferenced orthomosaic and GIS block boundary polygons to enable zonal polygon extraction."
+      "mapping_method": "Unavailable (Canvas pixel grid offsets only; no GPS or GIS boundaries)",
+      "observation_period": "Static research flight campaign",
+      "model": "Custom YOLO11n object detector (palm_yolo_best.pt)",
+      "supported_classes": [
+        "Dead",
+        "Healthy",
+        "Grass",
+        "Small",
+        "Yellow"
+      ],
+      "data_quality": "High optical detection accuracy (mAP50=0.98), but lacking georeferencing to B001-B042.",
+      "role": "Visual demonstration and image-level crown detection. Does NOT modify block risk scores."
     },
-    "multispectral": {
-      "pillar_id": "pillar_3",
-      "name": "Multispectral UAV Canopy Vigour",
-      "observation_level": "Tile",
-      "granularity": "512x512 5-band calibrated surface reflectance GeoTIFF",
-      "status": "Feature-ready, spatially unmapped",
-      "role": "External spectral evidence / demonstration module",
+    "pillar_3_multispectral_uav": {
+      "name": "Multispectral UAV Canopy Vigour Module",
+      "scope": "MSUAV500K Altum 5-band Stacked GeoTIFFs (512x512 tiles)",
+      "status": "UNMAPPED (DEMO ONLY / BENCHMARK)",
       "block_mapping": "unavailable",
-      "geographic_region": "Hullerbusch, Germany (MSUAV500K Benchmark)",
-      "spatial_unit": "Grid offset tile (e.g. 1072_1031; no plantation Block_ID)",
-      "total_records": 34,
-      "dataset_source": "MSUAV500K Altum 5-band UAV dataset (Zenodo DOI: 10.5281/zenodo.16743974)",
-      "spectral_bands": ["Blue (475 nm)", "Green (560 nm)", "Red (668 nm)", "Red Edge (717 nm)", "NIR (842 nm)"],
-      "summary_features": {
-        "mhs_mean": 92.00,
-        "canopy_ndvi_mean": 0.8859,
-        "canopy_ndre_mean": 0.5069,
-        "canopy_cover_pct_mean": 93.62,
-        "heterogeneity_ndvi_cv_mean": 0.1009,
-        "vigour_strata": {
-          "High Vigour Canopy": 30,
-          "Moderate Vigour Canopy": 3,
-          "Non-Canopy / Water / Background": 1
-        }
-      },
-      "integration_condition": "Requires multispectral survey flown directly over the target plantation blocks with synchronized radiometric calibration."
+      "mapping_method": "Unavailable (German beech forest research benchmark; no plantation linkage)",
+      "observation_period": "Static research campaign (Zenodo DOI: 10.5281/zenodo.16743974)",
+      "sensor": "MicaSense Altum (Blue 475nm, Green 560nm, Red 668nm, RedEdge 717nm, NIR 842nm)",
+      "data_quality": "Calibrated reflectance. Verified NDVI and NDRE calculation capability.",
+      "role": "Spectral index calculation demo. Marked DEMO ONLY / UNMATCHED. Zero influence on block risk."
     }
   },
-  "evidence_status_flags_by_block": {
-    "palm": "available",
-    "rgb_drone": "unmapped",
-    "multispectral": "unmapped"
+  "evidence_pillars": {
+    "palm_agronomic": {
+      "name": "Palm Operational Plantation Agronomic Intelligence",
+      "status": "available",
+      "block_mapping": "available",
+      "scope": "42 Operational Blocks (B001-B042)",
+      "risk_contribution_pct": 100.0
+    },
+    "rgb_drone": {
+      "name": "RGB Drone Detection (YOLO11n)",
+      "status": "available",
+      "block_mapping": "unavailable",
+      "scope": "500 aerial crops (MOPAD Site 2)",
+      "risk_contribution_pct": 0.0
+    },
+    "multispectral": {
+      "name": "Multispectral UAV Canopy Vigour (MSUAV500K Altum)",
+      "status": "available",
+      "block_mapping": "unavailable",
+      "scope": "34 GeoTIFF tiles (German Beech Forest benchmark)",
+      "risk_contribution_pct": 0.0
+    }
+  },
+  "canonical_risk_engine": {
+    "formula": "Multi_Source_Risk_Score = sum(Component_i * Weight_i) / sum(Available_Weights)",
+    "weights": {
+      "yield_gap_score": 0.4,
+      "nutrient_low_count_ratio": 0.25,
+      "dris_limiting_nutrient_ratio": 0.15
+    },
+    "nutrient_risk_requirement": "At least 3 of 6 nutrients must be measured; otherwise component is unavailable.",
+    "dris_requirement": "Available only when complete leaf nutrient panel allows DRIS calculation.",
+    "yield_gap_mapping": [
+      {
+        "gap": "< 5%",
+        "score": 20
+      },
+      {
+        "gap": "5% - < 10%",
+        "score": 40
+      },
+      {
+        "gap": "10% - < 20%",
+        "score": 60
+      },
+      {
+        "gap": "20% - < 30%",
+        "score": 75
+      },
+      {
+        "gap": ">= 30%",
+        "score": 90
+      }
+    ],
+    "risk_bands": {
+      "LOW": "Score < 40",
+      "MEDIUM": "40 <= Score < 70",
+      "HIGH": "Score >= 70"
+    },
+    "weather_policy": "Station averages repeated identically across blocks; excluded from block risk score.",
+    "soil_policy": "Observed soil indicators reported where sampled (7 blocks); reported as unavailable for remaining 35 blocks."
   }
 }

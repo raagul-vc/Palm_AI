@@ -27,7 +27,9 @@ import {
   Sparkles,
   BarChart3,
   HelpCircle,
-  Clock
+  Clock,
+  ClipboardCheck,
+  Database
 } from "lucide-react";
 import {
   LineChart,
@@ -42,6 +44,10 @@ import {
   Cell
 } from "recharts";
 import UnifiedBlockIntelligence from "./UnifiedBlockIntelligence";
+import FieldActionCenter from "./FieldActionCenter";
+import MultiSourceEvidencePage from "./MultiSourceEvidencePage";
+import DroneHealthPage from "./DroneHealthPage";
+import MultispectralHealthPage from "./MultispectralHealthPage";
 import PlantationImage from "./PlantationImage";
 import tallPalmImg from "./assets/images/tall_oil_palm_plantation.jpg";
 import estateOverviewImg from "./assets/images/estate_canopy_overview.jpg";
@@ -178,6 +184,14 @@ export default function App() {
     setIsLoading(false);
   }, []);
 
+  const sourceStatus = useMemo(() => {
+    const map = {};
+    Object.keys(sourcePaths).forEach((k) => {
+      map[k] = unavailableSources.includes(k) ? "unavailable" : "available";
+    });
+    return map;
+  }, [unavailableSources]);
+
   useEffect(() => {
     loadSources();
   }, [loadSources]);
@@ -190,6 +204,14 @@ export default function App() {
         setViewLevel("estates");
       } else if (hash === "blocks" || hash === "estate") {
         setViewLevel("blocks");
+      } else if (hash === "field-actions" || hash === "actions") {
+        setViewLevel("field-actions");
+      } else if (hash === "multi-source" || hash === "evidence") {
+        setViewLevel("multi-source");
+      } else if (hash === "drone-health" || hash === "drone") {
+        setViewLevel("drone-health");
+      } else if (hash === "multispectral" || hash === "spectral") {
+        setViewLevel("multispectral");
       } else if (hash.startsWith("block/")) {
         const bid = hash.replace("block/", "").toUpperCase();
         setSelectedBlockId(bid);
@@ -216,6 +238,14 @@ export default function App() {
       const bid = blockId || selectedBlockId;
       setSelectedBlockId(bid);
       window.history.pushState(null, "", `#${bid}`);
+    } else if (level === "field-actions") {
+      window.history.pushState(null, "", "#field-actions");
+    } else if (level === "multi-source") {
+      window.history.pushState(null, "", "#multi-source");
+    } else if (level === "drone-health") {
+      window.history.pushState(null, "", "#drone-health");
+    } else if (level === "multispectral") {
+      window.history.pushState(null, "", "#multispectral");
     }
   };
 
@@ -352,43 +382,84 @@ export default function App() {
               <Sprout size={18} className="text-emerald" />
             </div>
             <div className="brand-text-stack">
-              <strong className="brand-title">ALM AI</strong>
-              <span className="brand-sub">Palm Intelligence AI</span>
+              <strong className="brand-title">PALM AI</strong>
+              <span className="brand-sub">Plantation Intelligence AI</span>
             </div>
           </div>
 
           <div className="brand-divider" />
 
-          {/* Breadcrumb Hierarchy Navigation */}
-          <nav className="topbar-breadcrumbs">
+          {/* Navigation Tabs */}
+          <nav className="topbar-nav-tabs">
             <button
               type="button"
-              className={`crumb-btn ${viewLevel === "estates" ? "active" : ""}`}
+              className={`topbar-tab ${viewLevel === "estates" ? "active" : ""}`}
               onClick={() => navigateTo("estates")}
+              title="Estate Fleet Overview"
             >
-              Estates
+              <LayoutDashboard size={14} />
+              <span>Estates</span>
             </button>
 
-            {viewLevel !== "estates" && (
-              <>
-                <span className="crumb-chevron"><ChevronRight size={14} /></span>
-                <button
-                  type="button"
-                  className={`crumb-btn ${viewLevel === "blocks" ? "active" : ""}`}
-                  onClick={() => navigateTo("blocks")}
-                >
-                  {selectedEstate}
-                </button>
-              </>
-            )}
+            <button
+              type="button"
+              className={`topbar-tab ${viewLevel === "blocks" || viewLevel === "block-detail" ? "active" : ""}`}
+              onClick={() => navigateTo("blocks")}
+              title="42 Operational Blocks Grid"
+            >
+              <Layers size={14} />
+              <span>Blocks (42)</span>
+            </button>
 
-            {viewLevel === "block-detail" && (
-              <>
-                <span className="crumb-chevron"><ChevronRight size={14} /></span>
-                <strong className="crumb-current">Block {selectedBlockId}</strong>
-              </>
-            )}
+            <button
+              type="button"
+              className={`topbar-tab ${viewLevel === "field-actions" ? "active" : ""}`}
+              onClick={() => navigateTo("field-actions")}
+              title="Field Action Center & Directives Tracking"
+            >
+              <ClipboardCheck size={14} />
+              <span>Field Actions</span>
+              {riskCounts.high > 0 && <span className="tab-badge">{riskCounts.high}</span>}
+            </button>
+
+            <button
+              type="button"
+              className={`topbar-tab ${viewLevel === "multi-source" ? "active" : ""}`}
+              onClick={() => navigateTo("multi-source")}
+              title="Multi-Source Evidence Matrix & Audit Registry"
+            >
+              <Database size={14} />
+              <span>Evidence Matrix</span>
+            </button>
+
+            <button
+              type="button"
+              className={`topbar-tab ${viewLevel === "drone-health" ? "active" : ""}`}
+              onClick={() => navigateTo("drone-health")}
+              title="RGB Drone Health Vision (YOLO11n Palm Detection)"
+            >
+              <Camera size={14} />
+              <span>RGB Drone</span>
+            </button>
+
+            <button
+              type="button"
+              className={`topbar-tab ${viewLevel === "multispectral" ? "active" : ""}`}
+              onClick={() => navigateTo("multispectral")}
+              title="Multispectral Aerial Vigour (Altum 5-band)"
+            >
+              <Layers3 size={14} />
+              <span>Multispectral</span>
+            </button>
           </nav>
+
+          {/* Sub-crumb for Block Details */}
+          {viewLevel === "block-detail" && (
+            <div className="topbar-subcrumb">
+              <span className="crumb-chevron"><ChevronRight size={14} /></span>
+              <strong className="crumb-current">Block {selectedBlockId}</strong>
+            </div>
+          )}
         </div>
 
         {/* Topbar Right Telemetry Status */}
@@ -952,6 +1023,54 @@ export default function App() {
             datasets={datasets}
             onBackToGrid={() => navigateTo("blocks")}
             estateName={selectedEstate}
+          />
+        )}
+
+        {/* ======================================================== */}
+        {/* VIEW 4: FIELD ACTION CENTER — INTERACTIVE WORKFLOW       */}
+        {/* ======================================================== */}
+        {viewLevel === "field-actions" && (
+          <FieldActionCenter
+            datasets={datasets}
+            onNavigateBlock={(bid) => navigateTo("block-detail", bid)}
+          />
+        )}
+
+        {/* ======================================================== */}
+        {/* VIEW 5: MULTI-SOURCE EVIDENCE REGISTRY & DATA AUDIT      */}
+        {/* ======================================================== */}
+        {viewLevel === "multi-source" && (
+          <MultiSourceEvidencePage
+            datasets={datasets}
+            navigate={(view) => {
+              if (view === "drone") navigateTo("drone-health");
+              else if (view === "multispectral") navigateTo("multispectral");
+              else if (view === "actions") navigateTo("field-actions");
+              else if (view === "blocks") navigateTo("blocks");
+              else navigateTo("estates");
+            }}
+          />
+        )}
+
+        {/* ======================================================== */}
+        {/* VIEW 6: RGB DRONE HEALTH VISION (YOLO11N)                */}
+        {/* ======================================================== */}
+        {viewLevel === "drone-health" && (
+          <DroneHealthPage
+            datasets={datasets}
+            sourceStatus={sourceStatus}
+            loadSources={loadSources}
+          />
+        )}
+
+        {/* ======================================================== */}
+        {/* VIEW 7: MULTISPECTRAL VIGOUR (ALTUM 5-BAND BENCHMARK)    */}
+        {/* ======================================================== */}
+        {viewLevel === "multispectral" && (
+          <MultispectralHealthPage
+            datasets={datasets}
+            sourceStatus={sourceStatus}
+            loadSources={loadSources}
           />
         )}
       </main>

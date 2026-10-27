@@ -1,0 +1,9 @@
+﻿Sampling_Year,Soil_Event_ID,Division_ID,Block_ID,Member_Count,Sampling_Type
+2017,SOIL_2017_004,Division_A,B008,3,multi-block composite
+2017,SOIL_2017_007,Division_A,B015,3,multi-block composite
+2017,SOIL_2017_008,Division_A,B026,3,multi-block composite
+2017,SOIL_2017_009,Division_A,B031,3,multi-block composite
+2020,SOIL_2020_015,Division_A,B004,2,multi-block composite
+2020,SOIL_2020_015,Division_A,B006,2,multi-block composite
+2020,SOIL_2020_016,Division_A,B031,2,multi-block composite
+2020,SOIL_2020_016,Division_A,B041,2,multi-block composite
