@@ -124,11 +124,86 @@ function naturalBlockSort(a, b) {
   return idA.localeCompare(idB);
 }
 
+// Mandatory Estate Selection Empty State Screen
+function EstateMandatoryPrompt({ onSelectEstate, onGoToEstates }) {
+  return (
+    <div className="view-container estate-mandatory-container">
+      <div className="estate-mandatory-card">
+        <div className="mandatory-icon-circle">
+          <MapPin size={30} className="text-emerald" />
+        </div>
+        <span className="mandatory-eyebrow">ESTATE SELECTION REQUIRED</span>
+        <h2 className="mandatory-title">Select an estate to view plantation intelligence.</h2>
+        <p className="mandatory-description">
+          Operational KPIs, 42-block fleet health, historical yield curves, foliar diagnostics, and field action directives are only displayed after selecting an operational estate.
+        </p>
+
+        <div className="mandatory-available-estate-box">
+          <div className="avail-estate-header">
+            <span className="avail-estate-label">Available Operational Fleet</span>
+            <span className="avail-estate-badge">13-Yr Historical Telemetry</span>
+          </div>
+          <div className="avail-estate-body">
+            <div className="avail-estate-main">
+              <strong className="avail-estate-name">North Estate (PT Palm Indo)</strong>
+              <span className="avail-estate-meta">Division A · 42 Blocks (B001–B042) · 1,512 Ha · Mature DxP Hybrid</span>
+            </div>
+            <button
+              type="button"
+              className="select-estate-cta-btn"
+              onClick={() => onSelectEstate("North Estate (PT Palm Indo)")}
+            >
+              <CheckCircle2 size={15} />
+              <span>Select Estate & Enter Dashboard</span>
+              <ArrowRight size={15} />
+            </button>
+          </div>
+        </div>
+
+        <div className="mandatory-footer-actions">
+          <button
+            type="button"
+            className="browse-estates-btn"
+            onClick={onGoToEstates}
+          >
+            <LayoutDashboard size={14} />
+            <span>View All Operational Estates</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
-  // Navigation State: 'estates' | 'blocks' | 'block-detail'
-  const [viewLevel, setViewLevel] = useState("blocks");
-  const [selectedEstate, setSelectedEstate] = useState("North Estate (PT Palm Indo)");
-  const [selectedBlockId, setSelectedBlockId] = useState("B012");
+  // Selected Estate: MUST NOT default to an estate on fresh session unless user has intentionally selected one.
+  const [selectedEstate, setSelectedEstate] = useState(() => {
+    try {
+      return sessionStorage.getItem("palm_ai_selected_estate") || null;
+    } catch {
+      return null;
+    }
+  });
+
+  // Navigation State: 'estates' | 'blocks' | 'block-detail' | 'field-actions' | 'multi-source' | 'drone-health' | 'multispectral'
+  const [viewLevel, setViewLevel] = useState(() => {
+    const hash = window.location.hash.replace(/^#/, "").trim();
+    if (hash === "blocks" || hash === "estate") return "blocks";
+    if (hash === "field-actions" || hash === "actions") return "field-actions";
+    if (hash === "multi-source" || hash === "evidence") return "multi-source";
+    if (hash === "drone-health" || hash === "drone") return "drone-health";
+    if (hash === "multispectral" || hash === "spectral") return "multispectral";
+    if (hash.startsWith("block/") || /^B\d{3}$/i.test(hash)) return "block-detail";
+    return "estates";
+  });
+
+  const [selectedBlockId, setSelectedBlockId] = useState(() => {
+    const hash = window.location.hash.replace(/^#/, "").trim();
+    if (hash.startsWith("block/")) return hash.replace("block/", "").toUpperCase();
+    if (/^B\d{3}$/i.test(hash)) return hash.toUpperCase();
+    return null;
+  });
+
   const [blockSearch, setBlockSearch] = useState("");
   const [riskFilter, setRiskFilter] = useState("ALL");
 
@@ -235,7 +310,7 @@ export default function App() {
     } else if (level === "blocks") {
       window.history.pushState(null, "", "#blocks");
     } else if (level === "block-detail") {
-      const bid = blockId || selectedBlockId;
+      const bid = blockId || selectedBlockId || "B001";
       setSelectedBlockId(bid);
       window.history.pushState(null, "", `#${bid}`);
     } else if (level === "field-actions") {
@@ -248,6 +323,33 @@ export default function App() {
       window.history.pushState(null, "", "#multispectral");
     }
   };
+
+  // Explicit estate selection and deselection handlers
+  const handleSelectEstate = useCallback((estateName) => {
+    try {
+      sessionStorage.setItem("palm_ai_selected_estate", estateName);
+    } catch {
+      // ignore
+    }
+    setSelectedEstate(estateName);
+    setSelectedBlockId(null);
+    setBlockSearch("");
+    setRiskFilter("ALL");
+    navigateTo("blocks");
+  }, []);
+
+  const handleClearEstate = useCallback(() => {
+    try {
+      sessionStorage.removeItem("palm_ai_selected_estate");
+    } catch {
+      // ignore
+    }
+    setSelectedEstate(null);
+    setSelectedBlockId(null);
+    setBlockSearch("");
+    setRiskFilter("ALL");
+    navigateTo("estates");
+  }, []);
 
   // Process and naturally sort 42 blocks merging multi-source canonical screening data
   const processedBlocks = useMemo(() => {
@@ -464,6 +566,31 @@ export default function App() {
 
         {/* Topbar Right Telemetry Status */}
         <div className="topbar-right">
+          {selectedEstate ? (
+            <div className="topbar-estate-pill">
+              <MapPin size={12} className="text-emerald" />
+              <span className="estate-pill-label">Estate:</span>
+              <strong className="estate-pill-name">{selectedEstate}</strong>
+              <button
+                type="button"
+                className="estate-change-btn"
+                onClick={handleClearEstate}
+                title="Deselect active estate and return to Estate Selection"
+              >
+                Change
+              </button>
+            </div>
+          ) : (
+            <div
+              className="topbar-no-estate-pill clickable"
+              onClick={() => navigateTo("estates")}
+              title="Click to select an operational estate"
+            >
+              <span className="no-estate-dot" />
+              <span className="no-estate-text">No Estate Selected</span>
+            </div>
+          )}
+
           {viewLevel === "block-detail" && (
             <button
               type="button"
@@ -517,8 +644,14 @@ export default function App() {
             {/* Real Estate Cards Grid */}
             <div className="estate-cards-grid">
               <div
-                className="estate-card"
-                onClick={() => navigateTo("blocks")}
+                className={`estate-card ${selectedEstate === "North Estate (PT Palm Indo)" ? "is-selected" : ""}`}
+                onClick={() => {
+                  if (selectedEstate === "North Estate (PT Palm Indo)") {
+                    navigateTo("blocks");
+                  } else {
+                    handleSelectEstate("North Estate (PT Palm Indo)");
+                  }
+                }}
               >
                 {/* Real Commercial Oil-Palm Plantation Photographic Banner */}
                 <PlantationImage
@@ -535,10 +668,10 @@ export default function App() {
                 <div className="estate-card-top">
                   <div>
                     <span className="estate-category-tag">Operational Fleet · Division A</span>
-                    <h2 className="estate-name">{selectedEstate}</h2>
+                    <h2 className="estate-name">North Estate (PT Palm Indo)</h2>
                   </div>
-                  <span className="estate-live-badge">
-                    <span className="dot-live" /> Live Telemetry
+                  <span className="estate-history-badge">
+                    <Calendar size={12} /> Verified Historical Telemetry (2012–2024)
                   </span>
                 </div>
 
@@ -606,10 +739,48 @@ export default function App() {
 
                 {/* Card CTA */}
                 <div className="estate-card-action">
-                  <button type="button" className="open-estate-btn">
-                    <span>Inspect 42 Blocks</span>
-                    <ArrowRight size={15} />
-                  </button>
+                  {selectedEstate === "North Estate (PT Palm Indo)" ? (
+                    <div className="estate-selected-action-row">
+                      <span className="active-estate-pill">
+                        <CheckCircle2 size={14} className="text-emerald" />
+                        Selected Estate
+                      </span>
+                      <button
+                        type="button"
+                        className="open-estate-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigateTo("blocks");
+                        }}
+                      >
+                        <span>Enter Dashboard (42 Blocks)</span>
+                        <ArrowRight size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        className="deselect-estate-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleClearEstate();
+                        }}
+                      >
+                        Change / Clear
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      className="open-estate-btn select-estate-primary-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSelectEstate("North Estate (PT Palm Indo)");
+                      }}
+                    >
+                      <CheckCircle2 size={16} />
+                      <span>Select Estate & Enter Dashboard</span>
+                      <ArrowRight size={15} />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -620,110 +791,126 @@ export default function App() {
         {/* VIEW 2: ESTATE SCREEN — OVERVIEW & NATURAL BLOCK GRID    */}
         {/* ======================================================== */}
         {viewLevel === "blocks" && (
-          <div className="view-container block-grid-view">
-            {/* Estate Header & Controls */}
-            <div className="block-grid-header">
-              <div className="grid-header-left">
-                <button
-                  type="button"
-                  className="crumb-back-link"
-                  onClick={() => navigateTo("estates")}
-                >
-                  <ArrowLeft size={14} />
-                  <span>All Estates</span>
-                </button>
-                <div className="estate-title-row">
-                  <h1 className="estate-display-title">{selectedEstate}</h1>
-                  <span className="block-count-badge">42 Operational Blocks</span>
-                  <span className="cohort-tag">Mature DxP Hybrid</span>
-                </div>
-                <p className="estate-subtitle">
-                  Enterprise agronomic intelligence overview with 13-year productivity history, canonical screening distribution, and naturally sorted block cards.
-                </p>
-              </div>
-
-              {/* Summary Stats Strip */}
-              <div className="grid-summary-stats">
-                <div className="grid-stat">
-                  <span>Monitored Area</span>
-                  <strong>1,512 Ha</strong>
-                </div>
-                <div className="grid-stat">
-                  <span>Mean 2024 Yield</span>
-                  <strong className="text-emerald">{fmt(meanYield)} t/ha</strong>
-                </div>
-                <div className="grid-stat">
-                  <span>High Risk</span>
-                  <strong className="text-ruby">{riskCounts.high} Block</strong>
-                </div>
-                <div className="grid-stat">
-                  <span>Medium Risk</span>
-                  <strong className="text-gold">{riskCounts.medium} Blocks</strong>
-                </div>
-                <div className="grid-stat">
-                  <span>Low Risk</span>
-                  <strong className="text-emerald">{riskCounts.low} Blocks</strong>
-                </div>
-              </div>
-            </div>
-
-            {/* ===================================================== */}
-            {/* SECTION 3: ESTATE OVERVIEW DASHBOARD (ANALYTICS STRIP) */}
-            {/* ===================================================== */}
-            <div className="estate-analytics-grid">
-              {/* Historical Yield Trend Chart (2012–2024) */}
-              <div className="analytics-card span-2">
-                <div className="analytics-card-header">
-                  <div className="header-icon-title">
-                    <TrendingUp size={18} className="text-emerald" />
-                    <div>
-                      <h3>Estate Productivity Overview & Historical Yield Trend</h3>
-                      <p className="subtext">13-year annual harvest average (2012–2024) across all 42 operational blocks vs age benchmark</p>
-                    </div>
+          !selectedEstate ? (
+            <EstateMandatoryPrompt
+              onSelectEstate={handleSelectEstate}
+              onGoToEstates={() => navigateTo("estates")}
+            />
+          ) : (
+            <div className="view-container block-grid-view">
+              {/* Estate Header & Controls */}
+              <div className="block-grid-header">
+                <div className="grid-header-left">
+                  <button
+                    type="button"
+                    className="crumb-back-link"
+                    onClick={() => navigateTo("estates")}
+                  >
+                    <ArrowLeft size={14} />
+                    <span>All Estates</span>
+                  </button>
+                  <div className="estate-title-row">
+                    <h1 className="estate-display-title">{selectedEstate}</h1>
+                    <span className="block-count-badge">42 Operational Blocks</span>
+                    <span className="cohort-tag">Mature DxP Hybrid</span>
                   </div>
-                  <span className="subtle-badge">Telemetry: 2012–2024</span>
+                  <p className="estate-subtitle">
+                    Enterprise agronomic intelligence overview with 13-year productivity history, canonical screening distribution, and naturally sorted block cards.
+                  </p>
                 </div>
 
-                <div className="chart-container-wrap">
-                  <ResponsiveContainer width="100%" height={260}>
-                    <LineChart data={estateYieldTrend} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.07)" />
-                      <XAxis dataKey="year" stroke="#94a3b8" tick={{ fontSize: 11 }} />
-                      <YAxis stroke="#94a3b8" tick={{ fontSize: 11 }} domain={[0, 26]} unit=" t" />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: "#061a10",
-                          borderColor: "rgba(16, 185, 129, 0.4)",
-                          borderRadius: "8px",
-                          color: "#f8fafc",
-                          fontSize: "12px",
-                        }}
-                        formatter={(val, name) => [
-                          `${Number(val).toFixed(2)} t/ha`,
-                          name === "meanYield" ? "Estate Harvest Average" : "Maturity Benchmark",
-                        ]}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="meanYield"
-                        name="meanYield"
-                        stroke="#10b981"
-                        strokeWidth={3}
-                        dot={{ r: 4, fill: "#10b981" }}
-                        activeDot={{ r: 7, stroke: "#061a10", strokeWidth: 2 }}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="cohortBenchmark"
-                        name="cohortBenchmark"
-                        stroke="#d97706"
-                        strokeWidth={1.5}
-                        strokeDasharray="4 4"
-                        dot={false}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+                {/* Summary Stats Strip */}
+                <div className="grid-summary-stats">
+                  <div className="grid-stat">
+                    <span>Monitored Area</span>
+                    <strong>1,512 Ha</strong>
+                  </div>
+                  <div className="grid-stat">
+                    <span>Mean 2024 Yield</span>
+                    <strong className="text-emerald">{fmt(meanYield)} t/ha</strong>
+                  </div>
+                  <div className="grid-stat">
+                    <span>High Risk</span>
+                    <strong className="text-ruby">{riskCounts.high} Block</strong>
+                  </div>
+                  <div className="grid-stat">
+                    <span>Medium Risk</span>
+                    <strong className="text-gold">{riskCounts.medium} Blocks</strong>
+                  </div>
+                  <div className="grid-stat">
+                    <span>Low Risk</span>
+                    <strong className="text-emerald">{riskCounts.low} Blocks</strong>
+                  </div>
                 </div>
+              </div>
+
+              {/* ===================================================== */}
+              {/* SECTION 3: ESTATE OVERVIEW DASHBOARD (ANALYTICS STRIP) */}
+              {/* ===================================================== */}
+              <div className="estate-analytics-grid">
+                {/* Historical Yield Trend Chart (2012–2024) */}
+                <div className="analytics-card span-2">
+                  <div className="analytics-card-header">
+                    <div className="header-icon-title">
+                      <TrendingUp size={18} className="text-emerald" />
+                      <div>
+                        <h3>Estate Productivity Overview & Historical Yield Trend</h3>
+                        <p className="subtext">13-year annual harvest average (2012–2024) across all 42 operational blocks vs age benchmark</p>
+                      </div>
+                    </div>
+                    <span className="subtle-badge">13-Year Historical Harvest Ledger (2012–2024)</span>
+                  </div>
+
+                  <div className="chart-container-wrap">
+                    {estateYieldTrend && estateYieldTrend.length > 0 ? (
+                      <ResponsiveContainer width="100%" height={260} minWidth={0}>
+                        <LineChart data={estateYieldTrend} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.07)" />
+                          <XAxis dataKey="year" stroke="#94a3b8" tick={{ fontSize: 11 }} />
+                          <YAxis stroke="#94a3b8" tick={{ fontSize: 11 }} domain={[0, 26]} unit=" t" />
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: "#061a10",
+                              borderColor: "rgba(16, 185, 129, 0.4)",
+                              borderRadius: "8px",
+                              color: "#f8fafc",
+                              fontSize: "12px",
+                            }}
+                            formatter={(val, name) => [
+                              `${Number(val).toFixed(2)} t/ha`,
+                              name === "meanYield" ? "Estate Harvest Average" : "Maturity Benchmark",
+                            ]}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="meanYield"
+                            name="meanYield"
+                            stroke="#10b981"
+                            strokeWidth={3}
+                            dot={{ r: 4, fill: "#10b981" }}
+                            activeDot={{ r: 7, stroke: "#061a10", strokeWidth: 2 }}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="cohortBenchmark"
+                            name="cohortBenchmark"
+                            stroke="#d97706"
+                            strokeWidth={1.5}
+                            strokeDasharray="4 4"
+                            dot={false}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="chart-empty-state">
+                        <BarChart3 size={24} className="text-dim" />
+                        <span className="empty-title">Historical Yield Telemetry Unavailable</span>
+                        <span className="empty-sub">
+                          No 13-year annual harvest average records found for the selected estate.
+                        </span>
+                      </div>
+                    )}
+                  </div>
 
                 <div className="chart-footer-legend">
                   <span className="legend-chip"><i className="legend-dot bg-emerald" /> 42-Block Annual Harvest Mean (Actuals)</span>
@@ -1008,32 +1195,47 @@ export default function App() {
               </div>
             </div>
           </div>
-        )}
+        )
+      )}
 
         {/* ======================================================== */}
         {/* VIEW 3: BLOCK SELECTED — ALL ANALYSIS ON THE SAME SCREEN */}
         {/* ======================================================== */}
         {viewLevel === "block-detail" && (
-          <UnifiedBlockIntelligence
-            blockId={selectedBlockId}
-            onSelectBlock={(bid) => {
-              setSelectedBlockId(bid);
-              window.history.pushState(null, "", `#${bid}`);
-            }}
-            datasets={datasets}
-            onBackToGrid={() => navigateTo("blocks")}
-            estateName={selectedEstate}
-          />
+          !selectedEstate ? (
+            <EstateMandatoryPrompt
+              onSelectEstate={handleSelectEstate}
+              onGoToEstates={() => navigateTo("estates")}
+            />
+          ) : (
+            <UnifiedBlockIntelligence
+              blockId={selectedBlockId || "B001"}
+              onSelectBlock={(bid) => {
+                setSelectedBlockId(bid);
+                window.history.pushState(null, "", `#${bid}`);
+              }}
+              datasets={datasets}
+              onBackToGrid={() => navigateTo("blocks")}
+              estateName={selectedEstate}
+            />
+          )
         )}
 
         {/* ======================================================== */}
         {/* VIEW 4: FIELD ACTION CENTER — INTERACTIVE WORKFLOW       */}
         {/* ======================================================== */}
         {viewLevel === "field-actions" && (
-          <FieldActionCenter
-            datasets={datasets}
-            onNavigateBlock={(bid) => navigateTo("block-detail", bid)}
-          />
+          !selectedEstate ? (
+            <EstateMandatoryPrompt
+              onSelectEstate={handleSelectEstate}
+              onGoToEstates={() => navigateTo("estates")}
+            />
+          ) : (
+            <FieldActionCenter
+              datasets={datasets}
+              onNavigateBlock={(bid) => navigateTo("block-detail", bid)}
+            />
+          )
         )}
 
         {/* ======================================================== */}

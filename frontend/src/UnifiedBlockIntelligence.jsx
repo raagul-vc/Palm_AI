@@ -34,7 +34,8 @@ import {
   FileText,
   Droplets,
   Sun,
-  Wind
+  Wind,
+  BarChart3
 } from "lucide-react";
 import {
   BarChart,
@@ -177,19 +178,33 @@ export default function UnifiedBlockIntelligence({
       .sort((a, b) => Number(a.Year) - Number(b.Year));
   }, [datasets.forecast, currentBlockId]);
 
-  // Combined yield timeline
+  // Combined yield timeline with annual aggregation of monthly forecast values
   const yieldTimeline = useMemo(() => {
     const map = new Map();
     blockHistory.forEach((h) => {
-      map.set(h.Year, { Year: h.Year, Actual: h.Actual, Forecast: null });
+      if (h.Year && h.Actual != null) {
+        map.set(h.Year, { Year: h.Year, Actual: h.Actual, Forecast: null });
+      }
     });
+
+    // Sum monthly forecast records (e.g. 12 months in 2025 and 12 months in 2026) to compute annual productivity
+    const annualForecasts = new Map();
     blockForecast.forEach((f) => {
       const yr = Number(f.Year);
       const fcVal = num(f.Forecast_Productivity_t_Ha);
       if (yr && fcVal != null) {
-        map.set(yr, { Year: yr, Actual: null, Forecast: fcVal });
+        annualForecasts.set(yr, (annualForecasts.get(yr) || 0) + fcVal);
       }
     });
+
+    annualForecasts.forEach((sumVal, yr) => {
+      map.set(yr, {
+        Year: yr,
+        Actual: null,
+        Forecast: Number(sumVal.toFixed(2)),
+      });
+    });
+
     return [...map.values()].sort((a, b) => a.Year - b.Year);
   }, [blockHistory, blockForecast]);
 
@@ -718,19 +733,29 @@ export default function UnifiedBlockIntelligence({
                   <span className="legend-chip"><i className="dot-orange" /> Forecast Model</span>
                 </div>
               </div>
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={yieldTimeline} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.06)" />
-                  <XAxis dataKey="Year" tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} domain={[0, 26]} />
-                  <Tooltip
-                    formatter={(v, name) => [`${fmt(v)} t/ha`, name === "Actual" ? "Actual Harvest" : "Forecasted"]}
-                    contentStyle={{ backgroundColor: "#0d2317", borderRadius: "8px", color: "#f8fafc", border: "1px solid rgba(255,255,255,0.1)" }}
-                  />
-                  <Bar dataKey="Actual" fill="#10b981" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="Forecast" fill="#d97706" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="chart-container-wrap">
+                {yieldTimeline && yieldTimeline.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={280} minWidth={0}>
+                    <BarChart data={yieldTimeline} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.06)" />
+                      <XAxis dataKey="Year" tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} domain={[0, 26]} />
+                      <Tooltip
+                        formatter={(v, name) => [`${fmt(v)} t/ha`, name === "Actual" ? "Actual Harvest" : "Forecast Model (Annual Sum)"]}
+                        contentStyle={{ backgroundColor: "#0d2317", borderRadius: "8px", color: "#f8fafc", border: "1px solid rgba(255,255,255,0.1)" }}
+                      />
+                      <Bar dataKey="Actual" fill="#10b981" radius={[4, 4, 0, 0]} name="Actual" />
+                      <Bar dataKey="Forecast" fill="#d97706" radius={[4, 4, 0, 0]} name="Forecast" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="chart-empty-state">
+                    <BarChart3 size={24} className="text-dim" />
+                    <span className="empty-title">Historical Productivity Data Unavailable</span>
+                    <span className="empty-sub">No verified annual productivity records mapped for Block {currentBlockId}.</span>
+                  </div>
+                )}
+              </div>
               <div className="narrative-callout">
                 <Info size={16} className="text-emerald" />
                 <p>
@@ -799,28 +824,39 @@ export default function UnifiedBlockIntelligence({
             </div>
 
             {/* Monthly Harvest Breakdown if available */}
-            {monthlyHarvest.length > 0 && (
-              <div className="card-panel span-3">
-                <div className="card-panel-header">
-                  <div className="header-icon-title">
-                    <Activity size={18} className="text-emerald" />
-                    <h3>2024 Monthly Harvest Production Curve (12 Months)</h3>
-                  </div>
+            <div className="card-panel span-3">
+              <div className="card-panel-header">
+                <div className="header-icon-title">
+                  <Activity size={18} className="text-emerald" />
+                  <h3>2024 Monthly Harvest Production Curve (12 Months)</h3>
                 </div>
-                <ResponsiveContainer width="100%" height={200}>
-                  <LineChart data={monthlyHarvest} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.06)" />
-                    <XAxis dataKey="Month" tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <Tooltip
-                      formatter={(v, name) => [`${fmt(v)} ${name === "FFB" ? "tonnes" : "t/ha"}`, name]}
-                      contentStyle={{ backgroundColor: "#0d2317", borderRadius: "8px", color: "#f8fafc", border: "1px solid rgba(255,255,255,0.1)" }}
-                    />
-                    <Line type="monotone" dataKey="FFB" stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} />
-                  </LineChart>
-                </ResponsiveContainer>
+                {monthlyHarvest.length > 0 && (
+                  <span className="subtle-badge">12 Months Verified</span>
+                )}
               </div>
-            )}
+              {monthlyHarvest.length > 0 ? (
+                <div className="chart-container-wrap">
+                  <ResponsiveContainer width="100%" height={200} minWidth={0}>
+                    <LineChart data={monthlyHarvest} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.06)" />
+                      <XAxis dataKey="Month" tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} />
+                      <Tooltip
+                        formatter={(v, name) => [`${fmt(v)} ${name === "FFB" ? "tonnes" : "t/ha"}`, name]}
+                        contentStyle={{ backgroundColor: "#0d2317", borderRadius: "8px", color: "#f8fafc", border: "1px solid rgba(255,255,255,0.1)" }}
+                      />
+                      <Line type="monotone" dataKey="FFB" stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} name="FFB" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="chart-empty-state compact">
+                  <Activity size={20} className="text-dim" />
+                  <span className="empty-title">Monthly Harvest Curve Unavailable</span>
+                  <span className="empty-sub">Monthly FFB harvest records are not available for Block {currentBlockId} in 2024.</span>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
