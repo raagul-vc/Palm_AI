@@ -26,7 +26,19 @@ function formatNumber(value, digits = 2) {
 }
 
 export default function DroneHealthPage({ datasets, sourceStatus, loadSources }) {
-  const [activeTab, setActiveTab] = useState("predict");
+  const [activeTab, setActiveTab] = useState(() => {
+    try {
+      const hash = window.location.hash.replace(/^#/, "").trim();
+      if (hash === "drone-overview" || hash === "drone-categories") return "overview";
+      if (hash === "drone-validation") return "validation";
+      if (hash === "drone-visualizations" || hash === "drone-charts") return "visualizations";
+      if (hash === "drone-outliers") return "outliers";
+      if (hash === "drone-explorer") return "explorer";
+    } catch {
+      // fallback
+    }
+    return "predict";
+  });
   const [selectedChart, setSelectedChart] = useState(null);
 
   // Image Explorer filter state
@@ -1296,9 +1308,15 @@ export default function DroneHealthPage({ datasets, sourceStatus, loadSources })
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onClick={() => !selectedFile && fileInputRef.current?.click()}
+                  onKeyDown={(e) => {
+                    if ((e.key === "Enter" || e.key === " ") && !selectedFile) {
+                      e.preventDefault();
+                      fileInputRef.current?.click();
+                    }
+                  }}
                   role="button"
                   tabIndex={0}
-                  aria-label="Upload aerial drone image"
+                  aria-label="Upload aerial drone image file dropzone"
                 >
                   <input
                     ref={fileInputRef}
@@ -1307,6 +1325,7 @@ export default function DroneHealthPage({ datasets, sourceStatus, loadSources })
                     className="drone-file-input"
                     accept=".jpg,.jpeg,.png,image/jpeg,image/png"
                     onChange={handleFileChange}
+                    aria-label="Choose drone survey image file"
                   />
 
                   {imagePreview ? (
@@ -1323,16 +1342,21 @@ export default function DroneHealthPage({ datasets, sourceStatus, loadSources })
                       </div>
                       <strong>Drag & drop aerial image here, or click to browse</strong>
                       <p>Supports JPG, JPEG, and PNG (up to 10 MB · Recommended 1024×1024 px)</p>
-                      <button
-                        type="button"
-                        className="button-secondary button-sm dropzone-browse-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          fileInputRef.current?.click();
+                      <label
+                        htmlFor="drone-file-input"
+                        className="button-secondary dropzone-browse-btn"
+                        onClick={(e) => e.stopPropagation()}
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            fileInputRef.current?.click();
+                          }
                         }}
                       >
+                        <UploadCloud size={14} style={{ marginRight: 6 }} />
                         Select Image File
-                      </button>
+                      </label>
                     </div>
                   )}
                 </div>

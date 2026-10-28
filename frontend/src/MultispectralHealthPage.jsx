@@ -27,7 +27,18 @@ function formatNumber(value, digits = 2) {
 }
 
 export default function MultispectralHealthPage({ datasets, sourceStatus, loadSources }) {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState(() => {
+    try {
+      const hash = window.location.hash.replace(/^#/, "").trim();
+      if (hash === "spectral-indicators" || hash === "indicators") return "indicators";
+      if (hash === "spectral-charts" || hash === "visualizations") return "visualizations";
+      if (hash === "spectral-tiles" || hash === "tiles") return "tiles";
+      if (hash === "gis-readiness") return "gis-readiness";
+    } catch {
+      // fallback
+    }
+    return "overview";
+  });
   const [selectedChart, setSelectedChart] = useState(null);
 
   // Tile table filter & search state
@@ -519,7 +530,7 @@ export default function MultispectralHealthPage({ datasets, sourceStatus, loadSo
               </div>
               <div className="spectral-body">
                 <p>
-                  <strong>Physical Meaning:</strong> NDVI measures the contrast between strong red absorption by chlorophyll ($668\text{ nm}$) and high near-infrared reflectance by leaf mesophyll cellular structures ($842\text{ nm}$).
+                  <strong>Physical Meaning:</strong> NDVI measures the contrast between strong red absorption by chlorophyll (668 nm) and high near-infrared reflectance by leaf mesophyll cellular structures (842 nm).
                 </p>
                 <p>
                   <strong>Role in Oil Palm:</strong> Evaluates overall foliage density, canopy greenness, and photosynthetic capacity. In dense multi-layered mature oil palm crowns, NDVI can saturate above 0.85–0.90, making secondary red-edge indices critical.
@@ -543,7 +554,7 @@ export default function MultispectralHealthPage({ datasets, sourceStatus, loadSo
               </div>
               <div className="spectral-body">
                 <p>
-                  <strong>Physical Meaning:</strong> Replaces the red band with the narrow red-edge transition channel ($717\text{ nm}$). Red-edge light penetrates deeper into dense palm canopies without optical saturation.
+                  <strong>Physical Meaning:</strong> Replaces the red band with the narrow red-edge transition channel (717 nm). Red-edge light penetrates deeper into dense palm canopies without optical saturation.
                 </p>
                 <p>
                   <strong>Role in Oil Palm:</strong> Extremely sensitive to variations in canopy chlorophyll concentrations and foliar nitrogen status, capturing subtle physiological shifts that NDVI misses when saturated.
@@ -567,7 +578,7 @@ export default function MultispectralHealthPage({ datasets, sourceStatus, loadSo
               </div>
               <div className="spectral-body">
                 <p>
-                  <strong>Physical Meaning:</strong> A weighted composite score combining canopy cover percentage ($40\%$), canopy NDVI mean ($25\%$), canopy NDRE mean ($20\%$), and within-canopy spatial uniformity ($15\%$).
+                  <strong>Physical Meaning:</strong> A weighted composite score combining canopy cover percentage (40%), canopy NDVI mean (25%), canopy NDRE mean (20%), and within-canopy spatial uniformity (15%).
                 </p>
                 <p>
                   <strong>Role in Oil Palm:</strong> Provides an integrated single-metric baseline for comparing aerial survey tiles without confounding bare ground background or edge clipping.

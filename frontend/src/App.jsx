@@ -236,8 +236,8 @@ export default function App() {
     if (hash === "estates") return "estates";
     if (hash === "field-actions" || hash === "actions") return "field-actions";
     if (hash === "multi-source" || hash === "evidence") return "multi-source";
-    if (hash === "drone-health" || hash === "drone") return "drone-health";
-    if (hash === "multispectral" || hash === "spectral") return "multispectral";
+    if (hash === "drone-health" || hash === "drone" || hash === "rgb-drone" || hash === "drone-ai" || hash.startsWith("drone-")) return "drone-health";
+    if (hash === "multispectral" || hash === "spectral" || hash.startsWith("spectral-") || hash === "indicators" || hash === "tiles" || hash === "gis-readiness" || hash === "visualizations") return "multispectral";
     if (hash.startsWith("block/") || /^B\d{3}$/i.test(hash)) return "block-detail";
     return "blocks";
   });
@@ -355,9 +355,9 @@ export default function App() {
         setViewLevel("field-actions");
       } else if (hash === "multi-source" || hash === "evidence") {
         setViewLevel("multi-source");
-      } else if (hash === "drone-health" || hash === "drone") {
+      } else if (hash === "drone-health" || hash === "drone" || hash === "rgb-drone" || hash.startsWith("drone-")) {
         setViewLevel("drone-health");
-      } else if (hash === "multispectral" || hash === "spectral") {
+      } else if (hash === "multispectral" || hash === "spectral" || hash.startsWith("spectral-") || hash === "indicators" || hash === "tiles" || hash === "gis-readiness" || hash === "visualizations") {
         setViewLevel("multispectral");
       } else if (hash.startsWith("block/")) {
         const bid = hash.replace("block/", "").toUpperCase();
@@ -557,6 +557,9 @@ export default function App() {
 
   return (
     <div className="palm-app">
+      {/* Immersive fixed real oil-palm plantation background layer with dark translucent overlay */}
+      <div className="palm-app-bg-layer" aria-hidden="true" />
+
       {/* GLOBAL ENTERPRISE TOPBAR (NO SIDEBAR EVER) */}
       <header className="global-topbar">
         <div className="topbar-left">
