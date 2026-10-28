@@ -178,9 +178,15 @@ function EstateMandatoryPrompt({ onSelectEstate, onGoToEstates }) {
 const VALID_ESTATES = ["North Estate (PT Palm Indo)"];
 
 export default function App() {
-  // Selected Estate: Displays all 42 operational blocks by default without requiring estate selection
+  // Selected Estate: MUST NOT default to an estate on fresh session unless user has intentionally selected a valid one.
   const [selectedEstate, setSelectedEstate] = useState(() => {
     try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const estateParam = urlParams.get("estate");
+      if (estateParam && VALID_ESTATES.includes(estateParam)) {
+        sessionStorage.setItem("palm_ai_selected_estate", estateParam);
+        return estateParam;
+      }
       const stored = sessionStorage.getItem("palm_ai_selected_estate");
       if (stored && VALID_ESTATES.includes(stored)) {
         return stored;
@@ -189,10 +195,9 @@ export default function App() {
       if (stored) {
         sessionStorage.removeItem("palm_ai_selected_estate");
       }
-      // Default to "North Estate (PT Palm Indo)" to display all 42 blocks directly
-      return "North Estate (PT Palm Indo)";
+      return null;
     } catch {
-      return "North Estate (PT Palm Indo)";
+      return null;
     }
   });
 
@@ -214,9 +219,19 @@ export default function App() {
     block_permissions: ["*"]
   }));
 
-  // Navigation State: default directly to 42-block risk dashboard ('blocks')
+  // Navigation State: default to 'estates' on fresh session until estate is chosen
   const [viewLevel, setViewLevel] = useState(() => {
     const hash = window.location.hash.replace(/^#/, "").trim();
+    let stored = null;
+    try {
+      stored = sessionStorage.getItem("palm_ai_selected_estate");
+    } catch {
+      stored = null;
+    }
+    // Mandatory initial screen: If no estate selected, MUST be "estates"
+    if (!stored || !VALID_ESTATES.includes(stored)) {
+      return "estates";
+    }
     if (hash === "blocks" || hash === "estate" || hash === "dashboard") return "blocks";
     if (hash === "estates") return "estates";
     if (hash === "field-actions" || hash === "actions") return "field-actions";
@@ -312,6 +327,25 @@ export default function App() {
   useEffect(() => {
     const handleHash = () => {
       const hash = window.location.hash.replace(/^#/, "").trim();
+      let currentStored = null;
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const estateParam = urlParams.get("estate");
+        if (estateParam && VALID_ESTATES.includes(estateParam)) {
+          sessionStorage.setItem("palm_ai_selected_estate", estateParam);
+          currentStored = estateParam;
+        } else {
+          currentStored = sessionStorage.getItem("palm_ai_selected_estate");
+        }
+      } catch {
+        currentStored = null;
+      }
+
+      // If no estate is selected, strictly route to estates view
+      if (!currentStored || !VALID_ESTATES.includes(currentStored)) {
+        setViewLevel("estates");
+        return;
+      }
 
       if (!hash || hash === "dashboard" || hash === "blocks" || hash === "estate" || hash === "login") {
         setViewLevel("blocks");
@@ -340,10 +374,16 @@ export default function App() {
     handleHash();
     window.addEventListener("hashchange", handleHash);
     return () => window.removeEventListener("hashchange", handleHash);
-  }, []);
+  }, [selectedEstate]);
 
   // Update hash when viewLevel or selectedBlockId changes
   const navigateTo = (level, blockId = null, actionId = null) => {
+    // If attempting to navigate into block views without an estate, enforce estates view
+    if (!selectedEstate && level !== "estates") {
+      setViewLevel("estates");
+      window.history.pushState(null, "", "#estates");
+      return;
+    }
     setViewLevel(level);
     if (actionId !== undefined) {
       setSelectedActionId(actionId);
@@ -523,8 +563,14 @@ export default function App() {
           {/* Logo Brand */}
           <div
             className="brand-cluster clickable"
-            onClick={() => navigateTo("blocks")}
-            title="Main 42-Block Risk Dashboard"
+            onClick={() => {
+              if (selectedEstate) {
+                navigateTo("blocks");
+              } else {
+                navigateTo("estates");
+              }
+            }}
+            title={selectedEstate ? "Main 42-Block Risk Dashboard" : "Estate Fleet Selection"}
           >
             <div className="brand-logo-icon">
               <Sprout size={18} className="text-emerald" />
@@ -537,97 +583,99 @@ export default function App() {
 
           <div className="brand-divider" />
 
-          {/* Navigation Tabs */}
-          <nav className="topbar-nav-tabs">
-            <button
-              type="button"
-              className={`topbar-tab ${viewLevel === "blocks" ? "active" : ""}`}
-              onClick={() => navigateTo("blocks")}
-              title="Main 42-Block Risk Dashboard"
-            >
-              <Layers size={14} />
-              <span>42-Block Risk Dashboard</span>
-            </button>
-
-            <button
-              type="button"
-              className={`topbar-tab ${viewLevel === "field-actions" ? "active" : ""}`}
-              onClick={() => navigateTo("field-actions")}
-              title="Field Action Center & Directives Tracking"
-            >
-              <ClipboardCheck size={14} />
-              <span>Field Actions</span>
-              {riskCounts.high > 0 && <span className="tab-badge">{riskCounts.high}</span>}
-            </button>
-
-            <button
-              type="button"
-              className={`topbar-tab ${viewLevel === "multi-source" ? "active" : ""}`}
-              onClick={() => navigateTo("multi-source")}
-              title="Multi-Source Evidence Matrix & Audit Registry"
-            >
-              <Database size={14} />
-              <span>Evidence Matrix</span>
-            </button>
-
-            <button
-              type="button"
-              className={`topbar-tab ${viewLevel === "drone-health" ? "active" : ""}`}
-              onClick={() => navigateTo("drone-health")}
-              title="RGB Drone Health Vision (YOLO11n Palm Detection)"
-            >
-              <Camera size={14} />
-              <span>RGB Drone</span>
-            </button>
-
-            <button
-              type="button"
-              className={`topbar-tab ${viewLevel === "multispectral" ? "active" : ""}`}
-              onClick={() => navigateTo("multispectral")}
-              title="Multispectral Aerial Vigour (Altum 5-band)"
-            >
-              <Layers3 size={14} />
-              <span>Multispectral</span>
-            </button>
-          </nav>
-
-          {/* Sub-crumb for Block Details */}
-          {selectedEstate && viewLevel === "block-detail" && selectedBlockId && (
-            <div className="topbar-subcrumb">
-              <span className="crumb-chevron"><ChevronRight size={14} /></span>
+          {/* Navigation Tabs: ONLY RENDERED WHEN AN ESTATE IS SELECTED */}
+          {selectedEstate ? (
+            <nav className="topbar-nav-tabs">
               <button
                 type="button"
-                className="topbar-crumb-link"
+                className={`topbar-tab ${viewLevel === "blocks" ? "active" : ""}`}
                 onClick={() => navigateTo("blocks")}
-                title="Return to 42-Block Risk Dashboard"
+                title="Main 42-Block Risk Dashboard"
               >
-                42-Block Dashboard
+                <Layers size={14} />
+                <span>42-Block Risk Dashboard</span>
               </button>
-              <span className="crumb-chevron"><ChevronRight size={14} /></span>
-              <strong className="crumb-current">Block {selectedBlockId}</strong>
+
+              <button
+                type="button"
+                className={`topbar-tab ${viewLevel === "field-actions" ? "active" : ""}`}
+                onClick={() => navigateTo("field-actions")}
+                title="Field Action Center & Directives Tracking"
+              >
+                <ClipboardCheck size={14} />
+                <span>Field Actions</span>
+                {riskCounts.high > 0 && <span className="tab-badge">{riskCounts.high}</span>}
+              </button>
+
+              <button
+                type="button"
+                className={`topbar-tab ${viewLevel === "multi-source" ? "active" : ""}`}
+                onClick={() => navigateTo("multi-source")}
+                title="Multi-Source Evidence Matrix & Audit Registry"
+              >
+                <Database size={14} />
+                <span>Evidence Matrix</span>
+              </button>
+
+              <button
+                type="button"
+                className={`topbar-tab ${viewLevel === "drone-health" ? "active" : ""}`}
+                onClick={() => navigateTo("drone-health")}
+                title="RGB Drone Health Vision (YOLO11n Palm Detection)"
+              >
+                <Camera size={14} />
+                <span>RGB Drone</span>
+              </button>
+
+              <button
+                type="button"
+                className={`topbar-tab ${viewLevel === "multispectral" ? "active" : ""}`}
+                onClick={() => navigateTo("multispectral")}
+                title="Multispectral Aerial Vigour (Altum 5-band)"
+              >
+                <Layers3 size={14} />
+                <span>Multispectral</span>
+              </button>
+            </nav>
+          ) : (
+            <div className="topbar-estate-selection-notice">
+              <span className="notice-badge">STEP 1</span>
+              <span className="notice-text">Estate Fleet Selection</span>
             </div>
+          )}
+
+          {/* Keep accessible return action without redundant topbar breadcrumbs */}
+          {selectedEstate && viewLevel === "block-detail" && (
+            <button
+              type="button"
+              className="sr-only"
+              onClick={() => navigateTo("blocks")}
+              aria-label="← Back to All 42 Blocks"
+            >
+              ← Back to All 42 Blocks
+            </button>
           )}
         </div>
 
         {/* Topbar Right Telemetry Status */}
         <div className="topbar-right">
-          <div className="topbar-estate-pill">
-            <MapPin size={12} className="text-emerald" />
-            <span className="estate-pill-label">Estate:</span>
-            <strong className="estate-pill-name">{selectedEstate || "North Estate (PT Palm Indo)"}</strong>
-          </div>
+          {selectedEstate ? (
+            <div className="topbar-estate-pill">
+              <MapPin size={12} className="text-emerald" />
+              <span className="estate-pill-label">Estate:</span>
+              <strong className="estate-pill-name">{selectedEstate}</strong>
+              <button
+                type="button"
+                className="estate-change-btn"
+                onClick={handleClearEstate}
+                title="Deselect active estate and return to Estate Selection"
+              >
+                Change Estate
+              </button>
+            </div>
+          ) : null}
 
-          {viewLevel === "block-detail" && (
-            <button
-              type="button"
-              className="quick-back-grid-btn prominent-back-btn"
-              onClick={() => navigateTo("blocks")}
-              title="Return to 42-Block Risk Dashboard"
-            >
-              <ArrowLeft size={14} />
-              <span>← Back to All 42 Blocks</span>
-            </button>
-          )}
+
 
           <div className="telemetry-pill">
             <span className="telemetry-dot" />
@@ -863,9 +911,20 @@ export default function App() {
             <div className="view-container block-grid-view">
               {/* Estate Header & Controls */}
               <div className="block-grid-header">
-                <div className="grid-header-left">
+                <div className="grid-nav-breadcrumb-row">
+                  <button
+                    type="button"
+                    className="crumb-back-link"
+                    onClick={() => handleClearEstate()}
+                    title="Return to Estate Selection"
+                  >
+                    <ArrowLeft size={14} />
+                    <span>← All Operational Estates</span>
+                  </button>
+                </div>
+                <div className="estate-header-title-section">
                   <div className="estate-title-row">
-                    <h1 className="estate-display-title">North Estate (PT Palm Indo) — 42-Block Risk Dashboard</h1>
+                    <h1 className="estate-display-title">{selectedEstate}</h1>
                     <span className="block-count-badge">42 Operational Blocks</span>
                     <span className="cohort-tag">Mature DxP Hybrid Stand</span>
                   </div>
@@ -873,102 +932,101 @@ export default function App() {
                     Plantation-wide agronomic risk surveillance, 13-year productivity history, canonical screening distribution, and comprehensive 42-block fleet risk analysis.
                   </p>
                 </div>
+              </div>
 
-                {/* 5 Primary Landing Summary Cards (Specification Requirement 2) */}
-                <div className="landing-summary-cards-grid">
-                  <div className="landing-summary-card total">
-                    <div className="summary-card-header-mini">
-                      <span className="summary-card-title">TOTAL BLOCKS</span>
-                      <Layers size={16} className="text-emerald" />
-                    </div>
-                    <div className="summary-card-main-val">
-                      <strong>42</strong>
-                      <span className="summary-card-unit">Blocks</span>
-                    </div>
-                    <div className="summary-card-footnote">
-                      <span>B001 – B042 Natural Order · 100% Monitored</span>
-                    </div>
+              {/* 4 PRIMARY KPIS IN A CLEAN BALANCED ROW */}
+              <div className="primary-kpi-row">
+                <div className="primary-kpi-card total">
+                  <div className="kpi-card-header">
+                    <span className="kpi-card-title">TOTAL BLOCKS</span>
+                    <Layers size={16} className="text-emerald" />
                   </div>
-
-                  <div className="landing-summary-card high-risk">
-                    <div className="summary-card-header-mini">
-                      <span className="summary-card-title">HIGH-RISK BLOCKS</span>
-                      <ShieldAlert size={16} className="text-ruby" />
-                    </div>
-                    <div className="summary-card-main-val text-ruby">
-                      <strong>{riskCounts.high}</strong>
-                      <span className="summary-card-unit">({((riskCounts.high / (riskCounts.total || 42)) * 100).toFixed(1)}%)</span>
-                    </div>
-                    <div className="summary-card-footnote">
-                      <span>Block B001 · Urgent Agronomic Audit</span>
-                    </div>
+                  <div className="kpi-card-val">
+                    <strong>42</strong>
+                    <span className="kpi-card-unit">Blocks</span>
                   </div>
-
-                  <div className="landing-summary-card medium-risk">
-                    <div className="summary-card-header-mini">
-                      <span className="summary-card-title">MEDIUM-RISK BLOCKS</span>
-                      <AlertTriangle size={16} className="text-gold" />
-                    </div>
-                    <div className="summary-card-main-val text-gold">
-                      <strong>{riskCounts.medium}</strong>
-                      <span className="summary-card-unit">({((riskCounts.medium / (riskCounts.total || 42)) * 100).toFixed(1)}%)</span>
-                    </div>
-                    <div className="summary-card-footnote">
-                      <span>6 Blocks · Nutritional Watchlist</span>
-                    </div>
-                  </div>
-
-                  <div className="landing-summary-card low-risk">
-                    <div className="summary-card-header-mini">
-                      <span className="summary-card-title">LOW-RISK BLOCKS</span>
-                      <ShieldCheck size={16} className="text-emerald" />
-                    </div>
-                    <div className="summary-card-main-val text-emerald">
-                      <strong>{riskCounts.low}</strong>
-                      <span className="summary-card-unit">({((riskCounts.low / (riskCounts.total || 42)) * 100).toFixed(1)}%)</span>
-                    </div>
-                    <div className="summary-card-footnote">
-                      <span>35 Blocks · Performing to Benchmark</span>
-                    </div>
-                  </div>
-
-                  <div className="landing-summary-card overall-risk span-full">
-                    <div className="overall-summary-content">
-                      <div className="overall-badge-group">
-                        <Sparkles size={16} className="text-emerald" />
-                        <span className="overall-title">OVERALL PLANTATION RISK SUMMARY</span>
-                        <span className="overall-level-pill low">LOW PLANTATION RISK BASELINE</span>
-                      </div>
-                      <p className="overall-summary-text">
-                        <strong>83.3% of operational blocks</strong> (35 of 42) operate in standard cohort yield alignment. Mean 2024 harvest productivity across the plantation is <strong>{fmt(meanYield)} t/ha/yr</strong>. 1 priority block (<strong>B001</strong>, score {fmt((processedBlocks.find(b => b.Block_ID === 'B001') || {}).Risk_Score || 78.4, 1)}/100, -47.1% yield gap) requires targeted drainage and foliar intervention, while 6 medium-risk blocks are queued for potassium balancing.
-                      </p>
-                    </div>
+                  <div className="kpi-card-footnote">
+                    <span>B001 – B042 Natural Order · 100% Monitored</span>
                   </div>
                 </div>
 
-                {/* Summary Stats Strip */}
-                <div className="grid-summary-stats">
-                  <div className="grid-stat">
-                    <span>Monitored Area</span>
-                    <strong>1,512 Ha</strong>
+                <div className="primary-kpi-card high-risk">
+                  <div className="kpi-card-header">
+                    <span className="kpi-card-title">HIGH-RISK BLOCKS</span>
+                    <ShieldAlert size={16} className="text-ruby" />
                   </div>
-                  <div className="grid-stat">
-                    <span>Mean 2024 Yield</span>
-                    <strong className="text-emerald">{fmt(meanYield)} t/ha</strong>
+                  <div className="kpi-card-val text-ruby">
+                    <strong>{riskCounts.high}</strong>
+                    <span className="kpi-card-unit">({((riskCounts.high / (riskCounts.total || 42)) * 100).toFixed(1)}%)</span>
                   </div>
-                  <div className="grid-stat">
-                    <span>High Risk</span>
-                    <strong className="text-ruby">{riskCounts.high} Block</strong>
-                  </div>
-                  <div className="grid-stat">
-                    <span>Medium Risk</span>
-                    <strong className="text-gold">{riskCounts.medium} Blocks</strong>
-                  </div>
-                  <div className="grid-stat">
-                    <span>Low Risk</span>
-                    <strong className="text-emerald">{riskCounts.low} Blocks</strong>
+                  <div className="kpi-card-footnote">
+                    <span>Block B001 · Urgent Agronomic Audit</span>
                   </div>
                 </div>
+
+                <div className="primary-kpi-card medium-risk">
+                  <div className="kpi-card-header">
+                    <span className="kpi-card-title">MEDIUM-RISK BLOCKS</span>
+                    <AlertTriangle size={16} className="text-gold" />
+                  </div>
+                  <div className="kpi-card-val text-gold">
+                    <strong>{riskCounts.medium}</strong>
+                    <span className="kpi-card-unit">({((riskCounts.medium / (riskCounts.total || 42)) * 100).toFixed(1)}%)</span>
+                  </div>
+                  <div className="kpi-card-footnote">
+                    <span>6 Blocks · Nutritional Watchlist</span>
+                  </div>
+                </div>
+
+                <div className="primary-kpi-card low-risk">
+                  <div className="kpi-card-header">
+                    <span className="kpi-card-title">LOW-RISK BLOCKS</span>
+                    <ShieldCheck size={16} className="text-emerald" />
+                  </div>
+                  <div className="kpi-card-val text-emerald">
+                    <strong>{riskCounts.low}</strong>
+                    <span className="kpi-card-unit">({((riskCounts.low / (riskCounts.total || 42)) * 100).toFixed(1)}%)</span>
+                  </div>
+                  <div className="kpi-card-footnote">
+                    <span>35 Blocks · Performing to Benchmark</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECONDARY METRICS BELOW */}
+              <div className="secondary-metrics-row">
+                <div className="secondary-stat-card">
+                  <span className="stat-label">Monitored Area</span>
+                  <strong className="stat-val">1,512 Ha</strong>
+                  <span className="stat-sub">36.0 Ha avg/block</span>
+                </div>
+                <div className="secondary-stat-card">
+                  <span className="stat-label">Mean 2024 Yield</span>
+                  <strong className="stat-val text-emerald">{fmt(meanYield)} t/ha</strong>
+                  <span className="stat-sub">Annual harvest average</span>
+                </div>
+                <div className="secondary-stat-card">
+                  <span className="stat-label">Productive Stand</span>
+                  <strong className="stat-val">204,120 Palms</strong>
+                  <span className="stat-sub">135 palms/ha</span>
+                </div>
+                <div className="secondary-stat-card">
+                  <span className="stat-label">Data History</span>
+                  <strong className="stat-val">13 Years</strong>
+                  <span className="stat-sub">2012 – 2024 Historical</span>
+                </div>
+              </div>
+
+              {/* OVERALL PLANTATION RISK SUMMARY BANNER */}
+              <div className="overall-summary-banner">
+                <div className="overall-badge-group">
+                  <Sparkles size={16} className="text-emerald" />
+                  <span className="overall-title">OVERALL PLANTATION RISK SUMMARY</span>
+                  <span className="overall-level-pill low">LOW PLANTATION RISK BASELINE</span>
+                </div>
+                <p className="overall-summary-text">
+                  <strong>83.3% of operational blocks</strong> (35 of 42) operate in standard cohort yield alignment. Mean 2024 harvest productivity across the plantation is <strong>{fmt(meanYield)} t/ha/yr</strong>. 1 priority block (<strong>B001</strong>, score 70.0/100, nutrient imbalance flagged; peer yield baseline unavailable) requires joint field audit and foliar re-sampling, while 6 medium-risk blocks are queued for potassium balancing.
+                </p>
               </div>
 
               {/* ===================================================== */}
@@ -976,7 +1034,7 @@ export default function App() {
               {/* ===================================================== */}
               <div className="estate-analytics-grid">
                 {/* Historical Yield Trend Chart (2012–2024) */}
-                <div className="analytics-card span-2">
+                <div className="analytics-card chart-analytics-card">
                   <div className="analytics-card-header">
                     <div className="header-icon-title">
                       <TrendingUp size={18} className="text-emerald" />
@@ -1121,7 +1179,7 @@ export default function App() {
                         Inspect & Resolve B001 →
                       </button>
                     </div>
-                    <p>Conduct emergency joint agronomy audit for Block B001 (-47.1% yield gap). Frond 17 foliar re-sampling and field drainage assessment to resolve severe potassium/nitrogen imbalance.</p>
+                    <p>Convene joint agronomy audit for Block B001 (score 70.0/100). Conduct palm bunch census count and fresh Frond 17 foliar laboratory re-sampling to re-assess nutritional status against mature stand standards.</p>
                   </div>
 
                   <div className="action-directive-item moderate">

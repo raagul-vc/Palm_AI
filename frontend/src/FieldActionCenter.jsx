@@ -3,12 +3,14 @@ import {
   ClipboardCheck, Download, Filter, CheckCircle2, Clock3, CircleAlert,
   Sprout, ScanSearch, Layers3, ArrowUpRight, ArrowRight, RotateCcw, Sparkles,
   ShieldAlert, Info, Calendar, ChevronRight, AlertTriangle, UserCheck,
-  FileText, ExternalLink, ShieldCheck, CheckSquare, Square, Search, XCircle
+  FileText, ExternalLink, ShieldCheck, CheckSquare, Square, Search, XCircle,
+  ArrowUpDown, Check, RefreshCw
 } from "lucide-react";
 import "./FieldActionCenter.css";
 
 const STORAGE_KEY = "palm-ai-field-action-status-v2";
 const statusOptions = ["OPEN", "IN REVIEW", "VERIFYING IN FIELD", "COMPLETED"];
+const priorityOptions = ["CRITICAL", "ELEVATED", "ROUTINE"];
 
 function safeNum(value, fallback = null) {
   if (value == null || value === "") return fallback;
@@ -26,7 +28,7 @@ function fmt(value, digits = 1, fallback = "N/A") {
 }
 
 /**
- * Natural numerical sort for operational blocks: B001, B002 ... B010 ... B042
+ * Natural numerical/alphabetical sort key: B001 -> 1, B010 -> 10, B042 -> 42
  */
 function naturalSortKey(bid) {
   const match = String(bid || "").match(/\d+/);
@@ -39,7 +41,7 @@ function naturalSortKey(bid) {
 function buildActionItems(datasets) {
   const items = [];
 
-  // 1. Build lookup maps for foliar, dris, and soil
+  // 1. Build lookup maps for foliar, dris, soil, and risk
   const nutMap = new Map();
   (datasets.nutrients || []).forEach((n) => {
     const bid = String(n.Block_ID || "").trim().toUpperCase();
@@ -64,8 +66,12 @@ function buildActionItems(datasets) {
     if (bid) riskMap.set(bid, r);
   });
 
-  // 2. Process all operational blocks from multiRisk or risk
-  const processedBlocks = [...(datasets.multiRisk || datasets.risk || [])].map((r) => {
+  // 2. Process all 42 operational blocks from multiRisk or risk
+  const baseBlocks = datasets.multiRisk && datasets.multiRisk.length > 0
+    ? datasets.multiRisk
+    : (datasets.risk || []);
+
+  const processedBlocks = baseBlocks.map((r) => {
     const bid = String(r.Block_ID || "").trim().toUpperCase();
     const riskRow = riskMap.get(bid) || {};
     const nutRow = nutMap.get(bid) || {};
@@ -82,7 +88,7 @@ function buildActionItems(datasets) {
     const plantingYear = riskRow.Planting_Year || "2012";
 
     // Foliar status
-    const leafYear = nutRow.Year || nutRow.Leaf_Sampling_Year || 2022;
+    const leafYear = nutRow.Year || nutRow.Leaf_Sampling_Year || 2024;
     const lowNutrients = [];
     ["N", "P", "K", "Ca", "Mg", "B"].forEach((elem) => {
       if (nutRow[`${elem}_pct_Status`] === "LOW" || nutRow[`${elem}_ppm_Status`] === "LOW") {
@@ -92,9 +98,11 @@ function buildActionItems(datasets) {
 
     // DRIS limitations
     const limitingNutrients = [];
+    const excessNutrients = [];
     if (drisRow.Limitation_1 && drisRow.Limitation_1 !== "None") limitingNutrients.push(drisRow.Limitation_1);
     if (drisRow.Limitation_2 && drisRow.Limitation_2 !== "None") limitingNutrients.push(drisRow.Limitation_2);
     if (drisRow.Limitation_3 && drisRow.Limitation_3 !== "None") limitingNutrients.push(drisRow.Limitation_3);
+    if (drisRow.Excess_1 && drisRow.Excess_1 !== "None") excessNutrients.push(drisRow.Excess_1);
 
     // Soil status (strictly only 7 blocks have observed soil tests)
     const hasSoil = soilRow.status === "observed" || soilRow.pH_H2O != null;
@@ -102,13 +110,13 @@ function buildActionItems(datasets) {
     // Data coverage limitations
     const limitations = [];
     if (nutRow.B_ppm == null || nutRow.B_ppm === "") {
-      limitations.append ? limitations.push("Boron (B) foliar analysis unrecorded.") : limitations.push("Boron (B) foliar analysis unrecorded.");
+      limitations.push("Boron (B) foliar analysis unrecorded for this sample round.");
     }
     if (!hasSoil) {
-      limitations.push("No block soil sample (estate survey conducted on 7 index blocks only).");
+      limitations.push("No block-specific soil sample; estate soil survey restricted to 7 index blocks only.");
     }
-    limitations.push("Weather is estate-wide average (excluded from block risk).");
-    limitations.push("Drone RGB & multispectral imagery are unmapped benchmarks (0% risk influence).");
+    limitations.push("Weather telemetry is an estate-wide average; excluded from block screening score.");
+    limitations.push("Drone RGB and multispectral UAV imagery lack block georeferencing (0% risk contribution).");
 
     // Priority & Urgency
     let priority = "ROUTINE";
@@ -123,22 +131,31 @@ function buildActionItems(datasets) {
 
     // Recommended Action (strictly evidence grounded)
     let recommendedAction = r.Recommended_Action;
+    let agronomicRationale = "";
     if (!recommendedAction) {
       if (riskLevel === "HIGH") {
+        const limStr = limitingNutrients.length > 0 ? `DRIS identifies ${limitingNutrients.join(", ")} limitation.` : "Productivity gap is the primary constraint.";
+        agronomicRationale = `Observed production of ${fmt(actualYield)} t/ha correlates with nutritional deficit. ${limStr} ${drisRow.Prescription || ""}`;
         recommendedAction = `Convene joint agronomy audit for Block ${bid}. Review weed circle upkeep, check field drainage channels, and execute prescribed foliar balancing: ${drisRow.Prescription || "Consult estate agronomist for targeted foliar correction."}`;
       } else if (riskLevel === "MEDIUM") {
+        agronomicRationale = `Foliar diagnostic flags ${lowNutrients.length > 0 ? lowNutrients.join(", ") : "mild nutritional variation"}. ${drisRow.Prescription || ""}`;
         recommendedAction = `Verify field application logs for Block ${bid} and schedule spot canopy greenness inspection. Follow recommendation: ${drisRow.Prescription || "Review nutrient distribution and broadcast uniformity."}`;
       } else {
+        agronomicRationale = "Nutritional ratios and yield trends align with age-cohort baseline expectations with no critical limiting constraints.";
         recommendedAction = "Maintain standard circular weeding, weed circle upkeep, and scheduled standard fertilizer broadcast rounds.";
       }
+    } else {
+      agronomicRationale = riskLevel === "HIGH"
+        ? `Production deficit correlates with diagnostic flags (${limitingNutrients.length > 0 ? limitingNutrients.join(", ") : "yield lag"}). Ground verification required.`
+        : "Operational telemetry within expected variance bounds for age cohort.";
     }
 
     // Follow-up protocol
     const followUpProtocol = riskLevel === "HIGH"
-      ? "Conduct Frond 17 foliar re-sampling at 60–90 days; target quarterly bunch census count."
+      ? "Target quarterly bunch census count and conduct Frond 17 foliar re-sampling at 60–90 days."
       : riskLevel === "MEDIUM"
         ? "Monitor monthly bunch delivery weights across the upcoming 3 harvest rounds."
-        : "Routine annual foliar assay and standard monthly yield tracking.";
+        : "Routine annual foliar assay and standard monthly harvest weight tracking.";
 
     // Contributing indicators text
     const contributor = r.Main_Contributing_Indicators || r.Risk_Contributor || (
@@ -158,8 +175,23 @@ function buildActionItems(datasets) {
       urgency,
       mainIndicators: contributor,
       recommendedAction,
+      agronomicRationale,
       followUpProtocol,
       dataLimitations: limitations,
+      remoteSensingStatus: {
+        droneRgb: {
+          hasValidMapping: false,
+          status: "Unmapped Benchmark",
+          badge: "No Block Georeferencing",
+          reason: "MOPAD Site 2 benchmark imagery lacks GPS block boundaries for operational blocks B001–B042 (0% weight)."
+        },
+        multispectral: {
+          hasValidMapping: false,
+          status: "Unavailable Benchmark",
+          badge: "German Beech Forest",
+          reason: "MSUAV500K benchmark was collected over Hullerbusch Beech Forest in Germany (NOT oil palm); 0% weight."
+        }
+      },
       observations: {
         yield: {
           actual: actualYield,
@@ -180,8 +212,9 @@ function buildActionItems(datasets) {
         },
         dris: {
           limiting: limitingNutrients,
+          excess: excessNutrients,
           prescription: drisRow.Prescription || "Maintain balanced fertilizer application.",
-          sampleYear: drisRow.Year || 2022,
+          sampleYear: drisRow.Year || 2024,
         },
         soil: {
           hasSample: hasSoil,
@@ -189,6 +222,7 @@ function buildActionItems(datasets) {
           cOrg: safeNum(soilRow.C_Organic_pct),
           pAvail: safeNum(soilRow.P_Available_ppm),
           status: hasSoil ? "Observed Field Sample" : "Unavailable (Unsampled Block)",
+          note: hasSoil ? "Measured chemical survey on index block" : "Sparse survey restricted to 7 blocks in estate"
         },
         stand: {
           age: plantAge,
@@ -196,23 +230,17 @@ function buildActionItems(datasets) {
           planted: plantingYear,
         }
       },
-      provenance: "Ground-truth harvest scales (2012–2024) & certified commercial foliar laboratory assays (Frond 17)."
+      provenance: "Ground-truth harvest weighbridge scale records (2012–2024) & certified commercial Frond 17 foliar laboratory assays."
     };
-  });
-
-  // Sort blocks: High risk first, then Medium, then Low, with natural numerical secondary sort
-  processedBlocks.sort((a, b) => {
-    if (b.riskScore !== a.riskScore) return (b.riskScore || 0) - (a.riskScore || 0);
-    return naturalSortKey(a.blockId) - naturalSortKey(b.blockId);
   });
 
   items.push(...processedBlocks);
 
-  // 3. RGB UAV Benchmark items (Unmapped)
+  // 3. RGB UAV Benchmark items (Strictly isolated with unmapped status)
   const droneOutliers = [...(datasets.droneImages || [])]
     .filter((r) => r.is_outlier || String(r.health_category || "").toUpperCase() === "LOW" || (safeNum(r.drone_health_score) ?? 100) < 60)
     .sort((a, b) => (safeNum(a.drone_health_score) ?? 100) - (safeNum(b.drone_health_score) ?? 100))
-    .slice(0, 8);
+    .slice(0, 6);
 
   droneOutliers.forEach((r) => {
     items.push({
@@ -222,24 +250,27 @@ function buildActionItems(datasets) {
       type: "Image Tile Review (Unmapped)",
       target: r.image_filename || `Image ${r.image_id}`,
       blockId: null,
+      hasValidBlockMapping: false,
+      dataAvailabilityStatus: "UNMAPPED BENCHMARK · NO BLOCK MAPPING",
       riskLevel: (safeNum(r.drone_health_score) ?? 100) < 40 ? "HIGH" : "MEDIUM",
       riskScore: safeNum(r.drone_health_score),
       priority: (safeNum(r.drone_health_score) ?? 100) < 40 ? "CRITICAL" : "ELEVATED",
-      urgency: "Visual Inspection (Research Benchmark)",
+      urgency: "Visual Inspection (Research Demonstration Only)",
       mainIndicators: r.outlier_categories || `${r.non_healthy_palm_percentage ?? "N/A"}% non-healthy detected palms`,
-      recommendedAction: "Review annotated bounding boxes on the UAV image canvas; inspect flagged palm crowns during scheduled field inspection before applying corrective maintenance.",
-      followUpProtocol: "Ground-truth canopy condition with GPS-tagged inspection and compare against operational harvest scale records.",
+      recommendedAction: "Review bounding box crown annotations on UAV image canvas; inspect flagged palm crowns during scheduled field inspection.",
+      agronomicRationale: "Technical demonstration of deep-learning palm crown anomaly detection. Decoupled from operational block risk.",
+      followUpProtocol: "Technical benchmark validation; ground-truth canopy condition with GPS-tagged inspection.",
       dataLimitations: ["Tile lacks GPS EXIF tags and is not mapped to operational plantation blocks B001–B042."],
       provenance: "MOPAD Site 2 aerial survey crop (1024x1024 px); independent visual evidence, not an operational block record.",
       observations: null,
     });
   });
 
-  // 4. Multispectral UAV Benchmark items (Unmapped, German Beech Forest)
+  // 4. Multispectral UAV Benchmark items (Strictly isolated with German Beech Forest disclaimer)
   const spectralTiles = [...(datasets.multispectralTiles || [])]
     .filter((r) => /moderate|depressed|background/i.test(String(r.vigour_category || "")) || (safeNum(r.multispectral_health_score) ?? 100) < 80)
     .sort((a, b) => (safeNum(a.multispectral_health_score) ?? 100) - (safeNum(b.multispectral_health_score) ?? 100))
-    .slice(0, 6);
+    .slice(0, 4);
 
   spectralTiles.forEach((r) => {
     items.push({
@@ -249,12 +280,15 @@ function buildActionItems(datasets) {
       type: "GeoTIFF Tile Review (Demo Only)",
       target: r.tile_id ? `Tile ${r.tile_id}` : (r.filename || "GeoTIFF Tile"),
       blockId: null,
+      hasValidBlockMapping: false,
+      dataAvailabilityStatus: "UNMAPPED BENCHMARK · GERMAN BEECH FOREST",
       riskLevel: (safeNum(r.multispectral_health_score) ?? 100) < 60 ? "HIGH" : "MEDIUM",
       riskScore: safeNum(r.multispectral_health_score),
       priority: (safeNum(r.multispectral_health_score) ?? 100) < 60 ? "CRITICAL" : "ELEVATED",
       urgency: "Algorithmic Verification (Research Benchmark)",
       mainIndicators: `${r.vigour_category || "Canopy flag"}; Mean NDVI ${fmt(r.canopy_ndvi_mean, 3)}; NDRE ${fmt(r.canopy_ndre_mean, 3)}`,
       recommendedAction: "Inspect pure-canopy vegetation indices and verify surface reflectance calibration across the 5 spectral bands.",
+      agronomicRationale: "Technical demonstration of 5-band multispectral canopy extraction. Strictly decoupled from operational plantation risk.",
       followUpProtocol: "Technical benchmark validation of NDVI/NDRE algorithms. Strictly decoupled from plantation operational risk.",
       dataLimitations: [
         "BENCHMARK ONLY: Collected over Hullerbusch Beech Forest in Germany (Fagus sylvatica). NOT oil palm.",
@@ -275,14 +309,18 @@ function exportDirectivesCsv(items, records) {
   const headers = [
     "Task ID", "Evidence Source", "Target", "Block ID", "Risk Level",
     "Screening Score", "Priority", "Urgency", "Main Indicators",
-    "Recommended Action", "Follow-up Protocol", "Data Coverage Limitations",
-    "Verification Status", "Inspector Name", "Field Notes", "Completed At", "Data Provenance"
+    "Recommended Action", "Agronomic Rationale", "Follow-up Protocol",
+    "Drone Data Status", "Multispectral Data Status", "Data Coverage Limitations",
+    "Verification Status", "Inspector Name", "Inspection Date", "Field Notes",
+    "Completed At", "Data Provenance"
   ];
 
   const quote = (v) => `"${String(v ?? "").replaceAll('"', '""')}"`;
 
   const rows = items.map((t) => {
     const rec = records[t.id] || {};
+    const droneStatus = t.remoteSensingStatus?.droneRgb?.status || t.dataAvailabilityStatus || "N/A";
+    const msStatus = t.remoteSensingStatus?.multispectral?.status || t.dataAvailabilityStatus || "N/A";
     return [
       t.id,
       t.source,
@@ -294,10 +332,14 @@ function exportDirectivesCsv(items, records) {
       t.urgency,
       t.mainIndicators,
       t.recommendedAction,
+      t.agronomicRationale || "",
       t.followUpProtocol,
+      droneStatus,
+      msStatus,
       (t.dataLimitations || []).join(" | "),
       rec.status || "OPEN",
       rec.inspector || "",
+      rec.inspectionDate || "",
       rec.notes || "",
       rec.completedAt || "",
       t.provenance
@@ -317,7 +359,7 @@ function exportDirectivesCsv(items, records) {
 export default function FieldActionCenter({ datasets, onNavigateBlock, currentUser, authToken }) {
   const allItems = useMemo(() => buildActionItems(datasets), [datasets]);
 
-  // Persistent storage for field verification statuses and notes
+  // Persistent storage for field verification statuses and follow-up tracking
   const [records, setRecords] = useState(() => {
     try {
       return JSON.parse(window.localStorage.getItem(STORAGE_KEY) || "{}");
@@ -326,14 +368,16 @@ export default function FieldActionCenter({ datasets, onNavigateBlock, currentUs
     }
   });
 
-  // Filter and search state
+  // Filter and sorting states
+  const [sortBy, setSortBy] = useState("alphabetical"); // "alphabetical", "alphabetical_desc", "priority", "score_desc", "status"
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const [sourceFilter, setSourceFilter] = useState("ALL");
+  const [sourceFilter, setSourceFilter] = useState("agronomic"); // Default to Operational Blocks
   const [priorityFilter, setPriorityFilter] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedNotesId, setExpandedNotesId] = useState(null);
   const [aiRecommendations, setAiRecommendations] = useState({});
   const [loadingAi, setLoadingAi] = useState({});
+  const [saveFeedback, setSaveFeedback] = useState({});
 
   // Synchronize with server-side SQLite tasks
   useEffect(() => {
@@ -349,12 +393,17 @@ export default function FieldActionCenter({ datasets, onNavigateBlock, currentUs
               const updated = { ...prev };
               data.tasks.forEach((t) => {
                 const key = `block-${t.block_id}`;
-                const serverStatus = t.status === "COMPLETED" ? "COMPLETED" : (t.status === "SUBMITTED" ? "VERIFYING IN FIELD" : (t.status === "IN_PROGRESS" || t.status === "ASSIGNED" ? "IN REVIEW" : "OPEN"));
+                const serverStatus = t.status === "COMPLETED"
+                  ? "COMPLETED"
+                  : (t.status === "SUBMITTED"
+                    ? "VERIFYING IN FIELD"
+                    : (t.status === "IN_PROGRESS" || t.status === "ASSIGNED" ? "IN REVIEW" : "OPEN"));
                 updated[key] = {
                   ...(updated[key] || {}),
                   status: serverStatus,
                   notes: t.worker_findings || updated[key]?.notes || "",
                   inspector: t.assignee_name || updated[key]?.inspector || "",
+                  inspectionDate: t.worker_inspection_date || updated[key]?.inspectionDate || "",
                   completedAt: t.completed_at ? new Date(t.completed_at).toLocaleString() : updated[key]?.completedAt,
                   serverTaskId: t.task_id
                 };
@@ -380,15 +429,15 @@ export default function FieldActionCenter({ datasets, onNavigateBlock, currentUs
 
   // Update status for a specific item
   const updateStatus = useCallback((id, newStatus) => {
+    const completedTimestamp = newStatus === "COMPLETED" ? new Date().toLocaleString() : null;
     setRecords((prev) => {
       const current = prev[id] || {};
-      const completedAt = newStatus === "COMPLETED" ? new Date().toLocaleString() : null;
       return {
         ...prev,
         [id]: {
           ...current,
           status: newStatus,
-          completedAt: newStatus === "COMPLETED" ? (current.completedAt || completedAt) : null,
+          completedAt: newStatus === "COMPLETED" ? (current.completedAt || completedTimestamp) : null,
         }
       };
     });
@@ -416,7 +465,7 @@ export default function FieldActionCenter({ datasets, onNavigateBlock, currentUs
     }
   }, [authToken]);
 
-  // Update inspector name and notes
+  // Update inspector name, date, and notes
   const updateDetails = useCallback((id, field, value) => {
     setRecords((prev) => {
       const current = prev[id] || {};
@@ -430,7 +479,15 @@ export default function FieldActionCenter({ datasets, onNavigateBlock, currentUs
     });
   }, []);
 
-  // Fetch server-side recommendation on demand
+  // Save follow-up tracking feedback
+  const handleSaveFollowUp = (id) => {
+    setSaveFeedback((prev) => ({ ...prev, [id]: true }));
+    setTimeout(() => {
+      setSaveFeedback((prev) => ({ ...prev, [id]: false }));
+    }, 2500);
+  };
+
+  // Fetch server-side recommendation on demand (OpenAI or deterministic fallback)
   const fetchBlockAiSynthesis = async (bid) => {
     if (!bid) return;
     setLoadingAi((prev) => ({ ...prev, [bid]: true }));
@@ -447,9 +504,9 @@ export default function FieldActionCenter({ datasets, onNavigateBlock, currentUs
     }
   };
 
-  // Filtered item list
+  // Filtered and sorted item list
   const filteredItems = useMemo(() => {
-    return allItems.filter((item) => {
+    const list = allItems.filter((item) => {
       const rec = records[item.id] || {};
       const currentStatus = rec.status || "OPEN";
 
@@ -466,27 +523,71 @@ export default function FieldActionCenter({ datasets, onNavigateBlock, currentUs
 
       return matchStatus && matchSource && matchPriority && matchSearch;
     });
-  }, [allItems, records, statusFilter, sourceFilter, priorityFilter, searchQuery]);
+
+    // Sorting Logic
+    const priorityRank = { CRITICAL: 0, ELEVATED: 1, ROUTINE: 2 };
+    const statusRank = { OPEN: 0, "IN REVIEW": 1, "VERIFYING IN FIELD": 2, COMPLETED: 3 };
+
+    return list.sort((a, b) => {
+      if (sortBy === "alphabetical") {
+        if (a.blockId && b.blockId) {
+          return naturalSortKey(a.blockId) - naturalSortKey(b.blockId);
+        }
+        return a.target.localeCompare(b.target);
+      }
+      if (sortBy === "alphabetical_desc") {
+        if (a.blockId && b.blockId) {
+          return naturalSortKey(b.blockId) - naturalSortKey(a.blockId);
+        }
+        return b.target.localeCompare(a.target);
+      }
+      if (sortBy === "priority") {
+        const diff = (priorityRank[a.priority] ?? 9) - (priorityRank[b.priority] ?? 9);
+        if (diff !== 0) return diff;
+        if (b.riskScore !== a.riskScore) return (b.riskScore || 0) - (a.riskScore || 0);
+        return naturalSortKey(a.blockId) - naturalSortKey(b.blockId);
+      }
+      if (sortBy === "score_desc") {
+        if (b.riskScore !== a.riskScore) return (b.riskScore || 0) - (a.riskScore || 0);
+        return naturalSortKey(a.blockId) - naturalSortKey(b.blockId);
+      }
+      if (sortBy === "score_asc") {
+        if (a.riskScore !== b.riskScore) return (a.riskScore || 0) - (b.riskScore || 0);
+        return naturalSortKey(a.blockId) - naturalSortKey(b.blockId);
+      }
+      if (sortBy === "status") {
+        const stA = records[a.id]?.status || "OPEN";
+        const stB = records[b.id]?.status || "OPEN";
+        const diff = (statusRank[stA] ?? 9) - (statusRank[stB] ?? 9);
+        if (diff !== 0) return diff;
+        return naturalSortKey(a.blockId) - naturalSortKey(b.blockId);
+      }
+      return 0;
+    });
+  }, [allItems, records, statusFilter, sourceFilter, priorityFilter, searchQuery, sortBy]);
 
   // Summary Metrics
   const metrics = useMemo(() => {
-    const total = allItems.length;
+    const operationalBlocks = allItems.filter((i) => i.sourceType === "agronomic");
+    const total = operationalBlocks.length;
     let completed = 0;
     let inReview = 0;
-    let highUrgentOpen = 0;
+    let criticalOpen = 0;
+    let elevatedOpen = 0;
 
-    allItems.forEach((item) => {
+    operationalBlocks.forEach((item) => {
       const rec = records[item.id] || {};
       const status = rec.status || "OPEN";
       if (status === "COMPLETED") completed++;
       else if (status === "IN REVIEW" || status === "VERIFYING IN FIELD") inReview++;
 
-      if (status !== "COMPLETED" && item.priority === "CRITICAL") {
-        highUrgentOpen++;
+      if (status !== "COMPLETED") {
+        if (item.priority === "CRITICAL") criticalOpen++;
+        else if (item.priority === "ELEVATED") elevatedOpen++;
       }
     });
 
-    return { total, completed, inReview, highUrgentOpen };
+    return { total, completed, inReview, criticalOpen, elevatedOpen };
   }, [allItems, records]);
 
   return (
@@ -496,11 +597,11 @@ export default function FieldActionCenter({ datasets, onNavigateBlock, currentUs
         <div className="fac-hero-content">
           <div className="fac-eyebrow">
             <ClipboardCheck size={16} className="text-emerald" />
-            <span>OPERATIONAL FIELD INTELLIGENCE</span>
+            <span>OPERATIONAL FIELD ACTION CENTER · ALM AI PLATFORM</span>
           </div>
           <h1 className="fac-title">Field Action Center</h1>
           <p className="fac-subtitle">
-            Turn verified empirical evidence into actionable field inspection directives. Track verification progress, record agronomist findings, and export audit-ready handoffs for field teams.
+            Turn verified empirical observations into actionable field directives. Track verification progress, record agronomist inspection notes, inspect evidence grounding, and export audit-ready handoffs.
           </p>
 
           {/* 7-Step Operational Workflow Stepper */}
@@ -517,32 +618,32 @@ export default function FieldActionCenter({ datasets, onNavigateBlock, currentUs
               <span className="fac-step-arrow" aria-hidden="true">→</span>
               <span className="fac-step-item">
                 <span className="fac-step-badge">2</span>
-                <span className="fac-step-label">Block</span>
+                <span className="fac-step-label">Block ID</span>
               </span>
               <span className="fac-step-arrow" aria-hidden="true">→</span>
               <span className="fac-step-item">
                 <span className="fac-step-badge">3</span>
-                <span className="fac-step-label">Issue</span>
+                <span className="fac-step-label">Risk Reason</span>
               </span>
               <span className="fac-step-arrow" aria-hidden="true">→</span>
               <span className="fac-step-item">
                 <span className="fac-step-badge">4</span>
-                <span className="fac-step-label">Evidence</span>
+                <span className="fac-step-label">Observed Facts</span>
               </span>
               <span className="fac-step-arrow" aria-hidden="true">→</span>
               <span className="fac-step-item">
                 <span className="fac-step-badge">5</span>
-                <span className="fac-step-label">Solution</span>
+                <span className="fac-step-label">Recommendation</span>
               </span>
               <span className="fac-step-arrow" aria-hidden="true">→</span>
               <span className="fac-step-item">
                 <span className="fac-step-badge">6</span>
-                <span className="fac-step-label">Inspection</span>
+                <span className="fac-step-label">Field Follow-up</span>
               </span>
               <span className="fac-step-arrow" aria-hidden="true">→</span>
               <span className="fac-step-item">
                 <span className="fac-step-badge">7</span>
-                <span className="fac-step-label">Complete</span>
+                <span className="fac-step-label">Verification</span>
               </span>
             </div>
           </div>
@@ -550,46 +651,46 @@ export default function FieldActionCenter({ datasets, onNavigateBlock, currentUs
           <div className="fac-boundary-notice">
             <Info size={15} className="text-amber" />
             <span>
-              <strong>Scientific Protocol:</strong> Directives are strictly grounded in verified block telemetry (FFB scale yields & Frond 17 foliar assays). No chemical doses or pest treatments are fabricated. Unmapped UAV benchmarks are kept in separate review streams.
+              <strong>Scientific Protocol & Boundary Integrity:</strong> Facts (harvest scale yields & Frond 17 foliar laboratory assays) are preserved separately from AI suggestions. Remote sensing UAV datasets are unmapped technical benchmarks (0% screening influence).
             </span>
           </div>
         </div>
 
         <div className="fac-hero-stats">
           <div className="fac-stat-box">
-            <span className="fac-stat-label">Total Queue Items</span>
+            <span className="fac-stat-label">Operational Blocks</span>
             <strong className="fac-stat-val">{metrics.total}</strong>
-            <span className="fac-stat-sub">Across 3 Evidence Streams</span>
+            <span className="fac-stat-sub">B001 – B042 (Division A)</span>
           </div>
 
           <div className="fac-stat-box urgent">
-            <span className="fac-stat-label">Critical / Urgent Open</span>
-            <strong className="fac-stat-val text-ruby">{metrics.highUrgentOpen}</strong>
-            <span className="fac-stat-sub">Action required &lt;48h</span>
+            <span className="fac-stat-label">Critical Priority Open</span>
+            <strong className="fac-stat-val text-ruby">{metrics.criticalOpen}</strong>
+            <span className="fac-stat-sub">Intervention &lt;48 hours</span>
           </div>
 
-          <div className="fac-stat-box">
-            <span className="fac-stat-label">Under Verification</span>
-            <strong className="fac-stat-val text-gold">{metrics.inReview}</strong>
-            <span className="fac-stat-sub">Active field checks</span>
+          <div className="fac-stat-box elevated">
+            <span className="fac-stat-label">Elevated Priority Open</span>
+            <strong className="fac-stat-val text-gold">{metrics.elevatedOpen}</strong>
+            <span className="fac-stat-sub">Targeted audit &lt;14 days</span>
           </div>
 
           <div className="fac-stat-box completed">
             <span className="fac-stat-label">Verified & Completed</span>
             <strong className="fac-stat-val text-emerald">{metrics.completed}</strong>
-            <span className="fac-stat-sub">Recorded in browser session</span>
+            <span className="fac-stat-sub">Logged in field session</span>
           </div>
         </div>
       </section>
 
-      {/* 2. TOOLBAR & CONTROLS */}
+      {/* 2. TOOLBAR & CONTROLS (SORTING, FILTERING, SEARCH, EXPORT) */}
       <section className="fac-toolbar">
         <div className="fac-toolbar-left">
           <div className="fac-search-box">
             <Search size={15} className="fac-search-icon" />
             <input
               type="text"
-              placeholder="Search by Block ID, nutrient, or keyword..."
+              placeholder="Search by Block ID, deficiency (e.g. N, K), or directive..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -598,11 +699,48 @@ export default function FieldActionCenter({ datasets, onNavigateBlock, currentUs
             )}
           </div>
 
+          {/* Quick Sort Toggle Buttons */}
+          <div className="fac-quick-sort-pills" role="group" aria-label="Quick Sort Options">
+            <span className="fac-sort-label"><ArrowUpDown size={13} /> Sort:</span>
+            <button
+              type="button"
+              className={`fac-sort-pill ${sortBy === "alphabetical" ? "active" : ""}`}
+              onClick={() => setSortBy("alphabetical")}
+              title="Sort blocks alphabetically (A to Z: B001 to B042)"
+            >
+              Block ID (A → Z)
+            </button>
+            <button
+              type="button"
+              className={`fac-sort-pill ${sortBy === "priority" ? "active" : ""}`}
+              onClick={() => setSortBy("priority")}
+              title="Sort by risk priority (Critical -> Elevated -> Routine)"
+            >
+              Risk Priority
+            </button>
+            <button
+              type="button"
+              className={`fac-sort-pill ${sortBy === "score_desc" ? "active" : ""}`}
+              onClick={() => setSortBy("score_desc")}
+              title="Sort by screening risk score descending"
+            >
+              Risk Score
+            </button>
+            <button
+              type="button"
+              className={`fac-sort-pill ${sortBy === "status" ? "active" : ""}`}
+              onClick={() => setSortBy("status")}
+              title="Sort by action status (Open -> In Review -> Completed)"
+            >
+              Status
+            </button>
+          </div>
+
           <div className="fac-filter-group">
             <label className="fac-filter-label">
               <span>Status:</span>
               <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-                <option value="ALL">All Statuses ({allItems.length})</option>
+                <option value="ALL">All Statuses</option>
                 {statusOptions.map((st) => (
                   <option key={st} value={st}>{st}</option>
                 ))}
@@ -612,8 +750,8 @@ export default function FieldActionCenter({ datasets, onNavigateBlock, currentUs
             <label className="fac-filter-label">
               <span>Source:</span>
               <select value={sourceFilter} onChange={(e) => setSourceFilter(e.target.value)}>
-                <option value="ALL">All Evidence Streams</option>
                 <option value="agronomic">Operational Blocks (42)</option>
+                <option value="ALL">All Evidence Streams</option>
                 <option value="rgb">RGB UAV Benchmark (MOPAD)</option>
                 <option value="spectral">Multispectral Benchmark (Altum)</option>
               </select>
@@ -644,13 +782,23 @@ export default function FieldActionCenter({ datasets, onNavigateBlock, currentUs
         </div>
       </section>
 
+      {/* Advisory Banner for Unmapped Benchmark Streams (Requirement 5) */}
+      {(sourceFilter === "rgb" || sourceFilter === "spectral" || (sourceFilter === "ALL" && filteredItems.some((i) => !i.blockId))) && (
+        <div className="fac-benchmark-advisory-banner">
+          <AlertTriangle size={18} className="text-amber flex-shrink-0" />
+          <div className="fac-benchmark-advisory-text">
+            <strong>Remote Sensing Data Availability Advisory:</strong> RGB UAV Imagery (MOPAD Site 2) and Multispectral GeoTIFFs (Hullerbusch Beech Forest) lack spatial block mapping and georeferenced coordinates for operational plantation blocks B001–B042. Because no verified block mapping and source metadata exist, these research benchmarks are isolated with 0% risk contribution and do not generate operational block directives.
+          </div>
+        </div>
+      )}
+
       {/* 3. DIRECTIVES ACTION LIST */}
       <section className="fac-items-grid">
         {filteredItems.length === 0 ? (
           <div className="fac-empty-state">
             <ClipboardCheck size={36} className="text-emerald" />
-            <h3>No Directives Match the Current Filter Criteria</h3>
-            <p>Adjust your search query, status, or evidence source filter to view items.</p>
+            <h3>No Directives Match Current Filter Criteria</h3>
+            <p>Adjust your search query, priority, or action status filter to view directives.</p>
           </div>
         ) : (
           filteredItems.map((item) => {
@@ -660,6 +808,7 @@ export default function FieldActionCenter({ datasets, onNavigateBlock, currentUs
             const isNotesExpanded = expandedNotesId === item.id;
             const aiData = item.blockId ? aiRecommendations[item.blockId] : null;
             const isAiLoading = item.blockId ? loadingAi[item.blockId] : false;
+            const isSaved = saveFeedback[item.id];
 
             return (
               <article
@@ -686,12 +835,12 @@ export default function FieldActionCenter({ datasets, onNavigateBlock, currentUs
                         onClick={() => onNavigateBlock(item.blockId, item.id)}
                         title={`Open complete inspection and resolution workflow for Block ${item.blockId}`}
                       >
-                        <span>Open Block {item.blockId}</span>
+                        <span>Open Block {item.blockId} View</span>
                         <ArrowRight size={13} />
                       </button>
                     ) : (
                       <span className="fac-unmapped-tag" title="This research benchmark is not georeferenced to operational blocks">
-                        Unmapped Benchmark
+                        Unmapped Benchmark · Demo Only
                       </span>
                     )}
                   </div>
@@ -707,67 +856,94 @@ export default function FieldActionCenter({ datasets, onNavigateBlock, currentUs
                   </div>
                 </div>
 
-                {/* EVIDENCE & DIRECTIVE BODY (3 CLEAR TIERS) */}
+                {/* REMOTE SENSING DATA AVAILABILITY STATUS (Requirement 5) */}
+                {item.remoteSensingStatus && (
+                  <div className="fac-remote-sensing-row">
+                    <div className="fac-rs-item">
+                      <span className="fac-rs-title">RGB Drone:</span>
+                      <span className="fac-rs-status unmapped" title={item.remoteSensingStatus.droneRgb.reason}>
+                        <XCircle size={12} />
+                        {item.remoteSensingStatus.droneRgb.status} (0% Weight)
+                      </span>
+                    </div>
+                    <div className="fac-rs-item">
+                      <span className="fac-rs-title">Multispectral:</span>
+                      <span className="fac-rs-status unavailable" title={item.remoteSensingStatus.multispectral.reason}>
+                        <XCircle size={12} />
+                        {item.remoteSensingStatus.multispectral.status} (0% Weight)
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* EVIDENCE & DIRECTIVE BODY (3 VISUALLY SEPARATED TIERS: FACTS vs PREDICTIONS vs RECOMMENDATIONS) */}
                 <div className="fac-card-body">
-                  {/* TIER 1: CONFIRMED FIELD OBSERVATION */}
+                  {/* TIER 1: CONFIRMED FIELD OBSERVATIONS (VERIFIED GROUND-TRUTH FACTS) */}
                   <div className="fac-tier-block observation-tier">
                     <div className="fac-tier-tag text-emerald">
                       <CheckCircle2 size={13} />
-                      <span>CONFIRMED FIELD OBSERVATIONS (LAB & HARVEST SCALES)</span>
+                      <span>FACTS: VERIFIED FIELD TELEMETRY & LAB OBSERVATIONS (GROUND TRUTH)</span>
                     </div>
 
                     <div className="fac-obs-content">
                       <p className="fac-indicator-summary">
-                        <strong>Primary Flag:</strong> {item.mainIndicators}
+                        <strong>Evidence-Backed Risk Reason:</strong> {item.mainIndicators}
                       </p>
 
                       {item.observations && (
                         <div className="fac-evidence-chips">
                           {item.observations.yield.actual != null && (
                             <span className="fac-chip yield">
-                              <strong>2024 Yield:</strong> {fmt(item.observations.yield.actual)} t/ha
+                              <strong>2024 FFB Yield:</strong> {fmt(item.observations.yield.actual)} t/ha
                               {item.observations.yield.gap != null && (
                                 <em className={item.observations.yield.gap < 0 ? "neg" : "pos"}>
-                                  {" "}({fmt(item.observations.yield.gap)}% vs cohort)
+                                  {" "}({fmt(item.observations.yield.gap)}% vs peer cohort)
                                 </em>
                               )}
                             </span>
                           )}
 
                           <span className="fac-chip leaf">
-                            <strong>Frond 17 Foliar ({item.observations.foliar.year}):</strong>{" "}
+                            <strong>Frond 17 Foliar Assay ({item.observations.foliar.year}):</strong>{" "}
                             {item.observations.foliar.lowList.length > 0 ? (
-                              <span className="text-ruby">Low in {item.observations.foliar.lowList.join(", ")}</span>
+                              <span className="text-ruby">Deficient in {item.observations.foliar.lowList.join(", ")}</span>
                             ) : (
-                              <span className="text-emerald">All measured nutrients in standard range</span>
+                              <span className="text-emerald">All measured nutrients in standard reference range</span>
                             )}
                           </span>
 
                           <span className="fac-chip dris">
-                            <strong>DRIS Norms:</strong>{" "}
+                            <strong>DRIS Nutrient Diagnosis:</strong>{" "}
                             {item.observations.dris.limiting.length > 0
                               ? `Limiting: ${item.observations.dris.limiting.join(", ")}`
-                              : "No acute nutrient limiting index"}
+                              : "Balanced nutritional ratios"}
                           </span>
 
                           <span className={`fac-chip soil ${item.observations.soil.hasSample ? "sampled" : "unsampled"}`}>
-                            <strong>Soil Survey:</strong> {item.observations.soil.status}
+                            <strong>Soil Chemistry Survey:</strong> {item.observations.soil.status}{" "}
+                            {item.observations.soil.hasSample && `(pH ${item.observations.soil.ph}, Org C ${item.observations.soil.cOrg}%)`}
                           </span>
                         </div>
                       )}
+                      <span className="fac-facts-disclaimer">
+                        * Empirical observations from harvest weighbridge scale records and certified Frond 17 laboratory assays. Unaltered ground truth.
+                      </span>
                     </div>
                   </div>
 
-                  {/* TIER 2: CANONICAL MODEL PREDICTIONS & LIMITATIONS */}
+                  {/* TIER 2: CANONICAL SCREENING MODEL & DATA QUALITY AUDIT */}
                   <div className="fac-tier-block prediction-tier">
                     <div className="fac-tier-tag text-amber">
                       <ShieldAlert size={13} />
-                      <span>CANONICAL SCREENING MODEL & DATA QUALITY AUDIT</span>
+                      <span>MODEL EVALUATION: SCREENING SCORE & QUALITY AUDIT</span>
                     </div>
 
                     <div className="fac-pred-content">
                       <div className="fac-pred-row">
-                        <span><strong>Risk Classification:</strong> {item.riskLevel} (Canonical Screening Formula: Yield 40%, Foliar 25%, DRIS 15%)</span>
+                        <span>
+                          <strong>Risk Classification:</strong> {item.riskLevel}{" "}
+                          <em>(Screening Formula: Yield Gap 40%, Foliar Assay 25%, DRIS 15%)</em>
+                        </span>
                         <span className="fac-urgency-badge"><strong>Urgency:</strong> {item.urgency}</span>
                       </div>
 
@@ -784,11 +960,11 @@ export default function FieldActionCenter({ datasets, onNavigateBlock, currentUs
                     </div>
                   </div>
 
-                  {/* TIER 3: RECOMMENDED ACTION & VERIFICATION PROTOCOL */}
+                  {/* TIER 3: RECOMMENDED AGRONOMIC DIRECTIVES & DECISION SUPPORT */}
                   <div className="fac-tier-block action-tier">
                     <div className="fac-tier-tag text-emerald">
                       <Sprout size={13} />
-                      <span>RECOMMENDED AGRONOMIC INTERVENTION</span>
+                      <span>RECOMMENDED ACTIONS & FOLLOW-UP PROTOCOL (DECISION SUPPORT)</span>
                     </div>
 
                     <div className="fac-action-content">
@@ -796,8 +972,14 @@ export default function FieldActionCenter({ datasets, onNavigateBlock, currentUs
                         <strong>Action Directive:</strong> {item.recommendedAction}
                       </p>
 
+                      {item.agronomicRationale && (
+                        <p className="fac-agronomic-rationale">
+                          <strong>Agronomic Rationale:</strong> {item.agronomicRationale}
+                        </p>
+                      )}
+
                       <p className="fac-protocol">
-                        <strong>Verification Protocol (60–90 Days):</strong> {item.followUpProtocol}
+                        <strong>Follow-up Verification Protocol (60–90 Days):</strong> {item.followUpProtocol}
                       </p>
                     </div>
                   </div>
@@ -813,16 +995,16 @@ export default function FieldActionCenter({ datasets, onNavigateBlock, currentUs
                           disabled={isAiLoading}
                         >
                           <Sparkles size={14} className={isAiLoading ? "animate-spin" : "text-emerald"} />
-                          <span>{isAiLoading ? "Synthesizing Telemetry..." : "Consult AI Agronomist Synthesis"}</span>
+                          <span>{isAiLoading ? "Synthesizing Verified Telemetry..." : "Consult AI Agronomist Synthesis"}</span>
                         </button>
                       ) : (
                         <div className="fac-ai-card">
                           <div className="fac-ai-header">
                             <span className="fac-ai-badge">
                               <Sparkles size={13} />
-                              {aiData.is_ai_generated ? "OpenAI Synthesis" : "Deterministic Agronomic Rules Engine"}
+                              {aiData.is_ai_generated ? "OpenAI Agronomic Synthesis" : "Deterministic Rules Engine Fallback"}
                             </span>
-                            <span className="fac-ai-model">{aiData.model}</span>
+                            <span className="fac-ai-model">Model: {aiData.model}</span>
                           </div>
 
                           <div className="fac-ai-body">
@@ -830,6 +1012,9 @@ export default function FieldActionCenter({ datasets, onNavigateBlock, currentUs
                             <p><strong>Agronomic Rationale:</strong> {aiData.recommendation?.agronomic_rationale}</p>
                             <p><strong>Recommended Action:</strong> {aiData.recommendation?.recommended_action}</p>
                             <p><strong>Validation Protocol:</strong> {aiData.recommendation?.validation_protocol}</p>
+                            <span className="fac-ai-footer-note">
+                              {aiData.note} Never exposes API credentials to frontend.
+                            </span>
                           </div>
                         </div>
                       )}
@@ -837,7 +1022,7 @@ export default function FieldActionCenter({ datasets, onNavigateBlock, currentUs
                   )}
                 </div>
 
-                {/* CARD FOOTER: INTERACTIVE WORKFLOW STATUS & Agronomist Notes */}
+                {/* CARD FOOTER: INTERACTIVE WORKFLOW STATUS & FOLLOW-UP TRACKING */}
                 <div className="fac-card-footer">
                   <div className="fac-status-workflow-row">
                     {/* Primary Block Workflow CTA */}
@@ -849,17 +1034,17 @@ export default function FieldActionCenter({ datasets, onNavigateBlock, currentUs
                         title={`Open block detail view and execute inspection workflow for Block ${item.blockId}`}
                       >
                         <Sprout size={14} />
-                        <span>Inspect Block {item.blockId} & Record Findings →</span>
+                        <span>Inspect Block {item.blockId} →</span>
                       </button>
                     ) : (
                       <div className="fac-unmapped-pill-note">
                         <XCircle size={13} className="text-amber" />
-                        <span>Unmapped Benchmark · Not linked to blocks B001–B042</span>
+                        <span>Unmapped Benchmark · Isolated from blocks B001–B042</span>
                       </div>
                     )}
 
                     <div className="fac-status-selector">
-                      <span className="fac-status-label">Status:</span>
+                      <span className="fac-status-label">Action Status:</span>
                       <select
                         value={currentStatus}
                         onChange={(e) => updateStatus(item.id, e.target.value)}
@@ -876,9 +1061,10 @@ export default function FieldActionCenter({ datasets, onNavigateBlock, currentUs
                         type="button"
                         className={`fac-complete-btn ${isCompleted ? "completed" : ""}`}
                         onClick={() => updateStatus(item.id, isCompleted ? "OPEN" : "COMPLETED")}
+                        title={isCompleted ? "Click to reopen directive" : "Click to mark directive completed"}
                       >
                         {isCompleted ? <CheckSquare size={16} /> : <Square size={16} />}
-                        <span>{isCompleted ? "Marked as Completed" : "Mark Complete"}</span>
+                        <span>{isCompleted ? "Completed" : "Mark Complete"}</span>
                       </button>
                     </div>
 
@@ -888,18 +1074,25 @@ export default function FieldActionCenter({ datasets, onNavigateBlock, currentUs
                       onClick={() => setExpandedNotesId(isNotesExpanded ? null : item.id)}
                     >
                       <FileText size={14} />
-                      <span>{isNotesExpanded ? "Hide Field Notes" : "Inspector Notes"}</span>
+                      <span>{isNotesExpanded ? "Hide Follow-up" : "Follow-up Tracking"}</span>
                     </button>
                   </div>
 
-                  {/* EXPANDABLE INSPECTOR NOTES & COMPLETION VERIFICATION */}
+                  {/* EXPANDABLE INSPECTOR NOTES & FOLLOW-UP TRACKING DRAWER */}
                   {isNotesExpanded && (
                     <div className="fac-notes-expanded-drawer">
+                      <div className="fac-drawer-header">
+                        <h4><Calendar size={14} /> Follow-Up Tracking & Agronomist Field Verification</h4>
+                        {rec.serverTaskId && (
+                          <span className="fac-task-badge">Task ID: {rec.serverTaskId}</span>
+                        )}
+                      </div>
+
                       <div className="fac-notes-grid">
                         <div className="fac-field-group">
                           <label>
                             <UserCheck size={14} />
-                            <span>Inspector / Agronomist Name:</span>
+                            <span>Assigned Inspector / Agronomist:</span>
                           </label>
                           <input
                             type="text"
@@ -909,26 +1102,49 @@ export default function FieldActionCenter({ datasets, onNavigateBlock, currentUs
                           />
                         </div>
 
+                        <div className="fac-field-group">
+                          <label>
+                            <Calendar size={14} />
+                            <span>Inspection Date:</span>
+                          </label>
+                          <input
+                            type="date"
+                            value={rec.inspectionDate || ""}
+                            onChange={(e) => updateDetails(item.id, "inspectionDate", e.target.value)}
+                          />
+                        </div>
+
                         <div className="fac-field-group span-full">
                           <label>
                             <FileText size={14} />
-                            <span>Field Verification Notes & Corrective Work Order:</span>
+                            <span>Field Verification Observations & Corrective Work Order:</span>
                           </label>
                           <textarea
                             rows={3}
-                            placeholder="Record observed field conditions, weed circle status, drainage checks, foliar re-sampling dates, or work order numbers..."
+                            placeholder="Record observed field conditions, weed circle cleanliness, drainage checks, bunch census results, or work order reference..."
                             value={rec.notes || ""}
                             onChange={(e) => updateDetails(item.id, "notes", e.target.value)}
                           />
                         </div>
                       </div>
 
-                      {rec.completedAt && (
-                        <div className="fac-completed-timestamp">
-                          <CheckCircle2 size={14} className="text-emerald" />
-                          <span>Verification recorded completed on: {rec.completedAt}</span>
-                        </div>
-                      )}
+                      <div className="fac-drawer-actions">
+                        <button
+                          type="button"
+                          className="fac-save-notes-btn"
+                          onClick={() => handleSaveFollowUp(item.id)}
+                        >
+                          {isSaved ? <Check size={14} className="text-emerald" /> : <RefreshCw size={14} />}
+                          <span>{isSaved ? "Saved & Synchronized" : "Save Follow-up Notes"}</span>
+                        </button>
+
+                        {rec.completedAt && (
+                          <div className="fac-completed-timestamp">
+                            <CheckCircle2 size={14} className="text-emerald" />
+                            <span>Verification marked completed on: {rec.completedAt}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>

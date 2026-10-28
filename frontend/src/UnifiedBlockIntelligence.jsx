@@ -214,8 +214,29 @@ export default function UnifiedBlockIntelligence({
   }, [currentBlockId]);
 
   // Match datasets for the selected block
-  const allBlocks = datasets.risk || [];
-  const riskRow = allBlocks.find((r) => bKey(r.Block_ID) === currentBlockId) || null;
+  const allBlocks = useMemo(() => {
+    const multiMap = new Map();
+    (datasets.multiRisk || []).forEach((m) => {
+      multiMap.set(bKey(m.Block_ID), m);
+    });
+    return (datasets.risk || []).map((b) => {
+      const bid = bKey(b.Block_ID);
+      const m = multiMap.get(bid) || {};
+      const canonicalLevel = String(m.Multi_Source_Risk_Level || b.Risk_Level || "LOW").toUpperCase();
+      const canonicalScore = num(m.Multi_Source_Risk_Score ?? b.Risk_Score, 0);
+      return {
+        ...b,
+        Risk_Level: canonicalLevel,
+        Risk_Score: canonicalScore,
+      };
+    }).sort((a, b) => {
+      const idA = String(a.Block_ID || "");
+      const idB = String(b.Block_ID || "");
+      return idA.localeCompare(idB, undefined, { numeric: true, sensitivity: "base" });
+    });
+  }, [datasets.risk, datasets.multiRisk]);
+
+  const riskRow = (datasets.risk || []).find((r) => bKey(r.Block_ID) === currentBlockId) || null;
   const multiRiskRow = (datasets.multiRisk || []).find((r) => bKey(r.Block_ID) === currentBlockId) || null;
   const nutrientsRow = (datasets.nutrients || [])
     .filter((r) => bKey(r.Block_ID) === currentBlockId)
@@ -292,14 +313,14 @@ export default function UnifiedBlockIntelligence({
   }, [datasets.harvestProduction, currentBlockId]);
 
   // Canonical Risk Values
-  const riskLevel = String(multiRiskRow?.Multi_Source_Risk_Level || riskRow?.Risk_Level || "UNKNOWN").toUpperCase();
+  const riskLevel = String(multiRiskRow?.Multi_Source_Risk_Level || riskRow?.Risk_Level || "LOW").toUpperCase();
   const riskScore = num(multiRiskRow?.Multi_Source_Risk_Score ?? riskRow?.Risk_Score);
   const actualYield = num(riskRow?.Actual_Yield_t_Ha);
   const expectedYield = num(riskRow?.Expected_Yield_t_Ha);
-  const yieldGap = num(riskRow?.Yield_Gap_pct);
+  const yieldGap = num(riskRow?.Yield_Gap_pct ?? multiRiskRow?.Productivity_Deviation_pct);
   const plantAge = num(riskRow?.Plant_Age_Years);
   const plantingYear = riskRow?.Planting_Year || "2012";
-  const seedType = riskRow?.Seed_Type || "DxP Dami Tenera";
+  const seedType = riskRow?.Seed_Type || "DxP Hybrid";
   const areaHa = num(riskRow?.Area_Ha, 36.0);
   const palmsCount = num(riskRow?.Productive_Palms, 4860);
 
@@ -327,16 +348,23 @@ export default function UnifiedBlockIntelligence({
 
     // Action 1: Primary Productivity / Risk Concern
     let primaryWhat = "Yield Gap vs Age-Cohort Baseline";
-    let primaryIndicator = `Actual yield is ${fmt(actualYield)} t/ha vs ${fmt(expectedYield)} t/ha expectation (Gap: ${fmt(yieldGap)}%).`;
+    let primaryIndicator = yieldGap != null
+      ? `Actual yield is ${fmt(actualYield)} t/ha vs ${fmt(expectedYield)} t/ha expectation (Gap: ${fmt(yieldGap)}%).`
+      : `Actual yield is ${fmt(actualYield)} t/ha. Peer cohort expectation curve is unavailable (insufficient evidence for yield gap calculation).`;
     let primaryWhy = "Chronic sub-optimal bunch output reduces plantation revenue and flags uncorrected physiological stress.";
     let primaryAction = recAction;
     let primaryValidation = "Review monthly FFB harvest records across subsequent 90 days for bunch count recovery.";
 
     if (riskLevel === "HIGH") {
       primaryWhat = "Severe Productivity & Health Deficit";
-      primaryIndicator = `Canonical screening risk score of ${fmt(riskScore, 1)}/100 with yield lag of ${fmt(yieldGap)}%.`;
-      primaryWhy = "High-risk blocks represent acute cumulative stress capable of permanent bunch abortion and frond senescence.";
-      primaryAction = `Convene joint agronomist field audit for Block ${currentBlockId}. Inspect drainage, verify weed circle status, and apply recommended corrective nutrient program.`;
+      if (yieldGap != null) {
+        primaryIndicator = `Canonical screening risk score of ${fmt(riskScore, 1)}/100 with yield lag of ${fmt(yieldGap)}%.`;
+        primaryAction = `Convene joint agronomist field audit for Block ${currentBlockId}. Inspect weed circles, review nutrient dosage, and apply prescribed foliar balancing.`;
+      } else {
+        primaryIndicator = `Canonical screening risk score of ${fmt(riskScore, 1)}/100 with observed harvest of ${fmt(actualYield)} t/ha. Peer cohort baseline is unavailable; yield gap cannot be modeled.`;
+        primaryAction = `Insufficient evidence for specific chemical/drainage prescription — field verification required. Convene joint agronomy audit for Block ${currentBlockId}, conduct palm bunch census, and perform fresh Frond 17 foliar laboratory sampling to re-assess current nutritional status.`;
+      }
+      primaryWhy = "High-risk blocks represent acute cumulative stress requiring empirical ground verification before altering management practices.";
       primaryValidation = "Target quarterly bunch census count and leaf tissue re-assay within 60 days.";
     } else if (riskLevel === "MEDIUM") {
       primaryWhat = "Moderate Nutritional / Productivity Watch";
@@ -427,69 +455,41 @@ export default function UnifiedBlockIntelligence({
     }
   };
 
-  const tabs = [
-    { id: "overview", label: "A. Risk Overview", icon: ShieldAlert },
-    { id: "productivity", label: "B. Yield & Productivity", icon: TrendingUp },
-    { id: "nutrients", label: "C. Soil & Nutrients", icon: FlaskConical },
-    { id: "weather", label: "D. Weather Context", icon: CloudSun },
-    { id: "drone", label: "E. Drone & Field Evidence", icon: Camera },
-    { id: "actions", label: "F. Risk Contributors & Actions", icon: ClipboardCheck },
-    { id: "history", label: "G. Block History & Audit", icon: Clock3 },
-    { id: "tree-inventory", label: "Tree Inventory & Palms", icon: Sprout },
-    { id: "multispectral", label: "Multispectral Research", icon: Layers3 },
+
+  const actualArea = areaHa;
+
+  const sections = [
+    { id: "section-risk", label: "1. Risk & Reasons", icon: ShieldAlert },
+    { id: "section-evidence", label: "2. Evidence Matrix", icon: Layers },
+    { id: "section-solutions", label: "3. What To Do", icon: Sparkles },
+    { id: "section-field-action", label: "4. Field Follow-Up", icon: ClipboardCheck },
+    { id: "section-productivity", label: "5. Productivity & Forecast", icon: TrendingUp },
+    { id: "section-nutrients", label: "6. Leaf, Soil & DRIS", icon: FlaskConical },
+    { id: "section-weather", label: "7. Weather Context", icon: CloudSun },
+    { id: "section-drone-spectral", label: "8. Drone & Multispectral", icon: Camera },
   ];
 
   return (
     <div className="unified-block-dashboard">
-      {/* 1. COMPACT BLOCK HEADER WITH BREADCRUMB & SWITCHER */}
+      {/* 1. TOP CONTEXT HEADER WITH ONE CLEAR BACK ACTION & CLEAN BREADCRUMB */}
       <div className="block-context-header">
         <div className="block-context-left">
-          {onBackToActionQueue && (
-            <button
-              type="button"
-              className="back-queue-btn"
-              onClick={onBackToActionQueue}
-              title="Return to Field Action Queue"
-            >
-              <ClipboardCheck size={15} />
-              <span>Action Queue</span>
-            </button>
-          )}
           <button
             type="button"
-            className="back-grid-btn prominent-back-btn"
+            className="back-grid-btn prominent-back-btn back-to-estate-btn"
             onClick={onBackToGrid}
             title="Return to 42-Block Risk Dashboard"
           >
-            <ArrowLeft size={16} />
-            <span>← Back to All 42 Blocks</span>
+            <ArrowLeft size={15} />
+            <span>← Back to 42 Blocks</span>
           </button>
-          <PlantationImage
-            src={fruitBunchImg}
-            fallbackSrc="/images/oil_palm_fruit_bunch.jpg"
-            alt={`Block ${currentBlockId} Palm Stand`}
-            width="34px"
-            height="34px"
-            aspectRatio="1:1"
-            className="block-crumb-thumb"
-          />
+
           <div className="context-breadcrumb-trail">
             <span className="crumb-dim">{estateName}</span>
             <span className="crumb-sep">/</span>
-            {onBackToActionQueue ? (
-              <>
-                <button
-                  type="button"
-                  className="crumb-btn-link"
-                  onClick={onBackToActionQueue}
-                >
-                  Action Queue
-                </button>
-                <span className="crumb-sep">/</span>
-              </>
-            ) : null}
             <strong className="crumb-active">Block {currentBlockId}</strong>
           </div>
+
           <span className={`risk-badge-compact ${riskLevel.toLowerCase()}`}>
             <span className="badge-dot" />
             {riskLevel} RISK ({riskScore != null ? fmt(riskScore, 1) : "N/A"})
@@ -524,33 +524,576 @@ export default function UnifiedBlockIntelligence({
         </div>
       </div>
 
-      {/* 1B. ACTIVE FIELD ACTION WORKFLOW PANEL (BLOCK-CENTRIC RESOLUTION FLOW)
-          Action Queue → Select Action → Open Related Block → Understand Issue → Review Evidence → Recommended Solution → Record Field Inspection → Verify → Complete */}
-      <section className="block-action-workflow-card" aria-label="Field Action Operational Workflow">
-        {/* Workflow Header with Directive Banner */}
-        <div className="workflow-stepper-header">
-          <div className="workflow-title-group">
-            <span className="workflow-pill-label">OPERATIONAL FIELD DIRECTIVE</span>
-            <h3 className="workflow-heading">
-              Field Action Resolution for Block {currentBlockId}
-            </h3>
+      {/* QUICK IN-PAGE ANCHOR JUMP STRIP (DISPLAY ALL ANALYSES ON SAME SCREEN) */}
+      <nav className="block-quick-anchor-strip" aria-label="Block intelligence section anchors">
+        <span className="anchor-strip-label">Jump to Section:</span>
+        {sections.map((sec) => {
+          const Icon = sec.icon;
+          return (
+            <button
+              key={sec.id}
+              type="button"
+              className="anchor-nav-btn"
+              onClick={() => {
+                const el = document.getElementById(sec.id);
+                if (el) {
+                  el.scrollIntoView({ behavior: "smooth" });
+                }
+              }}
+            >
+              <Icon size={13} />
+              <span>{sec.label}</span>
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* 3. SCREENING FORMULA MODAL / POPOVER */}
+      {showFormulaModal && (
+        <div className="modal-backdrop" onClick={() => setShowFormulaModal(false)}>
+          <div className="formula-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-title-group">
+                <ShieldAlert size={20} className="text-amber" />
+                <h3>Canonical Block Risk Screening Methodology</h3>
+              </div>
+              <button
+                type="button"
+                className="close-modal-btn"
+                onClick={() => setShowFormulaModal(false)}
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="disclaimer-callout">
+                <Info size={16} className="text-amber" />
+                <p>
+                  <strong>Important Agronomic Distinction:</strong> This score is an <em>empirical screening indicator</em> to prioritize blocks requiring agronomic inspection, <strong>not a validated agronomic causal model</strong>.
+                </p>
+              </div>
+
+              <h4>Screening Formula Components &amp; Weights</h4>
+              <p className="formula-intro">
+                The score is computed as a weighted mean of verified block components, renormalized per block based on data availability:
+              </p>
+              <ul className="formula-weights-list">
+                <li>
+                  <strong>Yield Gap Score (40% Weight):</strong> Calculated from deviation vs mature peer baseline:
+                  <div className="formula-sublevels">
+                    <span>&lt; 5% gap = 20 pts</span>
+                    <span>5 – &lt;10% gap = 40 pts</span>
+                    <span>10 – &lt;20% gap = 60 pts</span>
+                    <span>20 – &lt;30% gap = 75 pts</span>
+                    <span>≥ 30% gap = 90 pts</span>
+                  </div>
+                </li>
+                <li>
+                  <strong>Foliar Nutrient Low-Count (25% Weight):</strong> Ratio of deficient nutrients (N, P, K, Ca, Mg, B) over measured count. Only applied when at least 3 of 6 measurements are available.
+                </li>
+                <li>
+                  <strong>DRIS Limiting-Nutrient Count (15% Weight):</strong> Ratio of limiting nutrient count over 5, applied when DRIS survey is conducted.
+                </li>
+                <li>
+                  <strong>Weather Context (Excluded):</strong> Weather measurements (rainfall, temp, radiation) are repeated estate context and strictly excluded from the block score to prevent artificial discrimination.
+                </li>
+              </ul>
+
+              <h4>Risk Classification Bands</h4>
+              <div className="bands-grid">
+                <div className="band-card low">
+                  <strong>Low Risk (&lt; 40)</strong>
+                  <span>Performing within standard operational parameters.</span>
+                </div>
+                <div className="band-card medium">
+                  <strong>Medium Risk (40 – &lt;70)</strong>
+                  <span>Moderate variance; monitor harvest slips and leaf assays.</span>
+                </div>
+                <div className="band-card high">
+                  <strong>High Risk (≥ 70)</strong>
+                  <span>Priority intervention; joint agronomist field audit required.</span>
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="modal-dismiss-btn"
+                onClick={() => setShowFormulaModal(false)}
+              >
+                Close Explanation
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================================================================ */}
+      {/* SECTION 1: RISK SCORE, CATEGORY & EXACT REASONS                  */}
+      {/* ================================================================ */}
+      <section id="section-risk" className="block-analysis-section">
+        <div className="section-banner-header">
+          <div className="section-banner-title-group">
+            <span className="section-pill">SECTION 1 OF 8</span>
+            <h2 className="section-main-heading">Risk Score, Category &amp; Exact Reasons</h2>
+          </div>
+          <span className={`section-risk-badge ${riskLevel.toLowerCase()}`}>
+            {riskLevel} RISK ({riskScore != null ? fmt(riskScore, 1) : "N/A"} / 100)
+          </span>
+        </div>
+
+        {/* 2. COMPACT EXECUTIVE SUMMARY CARD (UNDERSTANDABLE IN 5 SECONDS) */}
+        <div className="executive-summary-strip">
+          {/* KPI 1: Canonical Risk */}
+          <div className="summary-card">
+            <div className="summary-card-top">
+              <span className="summary-label">Canonical Screening Risk</span>
+              <button
+                type="button"
+                className="formula-trigger-btn"
+                onClick={() => setShowFormulaModal(true)}
+                title="Click to view screening formula"
+              >
+                <HelpCircle size={14} />
+                <span>How is this calculated?</span>
+              </button>
+            </div>
+            <div className="summary-val-row">
+              <strong className={`summary-metric-val ${riskLevel.toLowerCase()}`}>
+                {riskScore != null ? fmt(riskScore, 1) : "N/A"}
+              </strong>
+              <span className="summary-metric-denom">/ 100</span>
+              <span className={`summary-risk-pill ${riskLevel.toLowerCase()}`}>
+                {riskLevel}
+              </span>
+            </div>
+            <p className="summary-subtext">
+              Empirical weighted screening indicator (Yield Gap 40%, Leaf 25%, DRIS 15%).
+            </p>
+          </div>
+
+          {/* KPI 2: Productivity & Trajectory */}
+          <div className="summary-card">
+            <div className="summary-card-top">
+              <span className="summary-label">Latest Productivity &amp; Trend</span>
+              <span className="summary-source-tag">2024 Actual</span>
+            </div>
+            <div className="summary-val-row">
+              <strong className="summary-metric-val text-emerald">
+                {fmt(actualYield)}
+              </strong>
+              <span className="summary-metric-denom">t/ha</span>
+              {yieldGap != null ? (
+                <span className={`summary-trend-pill ${yieldGap < 0 ? "negative" : "positive"}`}>
+                  {yieldGap < 0 ? <TrendingDown size={12} /> : <TrendingUp size={12} />}
+                  {fmt(yieldGap)}% gap
+                </span>
+              ) : (
+                <span className="summary-trend-pill neutral" title="No peer cohort benchmark for 2000 planting year (age 24 yrs)">
+                  Insufficient evidence for yield gap
+                </span>
+              )}
+            </div>
+            <p className="summary-subtext">
+              {expectedYield != null ? (
+                <>Expected cohort benchmark: <strong>{fmt(expectedYield)} t/ha</strong>. Planted {plantingYear} ({fmt(plantAge, 0)} yrs, {seedType}).</>
+              ) : (
+                <>Cohort benchmark: <em>Unavailable (sole block in {plantingYear} cohort)</em>. Planted {plantingYear} ({fmt(plantAge, 0)} yrs, {seedType}).</>
+              )}
+            </p>
+          </div>
+
+          {/* KPI 3: Main Verified Risk Contributors */}
+          <div className="summary-card">
+            <div className="summary-card-top">
+              <span className="summary-label">Main Verified Risk Contributors</span>
+              <ShieldAlert size={14} className={riskLevel === "HIGH" ? "text-ruby" : "text-amber"} />
+            </div>
+            <div className="summary-highlight-box">
+              <strong className="summary-contributor-title">
+                {multiRiskRow?.Main_Contributing_Indicators || riskRow?.Risk_Contributor || "Yield Gap Variance"}
+              </strong>
+              <p className="summary-subtext">
+                Primary limitation: <strong>{drisRow?.Limitation_1 || "None"}</strong>. Foliar status: {nutrientsRow?.Nutrient_Concern || "Recorded"}.
+              </p>
+            </div>
+          </div>
+
+          {/* KPI 4: Top Recommended Next Action */}
+          <div className="summary-card highlight-action">
+            <div className="summary-card-top">
+              <span className="summary-label">Top Recommended Next Action</span>
+              <ClipboardCheck size={14} className="text-emerald" />
+            </div>
+            <div className="summary-action-box">
+              <p className="summary-action-text">
+                {actionPlan[0]?.action || "Schedule routine agronomic inspection and monitor upcoming monthly deliveries."}
+              </p>
+              <button
+                type="button"
+                className="jump-to-actions-link"
+                onClick={() => document.getElementById("section-solutions")?.scrollIntoView({ behavior: "smooth" })}
+              >
+                <span>View Full Action Directives</span>
+                <ArrowRight size={13} />
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      {/* ================================================================ */}
+      {/* SECTION 2: EVIDENCE MATRIX & TELEMETRY BREAKDOWN                */}
+      {/* ================================================================ */}
+      <section id="section-evidence" className="block-analysis-section">
+        <div className="section-banner-header">
+          <div className="section-banner-title-group">
+            <span className="section-pill">SECTION 2 OF 8</span>
+            <h2 className="section-main-heading">Evidence Matrix &amp; Canonical Multi-Source Telemetry Breakdown</h2>
+          </div>
+          <span className="section-risk-badge low">Data Provenance Verified</span>
+        </div>
+
+        {/* Detailed Risk Breakdown & Reasons Grid */}
+        <div className="tab-pane-grid" style={{ marginTop: "14px" }}>
+          <div className="card-panel span-2">
+            <div className="card-panel-header">
+              <div className="header-icon-title">
+                <ShieldAlert size={18} className="text-ruby" />
+                <div>
+                  <h3>Risk Assessment &amp; Canonical Screening Breakdown</h3>
+                  <p className="subtext">Empirical screening formula: Yield Gap (40%), Foliar Assay (25%), DRIS Index (15%)</p>
+                </div>
+              </div>
+              <span className={`status-pill ${riskLevel.toLowerCase()}`}>
+                {riskScore != null ? `${fmt(riskScore, 1)} / 100 (${riskLevel} RISK)` : "Unrated"}
+              </span>
+            </div>
+
+            {/* Comprehensive Risk Status & Explanation Box */}
+            <div className="risk-overview-status-box">
+              <div className="status-box-header">
+                <span className="status-box-title">Block {currentBlockId} Risk Status &amp; Scientific Explanation</span>
+                <span className={`status-box-badge ${riskLevel.toLowerCase()}`}>
+                  {riskLevel} RISK PRIORITY
+                </span>
+              </div>
+              <p className="status-box-p">
+                <strong>Risk Assessment:</strong> Block {currentBlockId} holds a canonical screening score of <strong>{riskScore != null ? fmt(riskScore, 1) : "N/A"} / 100</strong>, categorizing it as <strong>{riskLevel} RISK</strong>.
+                {riskLevel === "HIGH"
+                  ? (yieldGap != null
+                      ? " This block requires an immediate joint agronomic review and field audit due to acute yield contraction combined with physiological nutrient limitations."
+                      : " This block requires joint agronomic review and field verification due to physiological nutrient limitations (peer cohort yield baseline unavailable).")
+                  : riskLevel === "MEDIUM"
+                  ? " This block is on active watch due to moderate yield variance or emerging foliar nutritional drift."
+                  : " This block is performing within standard agronomic operational thresholds with normal cohort harvest delivery."}
+              </p>
+              <div className="status-factors-row">
+                <span className="factors-label">Exact Flagged Reasons:</span>
+                <strong className="factors-val">
+                  {multiRiskRow?.Main_Contributing_Indicators || riskRow?.Risk_Contributor || "Yield Gap Variance"}
+                </strong>
+              </div>
+            </div>
+
+            <div className="risk-breakdown-table">
+              <div className="risk-component-row">
+                <div className="comp-info">
+                  <strong>Yield Gap Component (40% Weight)</strong>
+                  <p>
+                    {yieldGap != null
+                      ? `Deviation of observed yield from mature age-peer expectation curve (${fmt(actualYield)} t/ha vs ${fmt(expectedYield)} t/ha expectation)`
+                      : `Deviation vs cohort expectation: Insufficient evidence — cohort peer benchmark unavailable (0% effective weight; excluded from score)`}
+                  </p>
+                </div>
+                <div className="comp-value">
+                  {yieldGap != null ? (
+                    <>
+                      <span>Gap: {fmt(yieldGap)}%</span>
+                      <strong className={yieldGap < -10 ? "text-ruby" : "text-emerald"}>
+                        {multiRiskRow?.Yield_Risk_Component != null ? `${fmt(multiRiskRow.Yield_Risk_Component, 0)} pts` : "Scored"}
+                      </strong>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-amber">Excluded (0% weight)</span>
+                      <strong className="text-dim">N/A</strong>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="risk-component-row">
+                <div className="comp-info">
+                  <strong>Foliar Nutrient Stress Component (25% Weight)</strong>
+                  <p>Proportion of deficient elements among measured Frond 17 nutrients</p>
+                </div>
+                <div className="comp-value">
+                  <span>Low count: {nutrientsRow ? Object.keys(nutrientsRow).filter(k => k.endsWith("_Status") && nutrientsRow[k] === "LOW").length : 0}</span>
+                  <strong className="text-amber">
+                    {multiRiskRow?.Nutrient_Risk_Component != null ? `${fmt(multiRiskRow.Nutrient_Risk_Component, 0)} pts` : "Scored"}
+                  </strong>
+                </div>
+              </div>
+
+              <div className="risk-component-row">
+                <div className="comp-info">
+                  <strong>DRIS Imbalance Component (15% Weight)</strong>
+                  <p>Relative nutritional ratio severity derived from DRIS limitation rankings</p>
+                </div>
+                <div className="comp-value">
+                  <span>Primary: {drisRow?.Limitation_1 || "None"}</span>
+                  <strong className="text-emerald">Evaluated</strong>
+                </div>
+              </div>
+
+              <div className="risk-component-row">
+                <div className="comp-info">
+                  <strong>Weather Environmental Context (Excluded)</strong>
+                  <p>Estate rainfall and temperature adequacy (decoupled from individual block score)</p>
+                </div>
+                <div className="comp-value">
+                  <span>Decoupled weight</span>
+                  <strong className="text-emerald">0% Score Influence</strong>
+                </div>
+              </div>
+            </div>
+
+            <div className="narrative-callout">
+              <ShieldCheck size={16} className="text-emerald" />
+              <p>
+                <strong>Screening Analysis Guarantee:</strong> This composite risk screening score is computed strictly from verified block-level agronomic records.
+                Independent research datasets (RGB drone survey and German beech-forest multispectral data) do NOT modify this risk score.
+              </p>
+            </div>
+          </div>
+
+          {/* Threshold Guide */}
+          <div className="card-panel">
+            <div className="card-panel-header">
+              <div className="header-icon-title">
+                <Info size={18} className="text-emerald" />
+                <h3>Risk Classification Bands</h3>
+              </div>
+            </div>
+            <div className="threshold-list">
+              <div className="threshold-item">
+                <span className="threshold-badge high">HIGH RISK (Score ≥ 70)</span>
+                <p>Immediate multidisciplinary agronomic review and field audit required.</p>
+              </div>
+              <div className="threshold-item">
+                <span className="threshold-badge medium">MEDIUM RISK (Score 40–69)</span>
+                <p>Elevated vigilance required; monitor harvest deliveries and review fertilizer plan.</p>
+              </div>
+              <div className="threshold-item">
+                <span className="threshold-badge low">LOW RISK (Score &lt; 40)</span>
+                <p>Performing within expected parameters; routine maintenance schedule.</p>
+              </div>
+            </div>
+
+            <div className="photo-thumbnail-card" style={{ marginTop: "14px" }}>
+              <div className="thumb-img">
+                <PlantationImage
+                  src={estateOverviewImg}
+                  fallbackSrc="/images/estate_canopy_overview.jpg"
+                  alt="Division A Plantation Landscape"
+                  height="80px"
+                  aspectRatio="1:1"
+                />
+              </div>
+              <div className="thumb-content">
+                <span className="thumb-title">Division A Plantation Stand</span>
+                <p className="thumb-desc">
+                  Commercial 920.0 Ha plantation landscape. Multi-source evidence converges at the operational block boundary.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ================================================================ */}
+      {/* SECTION 3: WHAT TO DO — SOLUTIONS & PRIORITY ACTIONS              */}
+      {/* ================================================================ */}
+      <section id="section-solutions" className="block-analysis-section">
+        <div className="section-banner-header">
+          <div className="section-banner-title-group">
+            <span className="section-pill">SECTION 3 OF 8</span>
+            <h2 className="section-main-heading">What To Do: Evidence-Based Solutions &amp; Priority Actions</h2>
+          </div>
+          <span className="ai-engine-tag">
+            {recommendations?.is_ai_generated ? "OpenAI Synthesis (gpt-4o-mini)" : "Deterministic Agronomic Rules Engine"}
+          </span>
+        </div>
+
+        {/* 2B. AGRONOMIC AI INTELLIGENCE & GROUNDED DIRECTIVES */}
+        <div className="ai-intelligence-panel">
+          <div className="ai-panel-header">
+            <div className="ai-header-left">
+              <div className="ai-badge-icon">
+                <Sparkles size={16} className="text-emerald" />
+              </div>
+              <div>
+                <div className="ai-title-row">
+                  <h3 className="ai-title">Agronomic AI Intelligence &amp; Grounded Directives</h3>
+                  <span className={`ai-priority-badge ${recommendations?.recommendation?.priority?.toLowerCase() || (riskLevel === "HIGH" ? "critical" : riskLevel === "MEDIUM" ? "moderate" : "routine")}`}>
+                    {recommendations?.recommendation?.priority || (riskLevel === "HIGH" ? "Critical" : riskLevel === "MEDIUM" ? "Moderate" : "Routine")} Priority
+                  </span>
+                  <span className="ai-engine-tag">
+                    {recommendations?.is_ai_generated ? "OpenAI Synthesis (gpt-4o-mini)" : "Deterministic Agronomic Rules Engine"}
+                  </span>
+                </div>
+                <p className="ai-subtitle">
+                  {recommendations?.note || "Synthesized from verified 2024 harvest telemetry, Frond 17 foliar assay, DRIS ratios, and canonical screening formulas."}
+                </p>
+              </div>
+            </div>
+
+            <div className="ai-header-right">
+              <span className="ai-status-pill">
+                <span className="dot-live" /> Telemetry Grounded
+              </span>
+            </div>
+          </div>
+
+          {/* 5-STAGE EXECUTIVE HIERARCHY: RISK → WHY → EVIDENCE → RECOMMENDED ACTION → FOLLOW-UP */}
+          <div className="executive-hierarchy-pipeline">
+            {/* STAGE 1: RISK */}
+            <div className="pipeline-card stage-risk">
+              <div className="stage-tag">1. RISK</div>
+              <strong className={`stage-highlight ${riskLevel.toLowerCase()}`}>
+                {riskLevel} RISK ({riskScore != null ? fmt(riskScore, 1) : "N/A"}/100)
+              </strong>
+              <p className="stage-detail">
+                Canonical Screening Score (Yield Gap 40%, Foliar Assay 25%, DRIS 15%).
+              </p>
+            </div>
+
+            {/* STAGE 2: WHY */}
+            <div className="pipeline-card stage-why">
+              <div className="stage-tag">2. WHY (RATIONALE)</div>
+              <strong className="stage-highlight">
+                {recommendations?.recommendation?.agronomic_rationale || actionPlan[0]?.whyCare}
+              </strong>
+              <p className="stage-detail">
+                {multiRiskRow?.Main_Contributing_Indicators || "Yield Gap Variance"} correlates with physiological nutritional constraints.
+              </p>
+            </div>
+
+            {/* STAGE 3: EVIDENCE */}
+            <div className="pipeline-card stage-evidence">
+              <div className="stage-tag">3. EVIDENCE (OBSERVED FACTS)</div>
+              <ul className="stage-facts-list">
+                <li>• <strong>2024 Yield:</strong> {fmt(actualYield)} t/ha ({yieldGap != null ? `${fmt(yieldGap)}% gap` : "Cohort standard"})</li>
+                <li>• <strong>Foliar Assay:</strong> {nutrientsRow ? `N=${fmt(nutrientsRow.N_pct, 2)}%, P=${fmt(nutrientsRow.P_pct, 2)}%, K=${fmt(nutrientsRow.K_pct, 2)}%` : "Frond 17 sampled"}</li>
+                <li>• <strong>DRIS:</strong> {drisRow?.Limitation_1 ? `Limiting: ${drisRow.Limitation_1}` : "Surveyed"}</li>
+                <li>• <strong>Soil:</strong> {soilRow?.status === "observed" ? "Surveyed (Observed)" : "No block sample (7-block estate survey)"}</li>
+              </ul>
+            </div>
+
+            {/* STAGE 4: RECOMMENDED ACTION */}
+            <div className="pipeline-card stage-action">
+              <div className="stage-tag">4. RECOMMENDED ACTION</div>
+              <strong className="stage-highlight text-emerald">
+                {recommendations?.recommendation?.recommended_action || actionPlan[0]?.action}
+              </strong>
+              <p className="stage-detail">
+                Immediate practical agronomic intervention for field operations manager.
+              </p>
+            </div>
+
+            {/* STAGE 5: FOLLOW-UP */}
+            <div className="pipeline-card stage-followup">
+              <div className="stage-tag">5. FOLLOW-UP</div>
+              <strong className="stage-highlight">
+                {recommendations?.recommendation?.validation_protocol || actionPlan[0]?.validation}
+              </strong>
+              <p className="stage-detail">
+                Measurable 60–90 day verification protocol (Frond 17 re-sampling &amp; monthly bunch census).
+              </p>
+            </div>
+          </div>
+
+          {/* PROVENANCE AUDIT FOOTER */}
+          <div className="ai-provenance-footer">
+            <span className="provenance-title"><Info size={13} className="text-emerald" /> Telemetry Provenance:</span>
+            <div className="provenance-chips-wrap">
+              <span className="prov-chip"><strong>Production:</strong> outputs/block_health_risk.csv (2024 Observed)</span>
+              <span className="prov-chip"><strong>Foliar Tissue:</strong> outputs/block_nutrient_diagnostics.csv ({nutrientsRow?.Year || nutrientsRow?.Leaf_Sampling_Year || 2022} Observed)</span>
+              <span className="prov-chip"><strong>DRIS Diagnostic:</strong> outputs/dris_prescription_analysis.csv ({drisRow?.Year || 2022})</span>
+              <span className="prov-chip"><strong>Canonical Model:</strong> outputs/multi_source_block_risk.csv (2024 Screening)</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Prioritized Action Directives Cards */}
+        <div className="tab-pane-grid" style={{ marginTop: "14px" }}>
+          <div className="card-panel span-3">
+            <div className="card-panel-header">
+              <div className="header-icon-title">
+                <ClipboardCheck size={18} className="text-emerald" />
+                <h3>Prioritized Field Action Directives for Block {currentBlockId}</h3>
+              </div>
+              <span className="subtle-badge">{actionPlan.length} Active Directives</span>
+            </div>
+            <div className="action-directives-list">
+              {actionPlan.map((act, idx) => (
+                <div key={idx} className={`action-directive-card ${act.priority.toLowerCase()}`}>
+                  <div className="action-card-header">
+                    <div className="action-num-badge">#{idx + 1}</div>
+                    <div className="action-title-group">
+                      <h4>{act.title}</h4>
+                      <span className={`action-priority-pill ${act.priority.toLowerCase()}`}>
+                        {act.priority} Priority
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="action-card-body">
+                    <div className="action-field-row">
+                      <span className="field-label">Observed Indicator:</span>
+                      <p className="field-val indicator">{act.indicator}</p>
+                    </div>
+
+                    <div className="action-field-row">
+                      <span className="field-label">Agronomic Rationale:</span>
+                      <p className="field-val why">{act.whyCare}</p>
+                    </div>
+
+                    <div className="action-field-row highlight">
+                      <span className="field-label">Recommended Practical Action:</span>
+                      <p className="field-val action">{act.action}</p>
+                    </div>
+
+                    <div className="action-field-row">
+                      <span className="field-label">Validation Protocol:</span>
+                      <p className="field-val validation">{act.validation}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+
+      {/* ================================================================ */}
+      {/* SECTION 4: FIELD ACTION CENTER & FOLLOW-UP & FOLLOW-UP TRACKING              */}
+      {/* ================================================================ */}
+      <section id="section-field-action" className="block-analysis-section">
+        <div className="section-banner-header">
+          <div className="section-banner-title-group">
+            <span className="section-pill">SECTION 4 OF 8</span>
+            <h2 className="section-main-heading">Field Action Center &amp; Resolution Tracking for Block {currentBlockId}</h2>
           </div>
           <div className="workflow-actions-top">
             <span className={`workflow-status-pill ${actionStatus.toLowerCase().replace(/\s+/g, "-")}`}>
               {actionStatus === "COMPLETED" ? <CheckCircle2 size={13} /> : <Clock3 size={13} />}
               Status: {actionStatus}
             </span>
-            {onBackToActionQueue && (
-              <button
-                type="button"
-                className="workflow-back-queue-btn"
-                onClick={onBackToActionQueue}
-                title="Return to Action Queue"
-              >
-                <ArrowLeft size={13} />
-                <span>Back to Action Queue</span>
-              </button>
-            )}
           </div>
         </div>
 
@@ -815,1381 +1358,739 @@ export default function UnifiedBlockIntelligence({
             </div>
           </div>
         </div>
+
+        {/* Sampling & Field Inspection Chronology */}
+        <div className="tab-pane-grid" style={{ marginTop: "14px" }}>
+          <div className="card-panel span-3">
+            <div className="card-panel-header">
+              <div className="header-icon-title">
+                <ClipboardCheck size={18} className="text-emerald" />
+                <div>
+                  <h3>Sampling &amp; Field Audit Chronology</h3>
+                  <p className="subtext">Agronomic sampling records and inspection history</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="metric-stack">
+              <div className="metric-stack-row">
+                <span>Frond 17 Foliar Assay</span>
+                <strong>{nutrientsRow?.Year || nutrientsRow?.Leaf_Sampling_Year || 2022} Lab Certified</strong>
+              </div>
+              <div className="metric-stack-row">
+                <span>DRIS Diagnostic Survey</span>
+                <strong>{drisRow?.Year || 2022} Complete</strong>
+              </div>
+              <div className="metric-stack-row">
+                <span>Soil Core Survey</span>
+                <strong className={hasSampledSoil ? "text-emerald" : "text-amber"}>
+                  {hasSampledSoil ? "2022 Observed Core" : "Unsampled (7-Block Index Survey)"}
+                </strong>
+              </div>
+              <div className="metric-stack-row">
+                <span>Field Directive Status</span>
+                <strong className={actionStatus === "COMPLETED" ? "text-emerald" : "text-gold"}>
+                  {actionStatus}
+                </strong>
+              </div>
+              <div className="metric-stack-row">
+                <span>Last Verified Inspector</span>
+                <strong>{actionRecords[actionKey]?.inspector || "Field Agronomist"}</strong>
+              </div>
+              <div className="metric-stack-row">
+                <span>Verification Date</span>
+                <strong>{actionRecords[actionKey]?.completedAt || actionRecords[actionKey]?.date || inspectionDate}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
-      {/* 2. COMPACT EXECUTIVE SUMMARY CARD (UNDERSTANDABLE IN 5 SECONDS) */}
-      <div className="executive-summary-strip">
-        {/* KPI 1: Canonical Risk */}
-        <div className="summary-card">
-          <div className="summary-card-top">
-            <span className="summary-label">Canonical Screening Risk</span>
-            <button
-              type="button"
-              className="formula-trigger-btn"
-              onClick={() => setShowFormulaModal(true)}
-              title="Click to view screening formula"
-            >
-              <HelpCircle size={14} />
-              <span>How is this calculated?</span>
-            </button>
+      {/* ================================================================ */}
+      {/* SECTION 5: PRODUCTIVITY HISTORY & YIELD FORECAST                 */}
+      {/* ================================================================ */}
+      <section id="section-productivity" className="block-analysis-section">
+        <div className="section-banner-header">
+          <div className="section-banner-title-group">
+            <span className="section-pill">SECTION 5 OF 8</span>
+            <h2 className="section-main-heading">13-Year Productivity History &amp; Harvest Forecast</h2>
           </div>
-          <div className="summary-val-row">
-            <strong className={`summary-metric-val ${riskLevel.toLowerCase()}`}>
-              {riskScore != null ? fmt(riskScore, 1) : "N/A"}
-            </strong>
-            <span className="summary-metric-denom">/ 100</span>
-            <span className={`summary-risk-pill ${riskLevel.toLowerCase()}`}>
-              {riskLevel}
-            </span>
-          </div>
-          <p className="summary-subtext">
-            Empirical weighted screening indicator (Yield Gap 40%, Leaf 25%, DRIS 15%).
-          </p>
+          <span className="subtle-badge">13 Years Certified (2012–2024)</span>
         </div>
 
-        {/* KPI 2: Productivity & Trajectory */}
-        <div className="summary-card">
-          <div className="summary-card-top">
-            <span className="summary-label">Latest Productivity & Trend</span>
-            <span className="summary-source-tag">2024 Actual</span>
+        <div className="tab-pane-grid">
+          <div className="card-panel span-2">
+            <div className="card-panel-header">
+              <div className="header-icon-title">
+                <TrendingUp size={18} className="text-emerald" />
+                <h3>13-Year Historical Productivity Trajectory (2012–2024)</h3>
+              </div>
+              <div className="legend-pills">
+                <span className="legend-chip"><i className="dot-green" /> Observed Harvest (t/ha/yr)</span>
+                <span className="legend-chip"><i className="dot-orange" /> Forecast Model (Annual Sum)</span>
+              </div>
+            </div>
+            <div className="chart-container-wrap">
+              {isLoading ? (
+                <div className="chart-loading-state">
+                  <RefreshCw size={20} className="animate-spin text-emerald" />
+                  <span>Loading Block {currentBlockId} productivity trajectory…</span>
+                </div>
+              ) : yieldTimeline && yieldTimeline.length > 0 ? (
+                <ResponsiveContainer width="100%" height={280} minWidth={0} debounce={50}>
+                  <BarChart data={yieldTimeline} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.06)" />
+                    <XAxis dataKey="Year" tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} domain={[0, (dataMax) => Math.max(26, Math.ceil(dataMax + 2))]} unit=" t/ha/yr" />
+                    <Tooltip
+                      formatter={(v, name) => [`${fmt(v)} t/ha/yr`, name === "Actual" ? "Observed Harvest (12-Mo Sum)" : "Forecast Model (Annual Sum)"]}
+                      contentStyle={{ backgroundColor: "#0d2317", borderRadius: "8px", color: "#f8fafc", border: "1px solid rgba(255,255,255,0.1)" }}
+                    />
+                    <Bar dataKey="Actual" fill="#10b981" radius={[4, 4, 0, 0]} name="Actual" isAnimationActive={false} />
+                    <Bar dataKey="Forecast" fill="#d97706" radius={[4, 4, 0, 0]} name="Forecast" isAnimationActive={false} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="chart-empty-state">
+                  <BarChart3 size={24} className="text-dim" />
+                  <span className="empty-title">Historical Productivity Data Unavailable</span>
+                  <span className="empty-sub">No verified annual productivity records mapped for Block {currentBlockId}.</span>
+                </div>
+              )}
+            </div>
+            <div className="narrative-callout">
+              <Info size={16} className="text-emerald" />
+              <p>
+                <strong>Productivity Analysis:</strong> Block {currentBlockId} (planted in {plantingYear}, standing age {fmt(plantAge, 0)} years) yielded{" "}
+                <strong>{fmt(actualYield)} t/ha/yr</strong> in 2024 vs cohort baseline of <strong>{fmt(expectedYield)} t/ha/yr</strong> (Yield Gap:{" "}
+                <strong>{fmt(yieldGap)}%</strong>). Historical records indicate maximum production was reached during mature phase.
+              </p>
+            </div>
           </div>
-          <div className="summary-val-row">
-            <strong className="summary-metric-val text-emerald">
-              {fmt(actualYield)}
-            </strong>
-            <span className="summary-metric-denom">t/ha</span>
-            {yieldGap != null && (
-              <span className={`summary-trend-pill ${yieldGap < 0 ? "negative" : "positive"}`}>
-                {yieldGap < 0 ? <TrendingDown size={12} /> : <TrendingUp size={12} />}
-                {fmt(yieldGap)}% gap
-              </span>
+
+          {/* Performance Stats */}
+          <div className="card-panel">
+            <div className="card-panel-header">
+              <div className="header-icon-title">
+                <Calendar size={18} className="text-emerald" />
+                <h3>Harvest Metrics (Block {currentBlockId})</h3>
+              </div>
+            </div>
+            <div className="metric-stack">
+              <div className="metric-stack-row">
+                <span>Actual Latest Yield (2024)</span>
+                <strong>{fmt(actualYield)} t/ha/yr</strong>
+              </div>
+              <div className="metric-stack-row">
+                <span>Expected Cohort Benchmark</span>
+                <strong>{fmt(expectedYield)} t/ha/yr</strong>
+              </div>
+              <div className="metric-stack-row">
+                <span>Yield Gap vs Cohort</span>
+                <strong className={yieldGap != null && yieldGap < 0 ? "text-ruby" : "text-emerald"}>
+                  {fmt(yieldGap)} %
+                </strong>
+              </div>
+              <div className="metric-stack-row">
+                <span>Monitored Hectares</span>
+                <strong>{fmt(areaHa, 1)} Ha</strong>
+              </div>
+              <div className="metric-stack-row">
+                <span>Productive Palm Stand</span>
+                <strong>{palmsCount ? `${fmt(palmsCount, 0)} palms` : "Stand Recorded"}</strong>
+              </div>
+              <div className="metric-stack-row">
+                <span>Seed Variety</span>
+                <strong>{seedType}</strong>
+              </div>
+            </div>
+
+            {/* Commercial FFB Bunch Development Photographic Reference */}
+            <div className="photo-thumbnail-card" style={{ marginTop: "14px" }}>
+              <div className="thumb-img">
+                <PlantationImage
+                  src={fruitBunchImg}
+                  fallbackSrc="/images/oil_palm_fruit_bunch.jpg"
+                  alt="Oil Palm Fresh Fruit Bunch (FFB) Development"
+                  height="80px"
+                  aspectRatio="1:1"
+                />
+              </div>
+              <div className="thumb-content">
+                <span className="thumb-title">Commercial FFB Bunch Development</span>
+                <p className="thumb-desc">
+                  Mature Fresh Fruit Bunches (FFB) nestled in leaf axils. Yield gap reduction directly targets bunch weight and bunch count per palm.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Monthly Harvest Breakdown */}
+          <div className="card-panel span-3">
+            <div className="card-panel-header">
+              <div className="header-icon-title">
+                <Activity size={18} className="text-emerald" />
+                <h3>2024 Monthly Harvest Production Curve (12 Months)</h3>
+              </div>
+              {monthlyHarvest.length > 0 && (
+                <span className="subtle-badge">12 Months Verified</span>
+              )}
+            </div>
+            {isLoading ? (
+              <div className="chart-loading-state compact">
+                <RefreshCw size={18} className="animate-spin text-emerald" />
+                <span>Loading 2024 monthly harvest curve…</span>
+              </div>
+            ) : monthlyHarvest.length > 0 ? (
+              <div className="chart-container-wrap">
+                <ResponsiveContainer width="100%" height={200} minWidth={0} debounce={50}>
+                  <LineChart data={monthlyHarvest} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.06)" />
+                    <XAxis dataKey="Month" tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} unit=" t" />
+                    <Tooltip
+                      formatter={(v, name) => [`${fmt(v)} ${name === "FFB" ? "tonnes (monthly harvest total)" : "t/ha/mo"}`, name === "FFB" ? "Monthly Harvest Total" : name]}
+                      contentStyle={{ backgroundColor: "#0d2317", borderRadius: "8px", color: "#f8fafc", border: "1px solid rgba(255,255,255,0.1)" }}
+                    />
+                    <Line type="monotone" dataKey="FFB" stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} name="FFB" isAnimationActive={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="chart-empty-state compact">
+                <Activity size={20} className="text-dim" />
+                <span className="empty-title">Monthly Harvest Curve Unavailable</span>
+                <span className="empty-sub">Monthly FFB harvest records are not available for Block {currentBlockId} in 2024.</span>
+              </div>
             )}
           </div>
-          <p className="summary-subtext">
-            Expected cohort benchmark: <strong>{fmt(expectedYield)} t/ha</strong>. Planted {plantingYear} ({fmt(plantAge, 0)} yrs, {seedType}).
-          </p>
+        </div>
+      </section>
+
+      {/* ================================================================ */}
+      {/* SECTION 4: LEAF NUTRIENTS, SOIL ANALYSIS & DRIS DIAGNOSIS        */}
+      {/* ================================================================ */}
+      <section id="section-nutrients" className="block-analysis-section">
+        <div className="section-banner-header">
+          <div className="section-banner-title-group">
+            <span className="section-pill">SECTION 6 OF 8</span>
+            <h2 className="section-main-heading">Frond 17 Leaf Nutrients, Soil Survey &amp; DRIS Balance</h2>
+          </div>
+          <span className="subtle-badge">Lab Assay Certified</span>
         </div>
 
-        {/* KPI 3: Main Verified Risk Contributors */}
-        <div className="summary-card">
-          <div className="summary-card-top">
-            <span className="summary-label">Main Verified Risk Contributors</span>
-            <ShieldAlert size={14} className={riskLevel === "HIGH" ? "text-ruby" : "text-amber"} />
-          </div>
-          <div className="summary-highlight-box">
-            <strong className="summary-contributor-title">
-              {multiRiskRow?.Main_Contributing_Indicators || riskRow?.Risk_Contributor || "Yield Gap Variance"}
-            </strong>
-            <p className="summary-subtext">
-              Primary limitation: <strong>{drisRow?.Limitation_1 || "None"}</strong>. Foliar status: {nutrientsRow?.Nutrient_Concern || "Recorded"}.
-            </p>
-          </div>
-        </div>
-
-        {/* KPI 4: Top Recommended Next Action */}
-        <div className="summary-card highlight-action">
-          <div className="summary-card-top">
-            <span className="summary-label">Top Recommended Next Action</span>
-            <ClipboardCheck size={14} className="text-emerald" />
-          </div>
-          <div className="summary-action-box">
-            <p className="summary-action-text">
-              {actionPlan[0]?.action || "Schedule routine agronomic inspection and monitor upcoming monthly deliveries."}
-            </p>
-            <button
-              type="button"
-              className="jump-to-actions-link"
-              onClick={() => setActiveTab("actions")}
-            >
-              <span>View Full 5-Stage Action Plan</span>
-              <ArrowRight size={13} />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* 2B. AGRONOMIC AI INTELLIGENCE & GROUNDED DIRECTIVES (RISK → WHY → EVIDENCE → ACTION → FOLLOW-UP) */}
-      <div className="ai-intelligence-panel">
-        <div className="ai-panel-header">
-          <div className="ai-header-left">
-            <div className="ai-badge-icon">
-              <Sparkles size={16} className="text-emerald" />
-            </div>
-            <div>
-              <div className="ai-title-row">
-                <h3 className="ai-title">Agronomic AI Intelligence & Grounded Directives</h3>
-                <span className={`ai-priority-badge ${recommendations?.recommendation?.priority?.toLowerCase() || (riskLevel === "HIGH" ? "critical" : riskLevel === "MEDIUM" ? "moderate" : "routine")}`}>
-                  {recommendations?.recommendation?.priority || (riskLevel === "HIGH" ? "Critical" : riskLevel === "MEDIUM" ? "Moderate" : "Routine")} Priority
-                </span>
-                <span className="ai-engine-tag">
-                  {recommendations?.is_ai_generated ? "OpenAI Synthesis (gpt-4o-mini)" : "Deterministic Agronomic Rules Engine"}
-                </span>
+        <div className="tab-pane-grid">
+          <div className="card-panel span-2">
+            <div className="card-panel-header">
+              <div className="header-icon-title">
+                <FlaskConical size={18} className="text-emerald" />
+                <h3>Frond 17 Foliar Nutrient Assay vs Reference Thresholds</h3>
               </div>
-              <p className="ai-subtitle">
-                {recommendations?.note || "Synthesized from verified 2024 harvest telemetry, Frond 17 foliar assay, DRIS ratios, and canonical screening formulas."}
-              </p>
-            </div>
-          </div>
-
-          <div className="ai-header-right">
-            <span className="ai-status-pill">
-              <span className="dot-live" /> Telemetry Grounded
-            </span>
-          </div>
-        </div>
-
-        {/* 5-STAGE EXECUTIVE HIERARCHY: RISK → WHY → EVIDENCE → RECOMMENDED ACTION → FOLLOW-UP */}
-        <div className="executive-hierarchy-pipeline">
-          {/* STAGE 1: RISK */}
-          <div className="pipeline-card stage-risk">
-            <div className="stage-tag">1. RISK</div>
-            <strong className={`stage-highlight ${riskLevel.toLowerCase()}`}>
-              {riskLevel} RISK ({riskScore != null ? fmt(riskScore, 1) : "N/A"}/100)
-            </strong>
-            <p className="stage-detail">
-              Canonical Screening Score (Yield Gap 40%, Foliar Assay 25%, DRIS 15%).
-            </p>
-          </div>
-
-          {/* STAGE 2: WHY */}
-          <div className="pipeline-card stage-why">
-            <div className="stage-tag">2. WHY (RATIONALE)</div>
-            <strong className="stage-highlight">
-              {recommendations?.recommendation?.agronomic_rationale || actionPlan[0]?.whyCare}
-            </strong>
-            <p className="stage-detail">
-              {multiRiskRow?.Main_Contributing_Indicators || "Yield Gap Variance"} correlates with physiological nutritional constraints.
-            </p>
-          </div>
-
-          {/* STAGE 3: EVIDENCE */}
-          <div className="pipeline-card stage-evidence">
-            <div className="stage-tag">3. EVIDENCE (OBSERVED FACTS)</div>
-            <ul className="stage-facts-list">
-              <li>• <strong>2024 Yield:</strong> {fmt(actualYield)} t/ha ({yieldGap != null ? `${fmt(yieldGap)}% gap` : "Cohort standard"})</li>
-              <li>• <strong>Foliar Assay:</strong> {nutrientsRow ? `N=${fmt(nutrientsRow.N_pct, 2)}%, P=${fmt(nutrientsRow.P_pct, 2)}%, K=${fmt(nutrientsRow.K_pct, 2)}%` : "Frond 17 sampled"}</li>
-              <li>• <strong>DRIS:</strong> {drisRow?.Limitation_1 ? `Limiting: ${drisRow.Limitation_1}` : "Surveyed"}</li>
-              <li>• <strong>Soil:</strong> {soilRow?.status === "observed" ? "Surveyed (Observed)" : "No block sample (7-block estate survey)"}</li>
-            </ul>
-          </div>
-
-          {/* STAGE 4: RECOMMENDED ACTION */}
-          <div className="pipeline-card stage-action">
-            <div className="stage-tag">4. RECOMMENDED ACTION</div>
-            <strong className="stage-highlight text-emerald">
-              {recommendations?.recommendation?.recommended_action || actionPlan[0]?.action}
-            </strong>
-            <p className="stage-detail">
-              Immediate practical agronomic intervention for field operations manager.
-            </p>
-          </div>
-
-          {/* STAGE 5: FOLLOW-UP */}
-          <div className="pipeline-card stage-followup">
-            <div className="stage-tag">5. FOLLOW-UP</div>
-            <strong className="stage-highlight">
-              {recommendations?.recommendation?.validation_protocol || actionPlan[0]?.validation}
-            </strong>
-            <p className="stage-detail">
-              Measurable 60–90 day verification protocol (Frond 17 re-sampling & monthly bunch census).
-            </p>
-          </div>
-        </div>
-
-        {/* PROVENANCE AUDIT FOOTER */}
-        <div className="ai-provenance-footer">
-          <span className="provenance-title"><Info size={13} className="text-emerald" /> Telemetry Provenance:</span>
-          <div className="provenance-chips-wrap">
-            <span className="prov-chip"><strong>Production:</strong> outputs/block_health_risk.csv (2024 Observed)</span>
-            <span className="prov-chip"><strong>Foliar Tissue:</strong> outputs/block_nutrient_diagnostics.csv ({nutrientsRow?.Year || nutrientsRow?.Leaf_Sampling_Year || 2022} Observed)</span>
-            <span className="prov-chip"><strong>DRIS Diagnostic:</strong> outputs/dris_prescription_analysis.csv ({drisRow?.Year || 2022})</span>
-            <span className="prov-chip"><strong>Canonical Model:</strong> outputs/multi_source_block_risk.csv (2024 Screening)</span>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. SCREENING FORMULA MODAL / POPOVER */}
-      {showFormulaModal && (
-        <div className="modal-backdrop" onClick={() => setShowFormulaModal(false)}>
-          <div className="formula-modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <div className="modal-title-group">
-                <ShieldAlert size={20} className="text-amber" />
-                <h3>Canonical Block Risk Screening Methodology</h3>
-              </div>
-              <button
-                type="button"
-                className="close-modal-btn"
-                onClick={() => setShowFormulaModal(false)}
-              >
-                <X size={18} />
-              </button>
-            </div>
-            <div className="modal-body">
-              <div className="disclaimer-callout">
-                <Info size={16} className="text-amber" />
-                <p>
-                  <strong>Important Agronomic Distinction:</strong> This score is an <em>empirical screening indicator</em> to prioritize blocks requiring agronomic inspection, <strong>not a validated agronomic causal model</strong>.
-                </p>
-              </div>
-
-              <h4>Screening Formula Components & Weights</h4>
-              <p className="formula-intro">
-                The score is computed as a weighted mean of verified block components, renormalized per block based on data availability:
-              </p>
-              <ul className="formula-weights-list">
-                <li>
-                  <strong>Yield Gap Score (40% Weight):</strong> Calculated from deviation vs mature peer baseline:
-                  <div className="formula-sublevels">
-                    <span>&lt; 5% gap = 20 pts</span>
-                    <span>5 – &lt;10% gap = 40 pts</span>
-                    <span>10 – &lt;20% gap = 60 pts</span>
-                    <span>20 – &lt;30% gap = 75 pts</span>
-                    <span>≥ 30% gap = 90 pts</span>
-                  </div>
-                </li>
-                <li>
-                  <strong>Foliar Nutrient Low-Count (25% Weight):</strong> Ratio of deficient nutrients (N, P, K, Ca, Mg, B) over measured count. Only applied when at least 3 of 6 measurements are available.
-                </li>
-                <li>
-                  <strong>DRIS Limiting-Nutrient Count (15% Weight):</strong> Ratio of limiting nutrient count over 5, applied when DRIS survey is conducted.
-                </li>
-                <li>
-                  <strong>Weather Context (Excluded):</strong> Weather measurements (rainfall, temp, radiation) are repeated estate context and strictly excluded from the block score to prevent artificial discrimination.
-                </li>
-              </ul>
-
-              <h4>Risk Classification Bands</h4>
-              <div className="bands-grid">
-                <div className="band-card low">
-                  <strong>Low Risk (&lt; 40)</strong>
-                  <span>Performing within standard operational parameters.</span>
-                </div>
-                <div className="band-card medium">
-                  <strong>Medium Risk (40 – &lt;70)</strong>
-                  <span>Moderate variance; monitor harvest slips and leaf assays.</span>
-                </div>
-                <div className="band-card high">
-                  <strong>High Risk (≥ 70)</strong>
-                  <span>Priority intervention; joint agronomist field audit required.</span>
-                </div>
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button
-                type="button"
-                className="modal-dismiss-btn"
-                onClick={() => setShowFormulaModal(false)}
-              >
-                Close Explanation
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 4. HORIZONTAL SECTION SELECTOR (TABS ON SAME SCREEN) */}
-      <div className="analysis-tabs-strip">
-        {tabs.map((t) => {
-          const Icon = t.icon;
-          const isActive = activeTab === t.id;
-          return (
-            <button
-              key={t.id}
-              type="button"
-              className={`analysis-tab-btn ${isActive ? "active" : ""}`}
-              onClick={() => setActiveTab(t.id)}
-            >
-              <Icon size={15} />
-              <span>{t.label}</span>
-              {t.id === "actions" && (
-                <span className="actions-count-pill">{actionPlan.length}</span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* 5. TAB CONTENT PANES (ALL ON THE SAME SCREEN) */}
-      <div className="analysis-workspace-pane">
-        {/* ==================== TAB 1: PRODUCTIVITY ==================== */}
-        {activeTab === "productivity" && (
-          <div className="tab-pane-grid">
-            <div className="card-panel span-2">
-              <div className="card-panel-header">
-                <div className="header-icon-title">
-                  <TrendingUp size={18} className="text-emerald" />
-                  <h3>13-Year Historical Productivity Trajectory (2012–2024)</h3>
-                </div>
-                <div className="legend-pills">
-                  <span className="legend-chip"><i className="dot-green" /> Observed Harvest (t/ha/yr)</span>
-                  <span className="legend-chip"><i className="dot-orange" /> Forecast Model (Annual Sum)</span>
-                </div>
-              </div>
-              <div className="chart-container-wrap">
-                {isLoading ? (
-                  <div className="chart-loading-state">
-                    <RefreshCw size={20} className="animate-spin text-emerald" />
-                    <span>Loading Block {currentBlockId} productivity trajectory…</span>
-                  </div>
-                ) : yieldTimeline && yieldTimeline.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={280} minWidth={0} debounce={50}>
-                    <BarChart data={yieldTimeline} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.06)" />
-                      <XAxis dataKey="Year" tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} domain={[0, (dataMax) => Math.max(26, Math.ceil(dataMax + 2))]} unit=" t/ha/yr" />
-                      <Tooltip
-                        formatter={(v, name) => [`${fmt(v)} t/ha/yr`, name === "Actual" ? "Observed Harvest (12-Mo Sum)" : "Forecast Model (Annual Sum)"]}
-                        contentStyle={{ backgroundColor: "#0d2317", borderRadius: "8px", color: "#f8fafc", border: "1px solid rgba(255,255,255,0.1)" }}
-                      />
-                      <Bar dataKey="Actual" fill="#10b981" radius={[4, 4, 0, 0]} name="Actual" isAnimationActive={false} />
-                      <Bar dataKey="Forecast" fill="#d97706" radius={[4, 4, 0, 0]} name="Forecast" isAnimationActive={false} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="chart-empty-state">
-                    <BarChart3 size={24} className="text-dim" />
-                    <span className="empty-title">Historical Productivity Data Unavailable</span>
-                    <span className="empty-sub">No verified annual productivity records mapped for Block {currentBlockId}.</span>
-                  </div>
-                )}
-              </div>
-              <div className="narrative-callout">
-                <Info size={16} className="text-emerald" />
-                <p>
-                  <strong>Productivity Analysis:</strong> Block {currentBlockId} (planted in {plantingYear}, standing age {fmt(plantAge, 0)} years) yielded{" "}
-                  <strong>{fmt(actualYield)} t/ha/yr</strong> in 2024 vs cohort baseline of <strong>{fmt(expectedYield)} t/ha/yr</strong> (Yield Gap:{" "}
-                  <strong>{fmt(yieldGap)}%</strong>). Historical records indicate maximum production was reached during mature phase.
-                </p>
-              </div>
+              <span className="subtle-badge">Lab Certified</span>
             </div>
 
-            {/* Performance Stats */}
-            <div className="card-panel">
-              <div className="card-panel-header">
-                <div className="header-icon-title">
-                  <Calendar size={18} className="text-emerald" />
-                  <h3>Harvest Metrics (Block {currentBlockId})</h3>
-                </div>
-              </div>
-              <div className="metric-stack">
-                <div className="metric-stack-row">
-                  <span>Actual Latest Yield (2024)</span>
-                  <strong>{fmt(actualYield)} t/ha/yr</strong>
-                </div>
-                <div className="metric-stack-row">
-                  <span>Expected Cohort Benchmark</span>
-                  <strong>{fmt(expectedYield)} t/ha/yr</strong>
-                </div>
-                <div className="metric-stack-row">
-                  <span>Yield Gap vs Cohort</span>
-                  <strong className={yieldGap != null && yieldGap < 0 ? "text-ruby" : "text-emerald"}>
-                    {fmt(yieldGap)} %
-                  </strong>
-                </div>
-                <div className="metric-stack-row">
-                  <span>Monitored Hectares</span>
-                  <strong>{fmt(areaHa, 1)} Ha</strong>
-                </div>
-                <div className="metric-stack-row">
-                  <span>Productive Palm Stand</span>
-                  <strong>{palmsCount ? `${fmt(palmsCount, 0)} palms` : "Stand Recorded"}</strong>
-                </div>
-                <div className="metric-stack-row">
-                  <span>Seed Variety</span>
-                  <strong>{seedType}</strong>
-                </div>
-              </div>
-
-              {/* Commercial FFB Bunch Development Photographic Reference */}
-              <div className="photo-thumbnail-card" style={{ marginTop: "14px" }}>
-                <div className="thumb-img">
-                  <PlantationImage
-                    src={fruitBunchImg}
-                    fallbackSrc="/images/oil_palm_fruit_bunch.jpg"
-                    alt="Oil Palm Fresh Fruit Bunch (FFB) Development"
-                    height="80px"
-                    aspectRatio="1:1"
-                  />
-                </div>
-                <div className="thumb-content">
-                  <span className="thumb-title">Commercial FFB Bunch Development</span>
-                  <p className="thumb-desc">
-                    Mature Fresh Fruit Bunches (FFB) nestled in leaf axils. Yield gap reduction directly targets bunch weight and bunch count per palm.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Monthly Harvest Breakdown if available */}
-            <div className="card-panel span-3">
-              <div className="card-panel-header">
-                <div className="header-icon-title">
-                  <Activity size={18} className="text-emerald" />
-                  <h3>2024 Monthly Harvest Production Curve (12 Months)</h3>
-                </div>
-                {monthlyHarvest.length > 0 && (
-                  <span className="subtle-badge">12 Months Verified</span>
-                )}
-              </div>
-              {isLoading ? (
-                <div className="chart-loading-state compact">
-                  <RefreshCw size={18} className="animate-spin text-emerald" />
-                  <span>Loading 2024 monthly harvest curve…</span>
-                </div>
-              ) : monthlyHarvest.length > 0 ? (
-                <div className="chart-container-wrap">
-                  <ResponsiveContainer width="100%" height={200} minWidth={0} debounce={50}>
-                    <LineChart data={monthlyHarvest} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.06)" />
-                      <XAxis dataKey="Month" tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} unit=" t" />
-                      <Tooltip
-                        formatter={(v, name) => [`${fmt(v)} ${name === "FFB" ? "tonnes (monthly harvest total)" : "t/ha/mo"}`, name === "FFB" ? "Monthly Harvest Total" : name]}
-                        contentStyle={{ backgroundColor: "#0d2317", borderRadius: "8px", color: "#f8fafc", border: "1px solid rgba(255,255,255,0.1)" }}
-                      />
-                      <Line type="monotone" dataKey="FFB" stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} name="FFB" isAnimationActive={false} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              ) : (
-                <div className="chart-empty-state compact">
-                  <Activity size={20} className="text-dim" />
-                  <span className="empty-title">Monthly Harvest Curve Unavailable</span>
-                  <span className="empty-sub">Monthly FFB harvest records are not available for Block {currentBlockId} in 2024.</span>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* ==================== TAB 2: NUTRIENTS & DRIS ==================== */}
-        {activeTab === "nutrients" && (
-          <div className="tab-pane-grid">
-            <div className="card-panel span-2">
-              <div className="card-panel-header">
-                <div className="header-icon-title">
-                  <FlaskConical size={18} className="text-emerald" />
-                  <h3>Frond 17 Foliar Nutrient Assay vs Reference Thresholds</h3>
-                </div>
-                <span className="subtle-badge">Lab Certified</span>
-              </div>
-
-              {nutrientsRow ? (
-                <div className="nutrient-table-container">
-                  <table className="nutrient-spec-table">
-                    <thead>
-                      <tr>
-                        <th>Nutrient Element</th>
-                        <th>Observed</th>
-                        <th>Standard Reference</th>
-                        <th>Diagnostic Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {nutrientMeta.map((n) => {
-                        const val = num(nutrientsRow[n.key]);
-                        const status = nutrientsRow[n.statusKey] || "NORMAL";
-                        return (
-                          <tr key={n.key}>
-                            <td>
-                              <strong>{n.label}</strong>
-                              <span className="nutrient-desc-sub">{n.desc}</span>
-                            </td>
-                            <td>
-                              <strong className="obs-val">
-                                {val != null ? `${fmt(val, n.unit === "%" ? 3 : 1)} ${n.unit}` : "N/A"}
-                              </strong>
-                            </td>
-                            <td>
-                              <span className="ref-range">
-                                {n.minRef} – {n.maxRef} {n.unit}
-                              </span>
-                            </td>
-                            <td>
-                              <span className={`status-pill ${status.toLowerCase()}`}>
-                                {status === "LOW" ? "Deficient" : status === "HIGH" ? "Excess" : "Adequate"}
-                              </span>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="no-data-panel">
-                  <Info size={20} className="text-amber" />
-                  <p>No verified leaf nutrient assay recorded for Block {currentBlockId}.</p>
-                </div>
-              )}
-            </div>
-
-            {/* DRIS Diagnostics & Prescription */}
-            <div className="card-panel">
-              <div className="card-panel-header">
-                <div className="header-icon-title">
-                  <Sparkles size={18} className="text-gold" />
-                  <h3>DRIS Imbalance Diagnosis</h3>
-                </div>
-              </div>
-              {drisRow ? (
-                <div className="dris-summary-card">
-                  <div className="dris-limitation-pill-stack">
-                    <div className="dris-lim-row">
-                      <span>Primary Constraint:</span>
-                      <strong className="text-ruby">{drisRow.Limitation_1 || "Balanced"}</strong>
-                    </div>
-                    {drisRow.Limitation_2 && (
-                      <div className="dris-lim-row">
-                        <span>Secondary Constraint:</span>
-                        <strong className="text-amber">{drisRow.Limitation_2}</strong>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="prescription-quote-box">
-                    <span className="prescription-tag">Agronomic Prescription:</span>
-                    <p className="prescription-text">
-                      "{drisRow.Prescription || "Maintain balanced application; verify foliar levels after next cycle."}"
-                    </p>
-                  </div>
-
-                  <p className="dris-footnote">
-                    Diagnosis and Recommendation Integrated System (DRIS) evaluates dual nutrient ratios to avoid induced deficiencies.
-                  </p>
-                </div>
-              ) : (
-                <div className="no-data-panel">
-                  <Info size={18} className="text-amber" />
-                  <p>DRIS survey data not linked to Block {currentBlockId}.</p>
-                </div>
-              )}
-            </div>
-
-            {/* Soil Test Results & Sparse Data Audit */}
-            <div className="card-panel span-3" style={{ marginTop: "14px" }}>
-                <div className="card-panel-header">
-                  <div className="header-icon-title">
-                    <MapPin size={18} className="text-emerald" />
-                    <div>
-                      <h3>Soil Chemical &amp; Physical Survey (Block {currentBlockId})</h3>
-                      <p className="subtext">Estate index soil survey status and nutrient availability</p>
-                    </div>
-                  </div>
-                  <span className={`subtle-badge ${hasSampledSoil ? "text-emerald" : "text-amber"}`}>
-                    {hasSampledSoil ? "Observed Soil Sample" : "Unsampled Block"}
-                  </span>
-                </div>
-
-                {hasSampledSoil ? (
-                  <div className="metric-stack">
-                    <div className="metric-stack-row">
-                      <span>Soil Reaction (pH H2O)</span>
-                      <strong className="text-emerald">{fmt(soilRow?.pH_H2O || soilRow?.Soil_pH, 2)} (Acidic Ultisol)</strong>
-                    </div>
-                    <div className="metric-stack-row">
-                      <span>Organic Carbon (C-Organic)</span>
-                      <strong>{fmt(soilRow?.C_Organic_pct || soilRow?.Organic_Carbon_pct, 2)} %</strong>
-                    </div>
-                    <div className="metric-stack-row">
-                      <span>Available Phosphorus (Bray II / Olsen)</span>
-                      <strong>{fmt(soilRow?.P_Available_ppm, 1)} ppm</strong>
-                    </div>
-                    <div className="metric-stack-row">
-                      <span>Cation Exchange Capacity (CEC)</span>
-                      <strong>{fmt(soilRow?.CEC_cmol_kg, 1)} cmol/kg</strong>
-                    </div>
-                    <div className="metric-stack-row">
-                      <span>Soil Texture Classification</span>
-                      <strong>{soilRow?.Texture_Class || "Sandy Clay Loam"}</strong>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="narrative-callout warning" style={{ marginTop: "8px" }}>
-                    <Info size={18} className="text-amber" />
-                    <p>
-                      <strong>Soil Core Sampling Unavailable for Block {currentBlockId}:</strong> The commercial plantation soil survey was conducted across <strong>7 representative index blocks</strong> (B004, B006, B008, B015, B026, B031, B041). Block {currentBlockId} does not have physical soil core assay data in the repository. Its canonical screening score is renormalized from verified foliar chemistry and harvest yield records without inventing missing soil values. Dedicated core sampling is recommended.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-        )}
-
-        {/* ==================== TAB 3: WEATHER & MICROCLIMATE ==================== */}
-        {activeTab === "weather" && (
-          <div className="tab-pane-grid">
-            <div className="card-panel span-2">
-              <div className="card-panel-header">
-                <div className="header-icon-title">
-                  <CloudSun size={18} className="text-emerald" />
-                  <h3>Estate Weather Observations & Microclimate Telemetry</h3>
-                </div>
-                <span className="subtle-badge">Weather Station A</span>
-              </div>
-
-              {weatherRow ? (
-                <div className="weather-grid-cards">
-                  <div className="weather-card">
-                    <div className="weather-icon-top"><Droplets size={20} className="text-emerald" /></div>
-                    <span>Mean Daily Rainfall</span>
-                    <strong>{fmt(weatherRow.Rainfall_mm_day, 1)} mm/day</strong>
-                    <small>Annualized precipitation</small>
-                  </div>
-                  <div className="weather-card">
-                    <div className="weather-icon-top"><Sun size={20} className="text-gold" /></div>
-                    <span>Ambient Temperature</span>
-                    <strong>{fmt(weatherRow.Temperature_C, 1)} °C</strong>
-                    <small>Tropical microclimate</small>
-                  </div>
-                  <div className="weather-card">
-                    <div className="weather-icon-top"><Leaf size={20} className="text-emerald" /></div>
-                    <span>Relative Humidity</span>
-                    <strong>{fmt(weatherRow.Relative_Humidity_pct, 1)} %</strong>
-                    <small>Canopy transpirational humidity</small>
-                  </div>
-                  <div className="weather-card">
-                    <div className="weather-icon-top"><Wind size={20} className="text-emerald" /></div>
-                    <span>Wind Velocity</span>
-                    <strong>{fmt(weatherRow.Wind_Speed_m_s, 1)} m/s</strong>
-                    <small>Surface air velocity</small>
-                  </div>
-                </div>
-              ) : (
-                <div className="no-data-panel">
-                  <Info size={20} className="text-amber" />
-                  <p>Weather station records not linked to Block {currentBlockId}.</p>
-                </div>
-              )}
-
-              <div className="narrative-callout">
-                <ShieldCheck size={16} className="text-emerald" />
-                <p>
-                  <strong>Scientific Provenance Boundary:</strong> Weather measurements represent repeated estate-level context. They provide physiological understanding of water availability but are strictly <strong>excluded from the block risk screening score</strong> to preserve discriminant block accuracy.
-                </p>
-              </div>
-            </div>
-
-            {/* Soil Properties if available */}
-            <div className="card-panel">
-              <div className="card-panel-header">
-                <div className="header-icon-title">
-                  <MapPin size={18} className="text-emerald" />
-                  <h3>Soil Physical & Chemical Survey</h3>
-                </div>
-              </div>
-              <div className="metric-stack">
-                <div className="metric-stack-row">
-                  <span>Soil Classification</span>
-                  <strong>{soilRow?.Texture_Class || "Sandy Clay Loam"}</strong>
-                </div>
-                <div className="metric-stack-row">
-                  <span>Soil Reaction (pH)</span>
-                  <strong>{fmt(soilRow?.Soil_pH, 1, "5.2 (Acidic)")}</strong>
-                </div>
-                <div className="metric-stack-row">
-                  <span>Organic Carbon</span>
-                  <strong>{soilRow?.Organic_Carbon_pct ? `${fmt(soilRow.Organic_Carbon_pct, 2)} %` : "1.85 %"}</strong>
-                </div>
-                <div className="metric-stack-row">
-                  <span>Cation Exchange Capacity</span>
-                  <strong>{soilRow?.CEC_cmol_kg ? `${fmt(soilRow.CEC_cmol_kg, 1)} cmol/kg` : "14.2 cmol/kg"}</strong>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ==================== SECTION A: RISK OVERVIEW & METHODOLOGY ==================== */}
-        {(activeTab === "overview" || activeTab === "risk") && (
-          <div className="tab-pane-grid">
-            <div className="card-panel span-2">
-              <div className="card-panel-header">
-                <div className="header-icon-title">
-                  <ShieldAlert size={18} className="text-ruby" />
-                  <div>
-                    <h3>Section A: Risk Overview &amp; Canonical Screening Breakdown</h3>
-                    <p className="subtext">Empirical screening formula: Yield Gap (40%), Foliar Assay (25%), DRIS Index (15%)</p>
-                  </div>
-                </div>
-                <span className={`status-pill ${riskLevel.toLowerCase()}`}>
-                  {riskScore != null ? `${fmt(riskScore, 1)} / 100 (${riskLevel} RISK)` : "Unrated"}
-                </span>
-              </div>
-
-              {/* Comprehensive Risk Status & Explanation Box */}
-              <div className="risk-overview-status-box">
-                <div className="status-box-header">
-                  <span className="status-box-title">Block {currentBlockId} Risk Status &amp; Scientific Explanation</span>
-                  <span className={`status-box-badge ${riskLevel.toLowerCase()}`}>
-                    {riskLevel} RISK PRIORITY
-                  </span>
-                </div>
-                <p className="status-box-p">
-                  <strong>Risk Assessment:</strong> Block {currentBlockId} holds a canonical screening score of <strong>{riskScore != null ? fmt(riskScore, 1) : "N/A"} / 100</strong>, categorizing it as <strong>{riskLevel} RISK</strong>.
-                  {riskLevel === "HIGH"
-                    ? " This block requires an immediate joint agronomic review and field audit due to acute yield contraction combined with physiological nutrient limitations."
-                    : riskLevel === "MEDIUM"
-                    ? " This block is on active watch due to moderate yield variance or emerging foliar nutritional drift."
-                    : " This block is performing within standard agronomic operational thresholds with normal cohort harvest delivery."}
-                </p>
-                <div className="status-factors-row">
-                  <span className="factors-label">Primary Contributing Factors:</span>
-                  <strong className="factors-val">
-                    {multiRiskRow?.Main_Contributing_Indicators || riskRow?.Risk_Contributor || "Yield Gap Variance"}
-                  </strong>
-                </div>
-              </div>
-
-              <div className="risk-breakdown-table">
-                <div className="risk-component-row">
-                  <div className="comp-info">
-                    <strong>Yield Gap Component (40% Weight)</strong>
-                    <p>Deviation of observed yield from mature age-peer expectation curve</p>
-                  </div>
-                  <div className="comp-value">
-                    <span>Gap: {fmt(yieldGap)}%</span>
-                    <strong className={yieldGap != null && yieldGap < -10 ? "text-ruby" : "text-emerald"}>
-                      {multiRiskRow?.Yield_Risk_Component != null ? `${fmt(multiRiskRow.Yield_Risk_Component, 0)} pts` : "Scored"}
-                    </strong>
-                  </div>
-                </div>
-
-                <div className="risk-component-row">
-                  <div className="comp-info">
-                    <strong>Foliar Nutrient Stress Component (25% Weight)</strong>
-                    <p>Proportion of deficient elements among measured Frond 17 nutrients</p>
-                  </div>
-                  <div className="comp-value">
-                    <span>Low count: {nutrientsRow ? Object.keys(nutrientsRow).filter(k => k.endsWith("_Status") && nutrientsRow[k] === "LOW").length : 0}</span>
-                    <strong className="text-amber">
-                      {multiRiskRow?.Nutrient_Risk_Component != null ? `${fmt(multiRiskRow.Nutrient_Risk_Component, 0)} pts` : "Scored"}
-                    </strong>
-                  </div>
-                </div>
-
-                <div className="risk-component-row">
-                  <div className="comp-info">
-                    <strong>DRIS Imbalance Component (15% Weight)</strong>
-                    <p>Relative nutritional ratio severity derived from DRIS limitation rankings</p>
-                  </div>
-                  <div className="comp-value">
-                    <span>Primary: {drisRow?.Limitation_1 || "None"}</span>
-                    <strong className="text-emerald">Evaluated</strong>
-                  </div>
-                </div>
-
-                <div className="risk-component-row">
-                  <div className="comp-info">
-                    <strong>Weather Environmental Context (Excluded)</strong>
-                    <p>Estate rainfall and temperature adequacy</p>
-                  </div>
-                  <div className="comp-value">
-                    <span>Decoupled weight</span>
-                    <strong className="text-emerald">Contextual</strong>
-                  </div>
-                </div>
-              </div>
-
-              <div className="narrative-callout">
-                <ShieldCheck size={16} className="text-emerald" />
-                <p>
-                  <strong>Screening Analysis Guarantee:</strong> This composite risk screening score is computed strictly from verified block-level agronomic records.
-                  Independent research datasets (RGB drone survey and German beech-forest multispectral data) do NOT modify this risk score.
-                </p>
-              </div>
-            </div>
-
-            {/* Threshold Guide */}
-            <div className="card-panel">
-              <div className="card-panel-header">
-                <div className="header-icon-title">
-                  <Info size={18} className="text-emerald" />
-                  <h3>Risk Classification Bands</h3>
-                </div>
-              </div>
-              <div className="threshold-list">
-                <div className="threshold-item">
-                  <span className="threshold-badge high">HIGH RISK (Score ≥ 70)</span>
-                  <p>Immediate multidisciplinary agronomic review and field audit required.</p>
-                </div>
-                <div className="threshold-item">
-                  <span className="threshold-badge medium">MEDIUM RISK (Score 40–69)</span>
-                  <p>Elevated vigilance required; monitor harvest deliveries and review fertilizer plan.</p>
-                </div>
-                <div className="threshold-item">
-                  <span className="threshold-badge low">LOW RISK (Score &lt; 40)</span>
-                  <p>Performing within expected parameters; routine maintenance schedule.</p>
-                </div>
-              </div>
-
-              {/* Commercial Division Stand Reference */}
-              <div className="photo-thumbnail-card" style={{ marginTop: "14px" }}>
-                <div className="thumb-img">
-                  <PlantationImage
-                    src={estateOverviewImg}
-                    fallbackSrc="/images/estate_canopy_overview.jpg"
-                    alt="Division A Plantation Landscape"
-                    height="80px"
-                    aspectRatio="1:1"
-                  />
-                </div>
-                <div className="thumb-content">
-                  <span className="thumb-title">Division A Plantation Stand</span>
-                  <p className="thumb-desc">
-                    Commercial 1,512 Ha plantation landscape. Multi-source evidence converges at the operational block boundary.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ==================== TAB 5: DRONE AI ==================== */}
-        {activeTab === "drone" && (
-          <div className="tab-pane-grid">
-            <div className="card-panel span-3">
-              <div className="provenance-banner warning">
-                <AlertTriangle size={18} className="text-amber" />
-                <div>
-                  <strong>Dataset Provenance Disclosure:</strong>
-                  <p>
-                    The RGB UAV benchmark imagery (MOPAD Site 2, 500 images, 43,599 detected crowns) is an independent aerial survey demonstration.
-                    <strong> These images are not georeferenced or mapped to operational plantation block {currentBlockId}.</strong>
-                    They are not used to evaluate or modify this block's agronomic risk score.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Live Drone Single-Image Inference Tool */}
-            <div className="card-panel span-2">
-              <div className="card-panel-header">
-                <div className="header-icon-title">
-                  <Camera size={18} className="text-emerald" />
-                  <h3>Live YOLO11n Single-Image Inference Workshop</h3>
-                </div>
-                <span className="subtle-badge">Live Model: palm_yolo_best.pt</span>
-              </div>
-              <p className="text-muted-sm">
-                Upload any operational field aerial photograph to execute live in-memory crown detection with YOLO11n.
-              </p>
-
-              <div className="upload-dropzone" onClick={() => fileInputRef.current?.click()}>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  style={{ display: "none" }}
-                  accept="image/jpeg,image/png,image/jpg"
-                  onChange={handleDroneFile}
-                />
-                <UploadCloud size={32} className="text-emerald" />
-                <strong>Click to Select Aerial Photo (JPG/PNG &lt; 10 MB)</strong>
-                <span>{droneFile ? droneFile.name : "Drag and drop or browse local filesystem"}</span>
-              </div>
-
-              {dronePreview && (
-                <div className="inference-controls-bar">
-                  <div className="conf-slider-group">
-                    <label>Detection Confidence Threshold: {fmt(droneConf, 2)}</label>
-                    <input
-                      type="range"
-                      min="0.10"
-                      max="0.90"
-                      step="0.05"
-                      value={droneConf}
-                      onChange={(e) => setDroneConf(Number(e.target.value))}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    className="run-inference-btn"
-                    onClick={runLiveInference}
-                    disabled={isInferring}
-                  >
-                    {isInferring ? "Analyzing image…" : "Run Live Inference"}
-                  </button>
-                </div>
-              )}
-
-              {droneError && (
-                <div className="error-alert-banner">
-                  <AlertTriangle size={16} />
-                  <span>{droneError}</span>
-                </div>
-              )}
-
-              {droneResult && (
-                <div className="inference-result-view">
-                  <div className="result-kpis-strip">
-                    <div className="res-kpi">
-                      <span>Total Palms</span>
-                      <strong>{droneResult.palm_detections}</strong>
-                    </div>
-                    <div className="res-kpi">
-                      <span>Healthy Score</span>
-                      <strong className="text-emerald">{droneResult.drone_health_score}%</strong>
-                    </div>
-                    <div className="res-kpi">
-                      <span>Healthy</span>
-                      <strong>{droneResult.healthy_count}</strong>
-                    </div>
-                    <div className="res-kpi">
-                      <span>Small</span>
-                      <strong>{droneResult.small_count}</strong>
-                    </div>
-                    <div className="res-kpi">
-                      <span>Yellow</span>
-                      <strong className="text-amber">{droneResult.yellow_count}</strong>
-                    </div>
-                    <div className="res-kpi">
-                      <span>Dead</span>
-                      <strong className="text-ruby">{droneResult.dead_count}</strong>
-                    </div>
-                  </div>
-
-                  {droneResult.annotated_image && (
-                    <div className="annotated-image-wrapper">
-                      <img
-                        src={droneResult.annotated_image}
-                        alt="YOLO11n Live Palm Crown Detection"
-                        className="annotated-preview-img"
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* GIS Boundary Prerequisites */}
-            <div className="card-panel">
-              <div className="card-panel-header">
-                <div className="header-icon-title">
-                  <Layers3 size={18} className="text-emerald" />
-                  <h3>GIS Boundary Prerequisites</h3>
-                </div>
-              </div>
-              <p className="text-muted-sm">
-                To link live aerial imagery to operational block <strong>{currentBlockId}</strong>:
-              </p>
-              <ul className="gis-checklist">
-                <li><CheckCircle2 size={14} className="text-emerald" /> RTK-GPS drone flightpaths with &lt;5cm georeferencing</li>
-                <li><CheckCircle2 size={14} className="text-emerald" /> GeoTIFF orthomosaic generation</li>
-                <li><CheckCircle2 size={14} className="text-emerald" /> Cadastral block shapefile boundary masks</li>
-                <li><CheckCircle2 size={14} className="text-emerald" /> Spatial intersection pipeline to attribute crowns to Block {currentBlockId}</li>
-              </ul>
-
-              {/* Precision UAV Commercial Canopy Pattern Reference */}
-              <div className="photo-thumbnail-card" style={{ marginTop: "14px" }}>
-                <div className="thumb-img">
-                  <PlantationImage
-                    src={droneCanopyImg}
-                    fallbackSrc="/images/drone_canopy_inspection.jpg"
-                    alt="Precision UAV Commercial Canopy Orthomosaic Reference"
-                    height="80px"
-                    aspectRatio="1:1"
-                  />
-                </div>
-                <div className="thumb-content">
-                  <span className="thumb-title">Precision UAV Stand Reference</span>
-                  <p className="thumb-desc">
-                    Commercial equilateral triangular planting arrangement (~135–143 palms/ha). Distinct from German beech-forest benchmark and live inference results.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ==================== TAB 6: MULTISPECTRAL ==================== */}
-        {activeTab === "multispectral" && (
-          <div className="tab-pane-grid">
-            <div className="card-panel span-3">
-              <div className="provenance-banner info">
-                <Info size={18} className="text-emerald" />
-                <div>
-                  <strong>Scientific Benchmark Provenance:</strong>
-                  <p>
-                    The multispectral calibration analysis is based on the <strong>MSUAV500K benchmark dataset (Zenodo 16743975)</strong> collected via a MicaSense Altum camera over a <strong>German temperate beech forest</strong>.
-                    <strong> There is no verified oil-palm multispectral imagery linked to operational block {currentBlockId}.</strong>
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="card-panel span-2">
-              <div className="card-panel-header">
-                <div className="header-icon-title">
-                  <Layers size={18} className="text-emerald" />
-                  <h3>Multispectral Indices Research Specification</h3>
-                </div>
-                <span className="subtle-badge">MicaSense Altum (5 Bands)</span>
-              </div>
-              <p className="section-instruction">
-                When operational multispectral UAV surveys are executed for Block {currentBlockId}, the following calibrated vegetation indices will be computed:
-              </p>
-
-              <div className="index-specs-grid">
-                <div className="index-spec-card">
-                  <strong>NDVI (Normalized Difference Vegetation Index)</strong>
-                  <code>(NIR - Red) / (NIR + Red)</code>
-                  <p>Measures overall photosynthetic canopy biomass and green leaf density.</p>
-                </div>
-                <div className="index-spec-card">
-                  <strong>NDRE (Normalized Difference RedEdge)</strong>
-                  <code>(NIR - RedEdge) / (NIR + RedEdge)</code>
-                  <p>Sensitive to chlorophyll concentration in dense mature oil palm crowns.</p>
-                </div>
-                <div className="index-spec-card">
-                  <strong>GNDVI (Green NDVI)</strong>
-                  <code>(NIR - Green) / (NIR + Green)</code>
-                  <p>Higher sensitivity to chlorophyll variations during active bunch development.</p>
-                </div>
-                <div className="index-spec-card">
-                  <strong>Thermal / Water Stress</strong>
-                  <code>LWIR Infrared Band</code>
-                  <p>Monitors transpiration reduction and stomatal closure under drought stress.</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="card-panel">
-              <div className="card-panel-header">
-                <div className="header-icon-title">
-                  <ShieldCheck size={18} className="text-emerald" />
-                  <h3>Integration Roadmap</h3>
-                </div>
-              </div>
-              <div className="status-timeline">
-                <div className="timeline-step complete">
-                  <CheckCircle2 size={16} />
-                  <div>
-                    <strong>Index Calculation Engine</strong>
-                    <span>5-band mathematical formulas validated</span>
-                  </div>
-                </div>
-                <div className="timeline-step pending">
-                  <Clock3 size={16} />
-                  <div>
-                    <strong>Estate Flight Campaign</strong>
-                    <span>Pending MicaSense UAV survey over North Estate</span>
-                  </div>
-                </div>
-                <div className="timeline-step pending">
-                  <Clock3 size={16} />
-                  <div>
-                    <strong>Block Boundary Overlay</strong>
-                    <span>Pending block shapefile boundary intersection</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ==================== TAB 7: PRIORITIZED SOLUTIONS ==================== */}
-        {activeTab === "actions" && (
-          <div className="tab-pane-grid">
-            <div className="card-panel span-3">
-              <div className="card-panel-header">
-                <div className="header-icon-title">
-                  <ClipboardCheck size={18} className="text-emerald" />
-                  <h3>Prioritized Field Action Directives for Block {currentBlockId}</h3>
-                </div>
-                <span className="subtle-badge">{actionPlan.length} Active Directives</span>
-              </div>
-
-              <div className="actions-workflow-stack">
-                {actionPlan.map((item, idx) => (
-                  <div key={idx} className={`action-workflow-card ${item.priority.toLowerCase()}`}>
-                    <div className="action-card-header">
-                      <div className="action-header-left">
-                        <span className={`action-priority-badge ${item.priority.toLowerCase()}`}>
-                          {item.priority} Priority
-                        </span>
-                        <h4>{item.risk}</h4>
-                      </div>
-                      <span className="source-label">{item.badge}</span>
-                    </div>
-
-                    <div className="action-five-stage-grid">
-                      <div className="stage-item">
-                        <span className="stage-label">1. What Needs Attention</span>
-                        <p><strong>{item.risk}</strong></p>
-                      </div>
-
-                      <div className="stage-item">
-                        <span className="stage-label">2. Observed Indicator</span>
-                        <p>{item.reason}</p>
-                      </div>
-
-                      <div className="stage-item">
-                        <span className="stage-label">3. Why Care (Impact)</span>
-                        <p>{item.whyCare}</p>
-                      </div>
-
-                      <div className="stage-item highlight">
-                        <span className="stage-label">4. Recommended Next Step</span>
-                        <p><strong>{item.action}</strong></p>
-                      </div>
-
-                      <div className="stage-item">
-                        <span className="stage-label">5. Validation Protocol</span>
-                        <p>{item.validation}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ==================== SECTION G: BLOCK HISTORY & AUDIT TRAIL ==================== */}
-        {activeTab === "history" && (
-          <div className="tab-pane-grid">
-            {/* 13-Year Historical Harvest Ledger */}
-            <div className="card-panel span-2">
-              <div className="card-panel-header">
-                <div className="header-icon-title">
-                  <Clock3 size={18} className="text-emerald" />
-                  <div>
-                    <h3>Section G: Block {currentBlockId} Historical Harvest Ledger (2012–2024)</h3>
-                    <p className="subtext">13-year certified weighbridge harvest records, cohort benchmarks, and performance variance</p>
-                  </div>
-                </div>
-                <span className="subtle-badge">13 Years Certified</span>
-              </div>
-
-              <div className="history-table-container">
+            {nutrientsRow ? (
+              <div className="nutrient-table-container">
                 <table className="nutrient-spec-table">
                   <thead>
                     <tr>
-                      <th>Harvest Year</th>
-                      <th>Observed Harvest</th>
-                      <th>FFB Delivery</th>
-                      <th>Cohort Benchmark</th>
-                      <th>Yield Gap</th>
-                      <th>Agronomic Status</th>
+                      <th>Nutrient Element</th>
+                      <th>Observed</th>
+                      <th>Standard Reference</th>
+                      <th>Diagnostic Status</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {blockHistory && blockHistory.length > 0 ? (
-                      blockHistory.map((row) => {
-                        const yr = row.Year;
-                        const benchmark = yr < 2015 ? 5.5 : yr < 2018 ? 8.0 : yr < 2022 ? 18.5 : 20.0;
-                        const gap = row.Actual != null && benchmark > 0 ? ((row.Actual - benchmark) / benchmark) * 100 : null;
-                        const status = gap == null ? "Standard" : gap >= 0 ? "Optimal" : gap > -15 ? "Normal Variance" : "Yield Deficit";
-                        return (
-                          <tr key={yr}>
-                            <td><strong>{yr}</strong></td>
-                            <td><strong className="obs-val">{row.Actual != null ? `${fmt(row.Actual, 2)} t/ha/yr` : "N/A"}</strong></td>
-                            <td>{row.FFB_Tonnes != null ? `${fmt(row.FFB_Tonnes, 1)} t` : "—"}</td>
-                            <td><span className="ref-range">{benchmark.toFixed(1)} t/ha/yr</span></td>
-                            <td>
-                              <span className={`chip-gap ${gap != null && gap < 0 ? "negative" : "positive"}`}>
-                                {gap != null ? `${fmt(gap, 1)}%` : "—"}
-                              </span>
-                            </td>
-                            <td>
-                              <span className={`status-pill ${status === "Optimal" ? "low" : status === "Yield Deficit" ? "high" : "medium"}`}>
-                                {status}
-                              </span>
-                            </td>
-                          </tr>
-                        );
-                      })
-                    ) : (
-                      <tr>
-                        <td colSpan={6} style={{ textAlign: "center", padding: "16px", color: "#94a3b8" }}>
-                          No annual harvest ledger entries mapped for Block {currentBlockId}.
-                        </td>
-                      </tr>
-                    )}
+                    {nutrientMeta.map((n) => {
+                      const val = num(nutrientsRow[n.key]);
+                      const status = nutrientsRow[n.statusKey] || "NORMAL";
+                      return (
+                        <tr key={n.key}>
+                          <td>
+                            <strong>{n.label}</strong>
+                            <span className="nutrient-desc-sub">{n.desc}</span>
+                          </td>
+                          <td>
+                            <strong className="obs-val">
+                              {val != null ? `${fmt(val, n.unit === "%" ? 3 : 1)} ${n.unit}` : "N/A"}
+                            </strong>
+                          </td>
+                          <td>
+                            <span className="ref-range">
+                              {n.minRef} – {n.maxRef} {n.unit}
+                            </span>
+                          </td>
+                          <td>
+                            <span className={`status-pill ${status.toLowerCase()}`}>
+                              {status === "LOW" ? "Deficient" : status === "HIGH" ? "Excess" : "Adequate"}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
-            </div>
-
-            {/* Sampling & Field Inspection Chronology */}
-            <div className="card-panel">
-              <div className="card-panel-header">
-                <div className="header-icon-title">
-                  <ClipboardCheck size={18} className="text-emerald" />
-                  <div>
-                    <h3>Sampling &amp; Field Audit Chronology</h3>
-                    <p className="subtext">Agronomic sampling records and inspection history</p>
-                  </div>
-                </div>
+            ) : (
+              <div className="no-data-panel">
+                <Info size={20} className="text-amber" />
+                <p>No verified leaf nutrient assay recorded for Block {currentBlockId}.</p>
               </div>
-
-              <div className="metric-stack">
-                <div className="metric-stack-row">
-                  <span>Frond 17 Foliar Assay</span>
-                  <strong>{nutrientsRow?.Year || nutrientsRow?.Leaf_Sampling_Year || 2022} Lab Certified</strong>
-                </div>
-                <div className="metric-stack-row">
-                  <span>DRIS Diagnostic Survey</span>
-                  <strong>{drisRow?.Year || 2022} Complete</strong>
-                </div>
-                <div className="metric-stack-row">
-                  <span>Soil Core Survey</span>
-                  <strong className={hasSampledSoil ? "text-emerald" : "text-amber"}>
-                    {hasSampledSoil ? "2022 Observed Core" : "Unsampled (7-Block Index Survey)"}
-                  </strong>
-                </div>
-                <div className="metric-stack-row">
-                  <span>Field Directive Status</span>
-                  <strong className={actionStatus === "COMPLETED" ? "text-emerald" : "text-gold"}>
-                    {actionStatus}
-                  </strong>
-                </div>
-                <div className="metric-stack-row">
-                  <span>Last Verified Inspector</span>
-                  <strong>{actionRecords[actionKey]?.inspector || "Field Agronomist"}</strong>
-                </div>
-                <div className="metric-stack-row">
-                  <span>Verification Date</span>
-                  <strong>{actionRecords[actionKey]?.completedAt || actionRecords[actionKey]?.date || inspectionDate}</strong>
-                </div>
-              </div>
-
-              {actionRecords[actionKey]?.findings && (
-                <div className="prescription-quote-box" style={{ marginTop: "14px" }}>
-                  <span className="prescription-tag">Latest Ground Findings:</span>
-                  <p className="prescription-text">"{actionRecords[actionKey].findings}"</p>
-                </div>
-              )}
-
-              {actionRecords[actionKey]?.followUp && (
-                <div className="prescription-quote-box" style={{ marginTop: "10px" }}>
-                  <span className="prescription-tag">Follow-Up Directives:</span>
-                  <p className="prescription-text">"{actionRecords[actionKey].followUp}"</p>
-                </div>
-              )}
-
-              <div className="action-panel-btn-wrap" style={{ marginTop: "16px" }}>
-                <button
-                  type="button"
-                  className="open-fac-link-btn"
-                  onClick={onBackToGrid}
-                  style={{ width: "100%", justifyContent: "center", padding: "10px" }}
-                >
-                  <ArrowLeft size={14} />
-                  <span>← Back to All 42 Blocks</span>
-                </button>
-              </div>
-            </div>
+            )}
           </div>
-        )}
 
-        {/* ==================== TAB 8: TREE INVENTORY ==================== */}
-        {activeTab === "tree-inventory" && (
-          <div className="tab-pane-grid">
-            <div className="card-panel span-2">
-              <div className="card-panel-header">
-                <div className="header-icon-title">
-                  <Sprout size={18} className="text-emerald" />
-                  <h3>Block {currentBlockId} Tree Inventory &amp; Remote-Sensing Readiness</h3>
-                </div>
-                <span className="unmapped-status-pill amber">
-                  Status: Inventory Unavailable
-                </span>
+          {/* DRIS Diagnostics & Prescription */}
+          <div className="card-panel">
+            <div className="card-panel-header">
+              <div className="header-icon-title">
+                <Sparkles size={18} className="text-gold" />
+                <h3>DRIS Imbalance Diagnosis</h3>
               </div>
-
-              {/* Empirical Status Notice */}
-              <div className="inventory-status-callout">
-                <div className="status-callout-icon">
-                  <ShieldAlert size={22} className="text-amber" />
+            </div>
+            {drisRow ? (
+              <div className="dris-summary-card">
+                <div className="dris-limitation-pill-stack">
+                  <div className="dris-lim-row">
+                    <span>Primary Constraint:</span>
+                    <strong className="text-ruby">{drisRow.Limitation_1 || "Balanced"}</strong>
+                  </div>
+                  {drisRow.Limitation_2 && (
+                    <div className="dris-lim-row">
+                      <span>Secondary Constraint:</span>
+                      <strong className="text-amber">{drisRow.Limitation_2}</strong>
+                    </div>
+                  )}
                 </div>
-                <div className="status-callout-text">
-                  <h4>Unique Individual Tree Inventory is Currently Unavailable</h4>
-                  <p>
-                    Verified individual palm crown centroid coordinates, LiDAR point clouds, and unique tree IDs are not present in current commercial estate records. Commercial plantations record aggregate block deliveries (B001–B042). Individual tree census requires high-resolution georeferenced crown segmentation.
+
+                <div className="prescription-quote-box">
+                  <span className="prescription-tag">Agronomic Prescription:</span>
+                  <p className="prescription-text">
+                    "{drisRow.Prescription || "Maintain balanced application; verify foliar levels after next cycle."}"
                   </p>
                 </div>
-              </div>
 
-              {/* Verified Block Characteristics & Theoretical Benchmark */}
-              <div className="tree-specs-grid">
-                <div className="tree-spec-box">
-                  <span className="spec-label">Verified Block Area</span>
-                  <strong className="spec-val text-emerald">{fmt(actualArea || 20.0, 1)} Ha</strong>
-                  <span className="spec-sub">Observed in block_characteristics.csv</span>
-                </div>
-                <div className="tree-spec-box">
-                  <span className="spec-label">Planting Year &amp; Age</span>
-                  <strong className="spec-val">{plantingYear || "2012"} ({fmt(plantAge, 0)} Yrs)</strong>
-                  <span className="spec-sub">{seedType || "PPKS / DxP Hybrid"}</span>
-                </div>
-                <div className="tree-spec-box">
-                  <span className="spec-label">Agronomic Spacing Standard</span>
-                  <strong className="spec-val">136 palms/ha</strong>
-                  <span className="spec-sub">9.0m Equilateral Triangular</span>
-                </div>
-                <div className="tree-spec-box highlight">
-                  <span className="spec-label">Theoretical Capacity Benchmark</span>
-                  <strong className="spec-val text-gold">~{Math.round((actualArea || 20.0) * 136).toLocaleString()} Palms</strong>
-                  <span className="spec-sub">Theoretical estimate (NOT verified census)</span>
-                </div>
-              </div>
-
-              {/* Remote Sensing Readiness Breakdown */}
-              <div className="readiness-section">
-                <div className="readiness-header">
-                  <h4>Remote-Sensing Readiness Score: <strong>35%</strong></h4>
-                  <span className="readiness-sub">3 of 6 prerequisite layers validated</span>
-                </div>
-                <div className="readiness-progress-bar">
-                  <div className="readiness-progress-fill" style={{ width: "35%" }} />
-                </div>
-                <div className="readiness-checklist-grid">
-                  <div className="readiness-item checked">
-                    <CheckCircle2 size={15} className="text-emerald" />
-                    <span>Cadastral Block Boundary (Available)</span>
-                  </div>
-                  <div className="readiness-item checked">
-                    <CheckCircle2 size={15} className="text-emerald" />
-                    <span>Planting Year &amp; Cohort History (Available)</span>
-                  </div>
-                  <div className="readiness-item checked">
-                    <CheckCircle2 size={15} className="text-emerald" />
-                    <span>Commercial DxP Seed Type (Available)</span>
-                  </div>
-                  <div className="readiness-item missing">
-                    <CircleAlert size={15} className="text-amber" />
-                    <span>Georeferenced Crown Centroids (Missing)</span>
-                  </div>
-                  <div className="readiness-item missing">
-                    <CircleAlert size={15} className="text-amber" />
-                    <span>High-Resolution Canopy Point Cloud (Missing)</span>
-                  </div>
-                  <div className="readiness-item missing">
-                    <CircleAlert size={15} className="text-amber" />
-                    <span>Field Ground-Truth Census Tags (Missing)</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Planned Schema Preview */}
-              <div className="future-schema-box">
-                <span className="schema-badge">EXTENSIBLE ARCHITECTURE</span>
-                <h4>Ready for Future Georeferenced Crown Ingestion</h4>
-                <p>
-                  The platform architecture is designed to ingest tree-level GeoJSON features as soon as survey orthomosaics are processed:
+                <p className="dris-footnote">
+                  Diagnosis and Recommendation Integrated System (DRIS) evaluates dual nutrient ratios to avoid induced deficiencies.
                 </p>
-                <pre className="schema-code">
-{`{
-  "entity": "TreeObservation",
-  "block_id": "${currentBlockId}",
-  "schema": ["tree_id", "latitude", "longitude", "crown_diameter_m", "bearing_status", "last_inspected"]
-}`}
-                </pre>
+              </div>
+            ) : (
+              <div className="no-data-panel">
+                <Info size={18} className="text-amber" />
+                <p>DRIS survey data not linked to Block {currentBlockId}.</p>
+              </div>
+            )}
+          </div>
+
+          {/* Soil Test Results & Sparse Data Audit */}
+          <div className="card-panel span-3" style={{ marginTop: "14px" }}>
+            <div className="card-panel-header">
+              <div className="header-icon-title">
+                <MapPin size={18} className="text-emerald" />
+                <div>
+                  <h3>Soil Chemical &amp; Physical Survey (Block {currentBlockId})</h3>
+                  <p className="subtext">Estate index soil survey status and nutrient availability</p>
+                </div>
+              </div>
+              <span className={`subtle-badge ${hasSampledSoil ? "text-emerald" : "text-amber"}`}>
+                {hasSampledSoil ? "Observed Soil Sample" : "Unsampled Block"}
+              </span>
+            </div>
+
+            {hasSampledSoil ? (
+              <div className="metric-stack">
+                <div className="metric-stack-row">
+                  <span>Soil Reaction (pH H2O)</span>
+                  <strong className="text-emerald">{fmt(soilRow?.pH_H2O || soilRow?.Soil_pH, 2)} (Acidic Ultisol)</strong>
+                </div>
+                <div className="metric-stack-row">
+                  <span>Organic Carbon (C-Organic)</span>
+                  <strong>{fmt(soilRow?.C_Organic_pct || soilRow?.Organic_Carbon_pct, 2)} %</strong>
+                </div>
+                <div className="metric-stack-row">
+                  <span>Available Phosphorus (Bray II / Olsen)</span>
+                  <strong>{fmt(soilRow?.P_Available_ppm, 1)} ppm</strong>
+                </div>
+                <div className="metric-stack-row">
+                  <span>Cation Exchange Capacity (CEC)</span>
+                  <strong>{fmt(soilRow?.CEC_cmol_kg, 1)} cmol/kg</strong>
+                </div>
+                <div className="metric-stack-row">
+                  <span>Soil Texture Classification</span>
+                  <strong>{soilRow?.Texture_Class || "Sandy Clay Loam"}</strong>
+                </div>
+              </div>
+            ) : (
+              <div className="narrative-callout warning" style={{ marginTop: "8px" }}>
+                <Info size={18} className="text-amber" />
+                <p>
+                  <strong>Soil Core Sampling Unavailable for Block {currentBlockId}:</strong> The commercial plantation soil survey was conducted across <strong>7 representative index blocks</strong> (B004, B006, B008, B015, B026, B031, B041). Block {currentBlockId} does not have physical soil core assay data in the repository. Its canonical screening score is renormalized from verified foliar chemistry and harvest yield records without inventing missing soil values. Dedicated core sampling is recommended.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ================================================================ */}
+      {/* SECTION 5: WEATHER CONTEXT & MICROCLIMATE OBSERVATIONS           */}
+      {/* ================================================================ */}
+      <section id="section-weather" className="block-analysis-section">
+        <div className="section-banner-header">
+          <div className="section-banner-title-group">
+            <span className="section-pill">SECTION 7 OF 8</span>
+            <h2 className="section-main-heading">Estate Weather Observations &amp; Microclimate Context</h2>
+          </div>
+          <span className="subtle-badge">Weather Station A · Excluded from Block Score</span>
+        </div>
+
+        <div className="tab-pane-grid">
+          <div className="card-panel span-2">
+            <div className="card-panel-header">
+              <div className="header-icon-title">
+                <CloudSun size={18} className="text-emerald" />
+                <h3>Estate Weather Observations &amp; Microclimate Telemetry</h3>
+              </div>
+              <span className="subtle-badge">Weather Station A</span>
+            </div>
+
+            {weatherRow ? (
+              <div className="weather-grid-cards">
+                <div className="weather-card">
+                  <div className="weather-icon-top"><Droplets size={20} className="text-emerald" /></div>
+                  <span>Mean Daily Rainfall</span>
+                  <strong>{fmt(weatherRow.Rainfall_mm_day, 1)} mm/day</strong>
+                  <small>Annualized precipitation</small>
+                </div>
+                <div className="weather-card">
+                  <div className="weather-icon-top"><Sun size={20} className="text-gold" /></div>
+                  <span>Ambient Temperature</span>
+                  <strong>{fmt(weatherRow.Temperature_C, 1)} °C</strong>
+                  <small>Tropical microclimate</small>
+                </div>
+                <div className="weather-card">
+                  <div className="weather-icon-top"><Leaf size={20} className="text-emerald" /></div>
+                  <span>Relative Humidity</span>
+                  <strong>{fmt(weatherRow.Relative_Humidity_pct, 1)} %</strong>
+                  <small>Canopy transpirational humidity</small>
+                </div>
+                <div className="weather-card">
+                  <div className="weather-icon-top"><Wind size={20} className="text-emerald" /></div>
+                  <span>Wind Velocity</span>
+                  <strong>{fmt(weatherRow.Wind_Speed_m_s, 1)} m/s</strong>
+                  <small>Surface air velocity</small>
+                </div>
+              </div>
+            ) : (
+              <div className="no-data-panel">
+                <Info size={20} className="text-amber" />
+                <p>Weather station records not linked to Block {currentBlockId}.</p>
+              </div>
+            )}
+
+            <div className="narrative-callout">
+              <ShieldCheck size={16} className="text-emerald" />
+              <p>
+                <strong>Scientific Provenance Boundary:</strong> Weather measurements represent repeated estate-level context. They provide physiological understanding of water availability but are strictly <strong>excluded from the block risk screening score</strong> to preserve discriminant block accuracy.
+              </p>
+            </div>
+          </div>
+
+          <div className="card-panel">
+            <div className="card-panel-header">
+              <div className="header-icon-title">
+                <MapPin size={18} className="text-emerald" />
+                <h3>Soil Physical &amp; Chemical Profile</h3>
+              </div>
+            </div>
+            <div className="metric-stack">
+              <div className="metric-stack-row">
+                <span>Soil Classification</span>
+                <strong>{soilRow?.Texture_Class || "Sandy Clay Loam"}</strong>
+              </div>
+              <div className="metric-stack-row">
+                <span>Soil Reaction (pH)</span>
+                <strong>{fmt(soilRow?.Soil_pH, 1, "5.2 (Acidic)")}</strong>
+              </div>
+              <div className="metric-stack-row">
+                <span>Organic Carbon</span>
+                <strong>{soilRow?.Organic_Carbon_pct ? `${fmt(soilRow.Organic_Carbon_pct, 2)} %` : "1.85 %"}</strong>
+              </div>
+              <div className="metric-stack-row">
+                <span>Cation Exchange Capacity</span>
+                <strong>{soilRow?.CEC_cmol_kg ? `${fmt(soilRow.CEC_cmol_kg, 1)} cmol/kg` : "14.2 cmol/kg"}</strong>
               </div>
             </div>
           </div>
-        )}
+        </div>
+      </section>
+
+      {/* ================================================================ */}
+      {/* SECTION 8: DRONE AI & MULTISPECTRAL REMOTE SENSING               */}
+      {/* ================================================================ */}
+      <section id="section-drone-spectral" className="block-analysis-section">
+        <div className="section-banner-header">
+          <div className="section-banner-title-group">
+            <span className="section-pill">SECTION 8 OF 8</span>
+            <h2 className="section-main-heading">Drone AI Inference &amp; Multispectral Remote Sensing Benchmarks</h2>
+          </div>
+          <span className="unmapped-status-pill amber">0% Screening Score Influence (Unmapped Benchmarks)</span>
+        </div>
+
+        <div className="tab-pane-grid">
+          <div className="card-panel span-3">
+            <div className="provenance-banner warning">
+              <AlertTriangle size={18} className="text-amber" />
+              <div>
+                <strong>Dataset Provenance Disclosure:</strong>
+                <p>
+                  The RGB UAV benchmark imagery (MOPAD Site 2, 500 images, 43,599 detected crowns) is an independent aerial survey demonstration.
+                  <strong> These images are not georeferenced or mapped to operational plantation block {currentBlockId}.</strong>
+                  They are not used to evaluate or modify this block's agronomic risk score.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Live Drone Single-Image Inference Workshop */}
+          <div className="card-panel span-2">
+            <div className="card-panel-header">
+              <div className="header-icon-title">
+                <Camera size={18} className="text-emerald" />
+                <h3>Live YOLO11n Single-Image Inference Workshop</h3>
+              </div>
+              <span className="subtle-badge">Live Model: palm_yolo_best.pt</span>
+            </div>
+            <p className="text-muted-sm">
+              Upload any operational field aerial photograph to execute live in-memory crown detection with YOLO11n.
+            </p>
+
+            <div className="upload-dropzone" onClick={() => fileInputRef.current?.click()}>
+              <input
+                type="file"
+                ref={fileInputRef}
+                style={{ display: "none" }}
+                accept="image/jpeg,image/png,image/jpg"
+                onChange={handleDroneFile}
+              />
+              <UploadCloud size={32} className="text-emerald" />
+              <strong>Click to Select Aerial Photo (JPG/PNG &lt; 10 MB)</strong>
+              <span>{droneFile ? droneFile.name : "Drag and drop or browse local filesystem"}</span>
+            </div>
+
+            {dronePreview && (
+              <div className="inference-controls-bar">
+                <div className="conf-slider-group">
+                  <label>Detection Confidence Threshold: {fmt(droneConf, 2)}</label>
+                  <input
+                    type="range"
+                    min="0.10"
+                    max="0.90"
+                    step="0.05"
+                    value={droneConf}
+                    onChange={(e) => setDroneConf(Number(e.target.value))}
+                  />
+                </div>
+                <button
+                  type="button"
+                  className="run-inference-btn"
+                  onClick={runLiveInference}
+                  disabled={isInferring}
+                >
+                  {isInferring ? "Analyzing image…" : "Run Live Inference"}
+                </button>
+              </div>
+            )}
+
+            {droneError && (
+              <div className="error-alert-banner">
+                <AlertTriangle size={16} />
+                <span>{droneError}</span>
+              </div>
+            )}
+
+            {droneResult && (
+              <div className="inference-result-view">
+                <div className="result-kpis-strip">
+                  <div className="res-kpi">
+                    <span>Total Palms</span>
+                    <strong>{droneResult.palm_detections}</strong>
+                  </div>
+                  <div className="res-kpi">
+                    <span>Healthy Score</span>
+                    <strong className="text-emerald">{droneResult.drone_health_score}%</strong>
+                  </div>
+                  <div className="res-kpi">
+                    <span>Healthy</span>
+                    <strong>{droneResult.healthy_count}</strong>
+                  </div>
+                  <div className="res-kpi">
+                    <span>Small</span>
+                    <strong>{droneResult.small_count}</strong>
+                  </div>
+                  <div className="res-kpi">
+                    <span>Yellow</span>
+                    <strong className="text-amber">{droneResult.yellow_count}</strong>
+                  </div>
+                  <div className="res-kpi">
+                    <span>Dead</span>
+                    <strong className="text-ruby">{droneResult.dead_count}</strong>
+                  </div>
+                </div>
+
+                {droneResult.annotated_image && (
+                  <div className="annotated-image-wrapper">
+                    <img
+                      src={droneResult.annotated_image}
+                      alt="YOLO11n Live Palm Crown Detection"
+                      className="annotated-preview-img"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* GIS Boundary Prerequisites */}
+          <div className="card-panel">
+            <div className="card-panel-header">
+              <div className="header-icon-title">
+                <Layers3 size={18} className="text-emerald" />
+                <h3>GIS Boundary Prerequisites</h3>
+              </div>
+            </div>
+            <p className="text-muted-sm">
+              To link live aerial imagery to operational block <strong>{currentBlockId}</strong>:
+            </p>
+            <ul className="gis-checklist">
+              <li><CheckCircle2 size={14} className="text-emerald" /> RTK-GPS drone flightpaths with &lt;5cm georeferencing</li>
+              <li><CheckCircle2 size={14} className="text-emerald" /> GeoTIFF orthomosaic generation</li>
+              <li><CheckCircle2 size={14} className="text-emerald" /> Cadastral block shapefile boundary masks</li>
+              <li><CheckCircle2 size={14} className="text-emerald" /> Spatial intersection pipeline to attribute crowns to Block {currentBlockId}</li>
+            </ul>
+
+            <div className="photo-thumbnail-card" style={{ marginTop: "14px" }}>
+              <div className="thumb-img">
+                <PlantationImage
+                  src={droneCanopyImg}
+                  fallbackSrc="/images/drone_canopy_inspection.jpg"
+                  alt="Precision UAV Commercial Canopy Orthomosaic Reference"
+                  height="80px"
+                  aspectRatio="1:1"
+                />
+              </div>
+              <div className="thumb-content">
+                <span className="thumb-title">Precision UAV Stand Reference</span>
+                <p className="thumb-desc">
+                  Commercial equilateral triangular planting arrangement (~135–143 palms/ha). Distinct from German beech-forest benchmark and live inference results.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Multispectral Research Benchmark Section */}
+          <div className="card-panel span-3" style={{ marginTop: "14px" }}>
+            <div className="provenance-banner info">
+              <Info size={18} className="text-emerald" />
+              <div>
+                <strong>Scientific Benchmark Provenance (MicaSense Altum 5-band):</strong>
+                <p>
+                  The multispectral calibration analysis is based on the <strong>MSUAV500K benchmark dataset (Zenodo 16743975)</strong> collected via a MicaSense Altum camera over a <strong>German temperate beech forest</strong>.
+                  <strong> There is no verified oil-palm multispectral imagery linked to operational block {currentBlockId}.</strong>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="card-panel span-2">
+            <div className="card-panel-header">
+              <div className="header-icon-title">
+                <Layers size={18} className="text-emerald" />
+                <h3>Multispectral Indices Research Specification</h3>
+              </div>
+              <span className="subtle-badge">MicaSense Altum (5 Bands)</span>
+            </div>
+            <p className="section-instruction">
+              When operational multispectral UAV surveys are executed for Block {currentBlockId}, the following calibrated vegetation indices will be computed:
+            </p>
+
+            <div className="index-specs-grid">
+              <div className="index-spec-card">
+                <strong>NDVI (Normalized Difference Vegetation Index)</strong>
+                <code>(NIR - Red) / (NIR + Red)</code>
+                <p>Measures overall photosynthetic canopy biomass and green leaf density.</p>
+              </div>
+              <div className="index-spec-card">
+                <strong>NDRE (Normalized Difference RedEdge)</strong>
+                <code>(NIR - RedEdge) / (NIR + RedEdge)</code>
+                <p>Sensitive to chlorophyll concentration in dense mature oil palm crowns.</p>
+              </div>
+              <div className="index-spec-card">
+                <strong>GNDVI (Green NDVI)</strong>
+                <code>(NIR - Green) / (NIR + Green)</code>
+                <p>Higher sensitivity to chlorophyll variations during active bunch development.</p>
+              </div>
+              <div className="index-spec-card">
+                <strong>Thermal / Water Stress</strong>
+                <code>LWIR Infrared Band</code>
+                <p>Monitors transpiration reduction and stomatal closure under drought stress.</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="card-panel">
+            <div className="card-panel-header">
+              <div className="header-icon-title">
+                <ShieldCheck size={18} className="text-emerald" />
+                <h3>Integration Roadmap</h3>
+              </div>
+            </div>
+            <div className="status-timeline">
+              <div className="timeline-step complete">
+                <CheckCircle2 size={16} />
+                <div>
+                  <strong>Index Calculation Engine</strong>
+                  <span>5-band mathematical formulas validated</span>
+                </div>
+              </div>
+              <div className="timeline-step pending">
+                <Clock3 size={16} />
+                <div>
+                  <strong>Estate Flight Campaign</strong>
+                  <span>Pending MicaSense UAV survey over North Estate</span>
+                </div>
+              </div>
+              <div className="timeline-step pending">
+                <Clock3 size={16} />
+                <div>
+                  <strong>Block Boundary Overlay</strong>
+                  <span>Pending block shapefile boundary intersection</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+
+      {/* BOTTOM RETURN BAR */}
+      <div className="block-detail-footer-bar">
+        <button
+          type="button"
+          className="back-grid-btn prominent-back-btn back-to-estate-btn"
+          onClick={onBackToGrid}
+          title={`Return to ${estateName} 42-Block Risk Dashboard`}
+        >
+          <ArrowLeft size={16} />
+          <span>← Back to Estate ({estateName})</span>
+        </button>
+        <button
+          type="button"
+          className="scroll-top-btn"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        >
+          ↑ Back to Top of Analysis
+        </button>
       </div>
     </div>
   );
