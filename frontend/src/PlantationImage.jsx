@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Sprout, ImageOff } from "lucide-react";
 
 /**
@@ -22,6 +22,13 @@ export default function PlantationImage({
 }) {
   const [hasError, setHasError] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const imgRef = useRef(null);
+
+  useEffect(() => {
+    if (imgRef.current && (imgRef.current.complete || imgRef.current.naturalWidth > 0)) {
+      setIsLoaded(true);
+    }
+  }, [src]);
 
   const containerStyle = {
     position: "relative",
@@ -38,6 +45,7 @@ export default function PlantationImage({
     <div className={`plantation-img-container ${className}`} style={containerStyle}>
       {!hasError ? (
         <img
+          ref={imgRef}
           src={src}
           alt={alt}
           className={`plantation-img ${isLoaded ? "loaded" : "loading"}`}
@@ -45,9 +53,10 @@ export default function PlantationImage({
             width: "100%",
             height: "100%",
             objectFit: "cover",
+            objectPosition: "center",
             display: "block",
-            transition: "opacity 0.25s ease, transform 0.3s ease",
-            opacity: isLoaded ? 1 : 0.4,
+            transition: "opacity 0.2s ease, transform 0.3s ease",
+            opacity: isLoaded ? 1 : 0.85,
           }}
           onLoad={() => setIsLoaded(true)}
           onError={(e) => {

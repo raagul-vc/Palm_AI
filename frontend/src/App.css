@@ -7819,6 +7819,14 @@ html, body {
   margin-top: 4px;
 }
 
+.action-panel-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
 .action-panel-title {
   margin: 0;
   font-size: 12.5px;
@@ -7827,6 +7835,129 @@ html, body {
   align-items: center;
   gap: 6px;
   font-weight: 700;
+}
+
+.open-fac-link-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 12px;
+  height: 28px;
+  box-sizing: border-box;
+  background: rgba(16, 185, 129, 0.16);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  border-radius: 6px;
+  color: #34d399;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  vertical-align: middle;
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+}
+
+.open-fac-link-btn:hover {
+  background: rgba(16, 185, 129, 0.3);
+  border-color: #10b981;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+
+.open-fac-link-btn:focus-visible {
+  outline: 2px solid #10b981;
+  outline-offset: 1px;
+}
+
+.open-fac-link-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.directive-item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.directive-jump-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 4px 12px;
+  height: 28px;
+  box-sizing: border-box;
+  background: #059669;
+  border: 1px solid #10b981;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  vertical-align: middle;
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
+.directive-jump-btn:hover {
+  background: #10b981;
+  border-color: #34d399;
+  color: #042f1a;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(16, 185, 129, 0.35);
+}
+
+.directive-jump-btn:focus-visible {
+  outline: 2px solid #34d399;
+  outline-offset: 1px;
+}
+
+.directive-jump-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.directive-jump-btn.secondary {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.32);
+  color: #6ee7b7;
+  box-shadow: none;
+}
+
+.directive-jump-btn.secondary:hover {
+  background: rgba(16, 185, 129, 0.22);
+  border-color: rgba(16, 185, 129, 0.55);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+
+.directive-jump-btn.secondary:focus-visible {
+  outline: 2px solid #10b981;
+  outline-offset: 1px;
+}
+
+.directive-jump-btn.secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .action-directive-item {
@@ -8275,17 +8406,31 @@ html, body {
   display: flex;
   flex-direction: column;
   position: relative;
-  min-height: 280px;
-  max-height: 380px;
+  width: 100%;
   height: 100%;
+  min-height: 280px;
 }
 
 .tall-plantation-panel .plantation-img-container {
+  width: 100%;
   height: 100%;
   min-height: 280px;
-  max-height: 380px;
-  border-radius: 0;
+  flex: 1 1 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 14px;
   border: none;
+  background-color: #061a10;
+  position: relative;
+  overflow: hidden;
+}
+
+.tall-plantation-panel .plantation-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
 }
 
 .plantation-img-container {
@@ -8471,6 +8616,7 @@ html, body {
   .tall-plantation-panel {
     grid-column: span 1;
     min-height: 280px;
+    max-height: 380px;
   }
 }
 
