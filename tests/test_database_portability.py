@@ -28,10 +28,12 @@ from backend.database import (
     seed_default_data,
     hash_password,
     verify_password,
-    DualCursorWrapper
+    DualCursorWrapper,
+    check_db_health
 )
 from backend.auth import authenticate_user, get_user_from_token
 from backend.task_service import create_task, submit_task_inspection, review_task, get_task_by_id
+from backend.api import app
 
 
 class TestDatabasePortability(unittest.TestCase):
@@ -217,6 +219,72 @@ class TestDatabasePortability(unittest.TestCase):
             self.assertIsNotNone(r)
             self.assertEqual(r["status"], "COMPLETED")
         verify_conn.close()
+
+    def test_06_database_health_indicator_safety(self):
+        """
+        Verifies /api/health returns database status and engine safely
+        without ever exposing connection strings, credentials, or host details.
+        """
+        # 1. Direct health probe in SQLite mode
+        orig_url = os.environ.get("DATABASE_URL")
+        try:
+            if "DATABASE_URL" in os.environ:
+                del os.environ["DATABASE_URL"]
+
+            health = check_db_health()
+            self.assertEqual(health["status"], "connected")
+            self.assertEqual(health["engine"], "SQLite")
+            self.assertTrue(health["connected"])
+
+            # 2. Test via Flask API client
+            client = app.test_client()
+            res = client.get("/api/health")
+            self.assertEqual(res.status_code, 200)
+            data = res.get_json()
+
+            self.assertEqual(data["status"], "online")
+            self.assertEqual(data["database"], "connected")
+            self.assertEqual(data["database_engine"], "SQLite")
+            self.assertTrue(data["database_connected"])
+
+            # Verify all 7 sources are present
+            required_sources = {
+                "risk", "multi_source_risk", "nutrients", "dris",
+                "weather", "master_observations", "yield_model"
+            }
+            self.assertTrue(required_sources.issubset(set(data["sources"].keys())))
+
+            # Confirm zero credential / host leaks in payload
+            raw_payload = res.get_data(as_text=True)
+            self.assertNotIn("password", raw_payload.lower())
+            self.assertNotIn("postgres://", raw_payload)
+            self.assertNotIn("postgresql://", raw_payload)
+            self.assertNotIn(".db", raw_payload)
+
+            # 3. Simulate PostgreSQL mode with unreachable host to test graceful failure handling
+            os.environ["DATABASE_URL"] = "postgresql://dummy_user:super_secret@127.0.0.1:59999/dummy_db?connect_timeout=1"
+            pg_health = check_db_health()
+            self.assertEqual(pg_health["engine"], "PostgreSQL")
+            self.assertEqual(pg_health["status"], "disconnected")
+            self.assertFalse(pg_health["connected"])
+
+            pg_res = client.get("/api/health")
+            self.assertEqual(pg_res.status_code, 200)
+            pg_data = pg_res.get_json()
+            self.assertEqual(pg_data["database"], "disconnected")
+            self.assertEqual(pg_data["database_engine"], "PostgreSQL")
+            self.assertFalse(pg_data["database_connected"])
+
+            # Confirm no secret leaked during error
+            pg_raw = pg_res.get_data(as_text=True)
+            self.assertNotIn("super_secret", pg_raw)
+            self.assertNotIn("dummy_user", pg_raw)
+            self.assertNotIn("59999", pg_raw)
+        finally:
+            if orig_url is not None:
+                os.environ["DATABASE_URL"] = orig_url
+            elif "DATABASE_URL" in os.environ:
+                del os.environ["DATABASE_URL"]
 
 
 if __name__ == "__main__":

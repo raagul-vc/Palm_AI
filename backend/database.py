@@ -224,7 +224,7 @@ class DualConnectionWrapper:
         self.close()
 
 
-def get_db_connection():
+def get_db_connection(timeout: float = 10.0):
     """
     Returns a unified database connection.
     If DATABASE_URL is set, connects to PostgreSQL via psycopg v3 with dict_row factory.
@@ -237,7 +237,7 @@ def get_db_connection():
             )
         url = get_db_url()
         try:
-            raw_conn = psycopg.connect(url, row_factory=dict_row, connect_timeout=10)
+            raw_conn = psycopg.connect(url, row_factory=dict_row, connect_timeout=max(1, int(timeout)))
             return DualConnectionWrapper(raw_conn, is_pg=True)
         except Exception as e:
             masked = mask_database_url(url)
@@ -245,7 +245,7 @@ def get_db_connection():
     else:
         target_path = get_db_path()
         target_path.parent.mkdir(parents=True, exist_ok=True)
-        conn = sqlite3.connect(str(target_path), timeout=15.0)
+        conn = sqlite3.connect(str(target_path), timeout=timeout)
         conn.row_factory = sqlite3.Row
         conn.execute("PRAGMA foreign_keys = ON;")
         try:
@@ -253,6 +253,36 @@ def get_db_connection():
         except Exception:
             pass
         return DualConnectionWrapper(conn, is_pg=False)
+
+
+def check_db_health(timeout: float = 3.0) -> dict:
+    """
+    Safely probes database connectivity without leaking credentials, connection string, or host details.
+    Returns:
+        {
+            "connected": bool,
+            "engine": "PostgreSQL" | "SQLite",
+            "status": "connected" | "disconnected"
+        }
+    """
+    engine_name = "PostgreSQL" if is_postgres() else "SQLite"
+    try:
+        conn = get_db_connection(timeout=timeout)
+        cur = conn.cursor()
+        cur.execute("SELECT 1;")
+        cur.fetchone()
+        conn.close()
+        return {
+            "connected": True,
+            "engine": engine_name,
+            "status": "connected"
+        }
+    except Exception:
+        return {
+            "connected": False,
+            "engine": engine_name,
+            "status": "disconnected"
+        }
 
 
 def init_db():

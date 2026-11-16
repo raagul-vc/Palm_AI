@@ -27,7 +27,13 @@ else:
 DATA_DIR = BASE_DIR / "data"
 OUTPUT_DIR = BASE_DIR / "outputs"
 
-from backend.database import seed_default_data, get_db_connection, hash_password, safe_json_loads
+from backend.database import (
+    seed_default_data,
+    get_db_connection,
+    hash_password,
+    safe_json_loads,
+    check_db_health,
+)
 from backend.auth import (
     authenticate_user,
     logout_user,
@@ -141,9 +147,13 @@ def unavailable_object(payload, reason):
 
 @app.route("/api/health")
 def health():
+    db_health = check_db_health()
     return jsonify({
         "status": "online",
         "message": "Palm AI API is running",
+        "database": db_health["status"],
+        "database_engine": db_health["engine"],
+        "database_connected": db_health["connected"],
         "sources": {
             "risk": (OUTPUT_DIR / "block_health_risk.csv").exists(),
             "multi_source_risk": (OUTPUT_DIR / "multi_source_block_risk.csv").exists(),
