@@ -124,8 +124,9 @@ class TestHybridAuthAndProvisioning(unittest.TestCase):
         p_hash, salt = hash_password(test_pass)
         now = datetime.now(timezone.utc).isoformat()
 
+        self.cur.execute("DELETE FROM users WHERE id = 'USR-TEST-MGR' OR email = ?;", (test_email,))
         self.cur.execute("""
-            INSERT OR REPLACE INTO users (id, email, password_hash, salt, full_name, role, estate_permissions, block_permissions, is_active, created_at)
+            INSERT INTO users (id, email, password_hash, salt, full_name, role, estate_permissions, block_permissions, is_active, created_at)
             VALUES ('USR-TEST-MGR', ?, ?, ?, 'Test Manager', 'MANAGER', '["*"]', '["*"]', 1, ?);
         """, (test_email, p_hash, salt, now))
         self.conn.commit()
@@ -156,20 +157,23 @@ class TestHybridAuthAndProvisioning(unittest.TestCase):
         w_hash, w_salt = hash_password("WorkerPass2026!")
         m_hash, m_salt = hash_password("ManagerPass2026!")
 
+        self.cur.execute("DELETE FROM users WHERE id = 'USR-TEST-WRK1' OR email = ?;", (worker_email,))
         self.cur.execute("""
-            INSERT OR REPLACE INTO users (id, email, password_hash, salt, full_name, role, estate_permissions, block_permissions, is_active, created_at)
+            INSERT INTO users (id, email, password_hash, salt, full_name, role, estate_permissions, block_permissions, is_active, created_at)
             VALUES ('USR-TEST-WRK1', ?, ?, ?, 'Ahmad Worker', 'WORKER', '["North Estate (PT Palm Indo)"]', '["B001"]', 1, ?);
         """, (worker_email, w_hash, w_salt, now))
 
+        self.cur.execute("DELETE FROM users WHERE id = 'USR-TEST-MGR1' OR email = ?;", (mgr_email,))
         self.cur.execute("""
-            INSERT OR REPLACE INTO users (id, email, password_hash, salt, full_name, role, estate_permissions, block_permissions, is_active, created_at)
+            INSERT INTO users (id, email, password_hash, salt, full_name, role, estate_permissions, block_permissions, is_active, created_at)
             VALUES ('USR-TEST-MGR1', ?, ?, ?, 'Siti Manager', 'MANAGER', '["*"]', '["*"]', 1, ?);
         """, (mgr_email, m_hash, m_salt, now))
 
         # Create a task assigned to Ahmad
         task_id = "TSK-TEST-001"
+        self.cur.execute("DELETE FROM field_tasks WHERE task_id = ?;", (task_id,))
         self.cur.execute("""
-            INSERT OR REPLACE INTO field_tasks (
+            INSERT INTO field_tasks (
                 task_id, estate_id, block_id, title, source_issue, evidence_summary,
                 assigned_to_user_id, assigned_by_user_id, priority, due_date, status, created_at, updated_at
             ) VALUES (

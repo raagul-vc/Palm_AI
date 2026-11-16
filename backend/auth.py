@@ -77,6 +77,17 @@ def authenticate_user(email: str, password: str, ip_address: str = None) -> tupl
     return user_dict, token, None
 
 
+def safe_json_loads(val, default=None):
+    if val is None:
+        return default
+    if isinstance(val, (dict, list)):
+        return val
+    try:
+        return json.loads(val)
+    except Exception:
+        return default
+
+
 def get_user_from_token(token: str) -> dict | None:
     """Retrieves active user dict from valid session token."""
     if not token or str(token).strip().lower() in ("", "public-session", "null", "undefined"):
@@ -97,8 +108,13 @@ def get_user_from_token(token: str) -> dict | None:
     if not row:
         return None
 
-    # Check expiration
-    expires_at = datetime.fromisoformat(row["expires_at"].replace("Z", "+00:00"))
+    # Check expiration (resilient to string or datetime)
+    raw_exp = row["expires_at"]
+    if isinstance(raw_exp, datetime):
+        expires_at = raw_exp if raw_exp.tzinfo else raw_exp.replace(tzinfo=timezone.utc)
+    else:
+        expires_at = datetime.fromisoformat(str(raw_exp).replace("Z", "+00:00"))
+
     if datetime.now(timezone.utc) > expires_at:
         return None
 
@@ -107,8 +123,8 @@ def get_user_from_token(token: str) -> dict | None:
         "email": row["email"],
         "full_name": row["full_name"],
         "role": row["role"],
-        "estate_permissions": json.loads(row["estate_permissions"]),
-        "block_permissions": json.loads(row["block_permissions"])
+        "estate_permissions": safe_json_loads(row["estate_permissions"], ["*"]),
+        "block_permissions": safe_json_loads(row["block_permissions"], ["*"])
     }
 
 

@@ -15,6 +15,17 @@ def utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def safe_json_loads(val, default):
+    if val is None:
+        return default
+    if isinstance(val, (dict, list)):
+        return val
+    try:
+        return json.loads(val)
+    except Exception:
+        return default
+
+
 def list_tasks(user: dict, estate_id: str = None, block_id: str = None, status: str = None, priority: str = None) -> list[dict]:
     """Lists tasks filtered by user role and query parameters."""
     conn = get_db_connection()
@@ -81,7 +92,7 @@ def list_tasks(user: dict, estate_id: str = None, block_id: str = None, status: 
             "block_id": r["block_id"],
             "title": r["title"],
             "source_issue": r["source_issue"],
-            "evidence_summary": json.loads(r["evidence_summary"] or "{}"),
+            "evidence_summary": safe_json_loads(r["evidence_summary"], {}),
             "assigned_to_user_id": r["assigned_to_user_id"],
             "assignee_name": r["assignee_name"] or "Unassigned",
             "assignee_email": r["assignee_email"],
@@ -89,8 +100,8 @@ def list_tasks(user: dict, estate_id: str = None, block_id: str = None, status: 
             "creator_name": r["creator_name"],
             "priority": r["priority"],
             "due_date": r["due_date"],
-            "checklist": json.loads(r["checklist"] or "[]"),
-            "required_evidence": json.loads(r["required_evidence"] or "[]"),
+            "checklist": safe_json_loads(r["checklist"], []),
+            "required_evidence": safe_json_loads(r["required_evidence"], []),
             "status": r["status"],
             "worker_findings": r["worker_findings"],
             "worker_followup_notes": r["worker_followup_notes"],
@@ -174,7 +185,7 @@ def get_task_by_id(task_id: str, user: dict) -> dict | None:
         "block_id": r["block_id"],
         "title": r["title"],
         "source_issue": r["source_issue"],
-        "evidence_summary": json.loads(r["evidence_summary"] or "{}"),
+        "evidence_summary": safe_json_loads(r["evidence_summary"], {}),
         "assigned_to_user_id": r["assigned_to_user_id"],
         "assignee_name": r["assignee_name"] or "Unassigned",
         "assignee_email": r["assignee_email"],
@@ -183,8 +194,8 @@ def get_task_by_id(task_id: str, user: dict) -> dict | None:
         "reviewer_name": r["reviewer_name"],
         "priority": r["priority"],
         "due_date": r["due_date"],
-        "checklist": json.loads(r["checklist"] or "[]"),
-        "required_evidence": json.loads(r["required_evidence"] or "[]"),
+        "checklist": safe_json_loads(r["checklist"], []),
+        "required_evidence": safe_json_loads(r["required_evidence"], []),
         "status": r["status"],
         "worker_findings": r["worker_findings"],
         "worker_followup_notes": r["worker_followup_notes"],

@@ -27,7 +27,7 @@ else:
 DATA_DIR = BASE_DIR / "data"
 OUTPUT_DIR = BASE_DIR / "outputs"
 
-from backend.database import seed_default_data, get_db_connection, hash_password
+from backend.database import seed_default_data, get_db_connection, hash_password, safe_json_loads
 from backend.auth import (
     authenticate_user,
     logout_user,
@@ -1868,8 +1868,8 @@ def auth_users():
                 "email": r["email"],
                 "full_name": r["full_name"],
                 "role": r["role"],
-                "estate_permissions": json.loads(r["estate_permissions"] or "[]"),
-                "block_permissions": json.loads(r["block_permissions"] or "[]"),
+                "estate_permissions": safe_json_loads(r["estate_permissions"], []),
+                "block_permissions": safe_json_loads(r["block_permissions"], []),
                 "is_active": bool(r["is_active"])
             })
         return jsonify({"users": users_list})

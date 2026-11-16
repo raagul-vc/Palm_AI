@@ -10,3 +10,4 @@ pillow>=10.0.0
 torch
 torchvision
 ultralytics>=8.0.0
+psycopg[binary]>=3.1.18
