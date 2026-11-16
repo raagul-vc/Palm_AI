@@ -30,3 +30,4 @@ yolo11n.pt
 *.db
 *.png
 scratch/
+backups_audit/

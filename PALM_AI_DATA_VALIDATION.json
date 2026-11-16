@@ -1,0 +1,94 @@
+{
+  "validation_metadata": {
+    "project": "Palm AI Plantation Intelligence Platform",
+    "validation_timestamp": "2026-11-16T11:45:00Z",
+    "status": "VALIDATED_AND_VERIFIED",
+    "validator": "Antigravity Agronomic Data Integrity Suite"
+  },
+  "operational_dataset_integrity": {
+    "master_file": "data/Palm_AI_Master_FFB_Leaf_Soil_Weather.csv",
+    "total_records": 6552,
+    "total_columns": 63,
+    "operational_blocks_count": 42,
+    "block_id_range": ["B001", "B042"],
+    "observed_timeframe": {
+      "start_year": 2012,
+      "end_year": 2024,
+      "granularity": "Monthly block records"
+    },
+    "duplicate_monthly_records_count": 0,
+    "immature_tbm_records_count": 1800,
+    "immature_handling": "TBM immature plantings have zero yield by design and are excluded from mature yield modeling."
+  },
+  "foliar_leaf_sampling_validation": {
+    "raw_sampling_events_count": 256,
+    "master_leaf_flagged_rows": 3516,
+    "distinct_block_sample_years": 293,
+    "sampling_window": "2015-2022",
+    "boron_ppm_integrity": {
+      "status": "VALIDATED",
+      "missing_boron_blocks_count": 11,
+      "zero_boron_count": 0,
+      "handling": "Missing Boron values are strictly preserved as NaN / JSON null and are never silently converted to 0. Available nutrient count dynamically decrements from 6 to 5 without skewing the ratio."
+    }
+  },
+  "soil_chemical_survey_validation": {
+    "raw_soil_sampling_events_count": 23,
+    "soil_covered_blocks_count": 7,
+    "soil_covered_block_ids": ["B004", "B006", "B008", "B015", "B026", "B031", "B041"],
+    "unsampled_blocks_count": 35,
+    "unsampled_handling": "Soil data is strictly reported as observed field measurements for the 7 sampled blocks and marked Unavailable for the remaining 35 blocks. No blind imputation or synthetic soil fabrication is permitted."
+  },
+  "weather_evidence_policy": {
+    "dataset": "data/NASA_POWER_Monthly_Weather_Clean.csv",
+    "spatial_discrimination": "ZERO (identical station averages repeated for all 42 blocks)",
+    "risk_score_inclusion": "EXCLUDED",
+    "weather_risk_component_weight": 0.0,
+    "weather_component_value": null,
+    "reporting_status": "Reported as estate-level meteorological context only."
+  },
+  "canonical_risk_engine_formula": {
+    "architecture": "Decoupled Deterministic Weighted Screening Model",
+    "base_weights": {
+      "Yield_Risk_Component": 0.40,
+      "Nutrient_Risk_Component": 0.25,
+      "DRIS_Risk_Component": 0.15
+    },
+    "renormalization_rule": "Multi_Source_Risk_Score = sum(Component_i * Weight_i) / sum(Available_Weights)",
+    "score_boundaries": [0.0, 100.0],
+    "risk_level_thresholds": {
+      "HIGH": ">= 70.0",
+      "MEDIUM": "40.0 - < 70.0",
+      "LOW": "< 40.0"
+    },
+    "reproducibility": "100% bit-identical across runs",
+    "fleet_risk_counts": {
+      "total_blocks": 42,
+      "high_risk_count": 1,
+      "high_risk_blocks": ["B001"],
+      "medium_risk_count": 6,
+      "medium_risk_blocks": ["B005", "B014", "B019", "B028", "B029", "B030"],
+      "low_risk_count": 35
+    }
+  },
+  "remote_sensing_benchmark_isolation": {
+    "rgb_drone_module": {
+      "benchmark_origin": "MOPAD Site 2 (Malaysian Oil Palm Aerial Dataset)",
+      "model": "YOLO11n (drone/models/palm_yolo_best.pt)",
+      "validation_sample_size": 500,
+      "mAP50": 0.9799,
+      "block_mapping_status": "UNMAPPED",
+      "risk_influence_percentage": 0.0,
+      "justification": "Research benchmark imagery lacks GIS block boundary shapefiles, GPS ground control points, and temporal alignment with operational harvest records."
+    },
+    "multispectral_uav_module": {
+      "benchmark_origin": "MSUAV500K Altum 5-band (Hullerbusch, Germany)",
+      "tile_count": 34,
+      "vegetation_type": "European temperate beech forest (Fagus sylvatica)",
+      "block_mapping_status": "UNMAPPED",
+      "risk_influence_percentage": 0.0,
+      "label": "Technical Benchmark / Demonstration Only – German Beech Forest Dataset",
+      "justification": "Dataset was flown over a German temperate deciduous forest; zero geographical or botanical overlap with the tropical oil palm estate."
+    }
+  }
+}

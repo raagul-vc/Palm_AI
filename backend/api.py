@@ -87,6 +87,15 @@ def handle_500(e):
     return e
 
 
+@app.after_request
+def add_security_headers(response):
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "SAMEORIGIN"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
+
+
 def load_csv(filename):
     path = OUTPUT_DIR / filename
 
@@ -1098,7 +1107,18 @@ def predict_drone_image():
         class_counts.get("Dead", 0)
     )
     healthy_count = class_counts.get("Healthy", 0)
-    drone_health_score = round((healthy_count / palm_detections) * 100.0, 2) if palm_detections > 0 else 0.0
+    if palm_detections > 0:
+        drone_health_score = round((healthy_count / palm_detections) * 100.0, 2)
+        health_status = "EVALUATED"
+    else:
+        drone_health_score = 0.0
+        health_status = "NO_PALMS_DETECTED"
+
+    is_outlier = False
+    outlier_warning = None
+    if palm_detections > 0 and drone_health_score < 28.34:
+        is_outlier = True
+        outlier_warning = "Statistical density/boundary outlier (< 28.34% baseline threshold); not clinically confirmed disease."
 
     try:
         plotted_bgr = res.plot()
@@ -1117,6 +1137,9 @@ def predict_drone_image():
         "total_detections": total_detections,
         "palm_detections": palm_detections,
         "drone_health_score": drone_health_score,
+        "health_status": health_status,
+        "is_outlier": is_outlier,
+        "outlier_warning": outlier_warning,
         "healthy_count": healthy_count,
         "small_count": class_counts.get("Small", 0),
         "yellow_count": class_counts.get("Yellow", 0),
@@ -1910,16 +1933,9 @@ def auth_users():
 # =====================================================================
 
 @app.route("/api/tasks", methods=["GET", "POST"])
-@optional_auth
+@require_auth
 def api_tasks():
-    user = g.current_user or {
-        "id": "USR-ANON",
-        "email": "guest@palmai.com",
-        "full_name": "Guest Agronomist",
-        "role": "MANAGER",
-        "estate_permissions": ["*"],
-        "block_permissions": ["*"]
-    }
+    user = g.current_user
 
     if request.method == "GET":
         estate_id = request.args.get("estate_id")
@@ -1941,16 +1957,9 @@ def api_tasks():
 
 
 @app.route("/api/tasks/<task_id>", methods=["GET", "PATCH"])
-@optional_auth
+@require_auth
 def api_task_detail(task_id):
-    user = g.current_user or {
-        "id": "USR-ANON",
-        "email": "guest@palmai.com",
-        "full_name": "Guest Agronomist",
-        "role": "MANAGER",
-        "estate_permissions": ["*"],
-        "block_permissions": ["*"]
-    }
+    user = g.current_user
 
     task = task_service.get_task_by_id(task_id, user)
     if not task:
@@ -1966,6 +1975,12 @@ def api_task_detail(task_id):
     data = request.get_json(silent=True) or {}
     new_status = data.get("status")
     assigned_to = data.get("assigned_to_user_id")
+
+    if new_status and new_status.upper() in ("SUBMITTED", "APPROVED", "COMPLETED"):
+        return jsonify({
+            "error": f"Invalid status transition to '{new_status}'. Field submissions must use POST /api/tasks/<task_id>/submit and reviews must use POST /api/tasks/<task_id>/review.",
+            "code": "WORKFLOW_VIOLATION"
+        }), 400
 
     conn = get_db_connection()
     cur = conn.cursor()
@@ -1995,16 +2010,9 @@ def api_task_detail(task_id):
 
 
 @app.route("/api/tasks/<task_id>/submit", methods=["POST"])
-@optional_auth
+@require_auth
 def api_task_submit(task_id):
-    user = g.current_user or {
-        "id": "USR-WRK-01",
-        "email": "worker@palmai.com",
-        "full_name": "Senior Field Inspector Ahmad",
-        "role": "WORKER",
-        "estate_permissions": ["North Estate (PT Palm Indo)"],
-        "block_permissions": ["*"]
-    }
+    user = g.current_user
     data = request.get_json(silent=True) or {}
     task, err = task_service.submit_task_inspection(task_id, user, data)
     if err:
@@ -2013,16 +2021,9 @@ def api_task_submit(task_id):
 
 
 @app.route("/api/tasks/<task_id>/review", methods=["POST"])
-@optional_auth
+@require_auth
 def api_task_review(task_id):
-    user = g.current_user or {
-        "id": "USR-MGR-01",
-        "email": "manager@palmai.com",
-        "full_name": "Estate Agronomy Operations Manager",
-        "role": "MANAGER",
-        "estate_permissions": ["North Estate (PT Palm Indo)"],
-        "block_permissions": ["*"]
-    }
+    user = g.current_user
     if user["role"] not in ("ADMIN", "MANAGER"):
         return jsonify({"error": "Forbidden: Requires ADMIN or MANAGER role to review inspections."}), 403
 

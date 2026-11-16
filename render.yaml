@@ -9,6 +9,8 @@ services:
  
     healthCheckPath: /api/health
     envVars:
+      - key: PALM_AI_ENV
+        value: "production"
       - key: PYTHONUNBUFFERED
         value: "1"
       - key: WEB_CONCURRENCY
@@ -17,3 +19,7 @@ services:
         value: "/tmp/ultralytics"
       - key: MPLCONFIGDIR
         value: "/tmp/matplotlib"
+      # To enable persistent SQLite storage across deploys, attach a Render persistent disk
+      # and set PALM_AI_DB_PATH to the disk mount path (e.g. /var/data/palm_ai.db)
+      # - key: PALM_AI_DB_PATH
+      #   value: "/var/data/palm_ai.db"

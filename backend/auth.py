@@ -145,6 +145,8 @@ def check_estate_access(user: dict, estate_name: str) -> bool:
     """Checks if user has permission to access the given estate."""
     if not user or not estate_name:
         return False
+    if user.get("role") == "ADMIN":
+        return True
     perms = user.get("estate_permissions", [])
     return "*" in perms or estate_name in perms
 
@@ -153,11 +155,15 @@ def check_block_access(user: dict, block_id: str) -> bool:
     """Checks if user has permission to access the given block."""
     if not user or not block_id:
         return False
-    # Admins and Managers have estate-wide access to all blocks
-    if user.get("role") in ("ADMIN", "MANAGER"):
+    role = user.get("role")
+    if role == "ADMIN":
         return True
     perms = user.get("block_permissions", [])
-    return "*" in perms or block_id.upper() in [p.upper() for p in perms]
+    if role == "MANAGER":
+        return "*" in perms or block_id.upper() in [p.upper() for p in perms]
+    # WORKER: no wildcard permission bypass allowed
+    block_perms = [p.upper() for p in perms if p != "*"]
+    return block_id.upper() in block_perms
 
 
 def require_auth(f):

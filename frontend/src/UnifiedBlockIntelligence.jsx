@@ -185,7 +185,7 @@ export default function UnifiedBlockIntelligence({
   // Live / Deterministic AI Recommendations API State
   const [recommendations, setRecommendations] = useState(null);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
-  const [recError, setRecError] = useState(null);
+  const [_recError, setRecError] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -324,26 +324,10 @@ export default function UnifiedBlockIntelligence({
   const areaHa = num(riskRow?.Area_Ha, 36.0);
   const palmsCount = num(riskRow?.Productive_Palms, 4860);
 
-  // Nutritional Radar Data
-  const nutrientRadarData = useMemo(() => {
-    if (!nutrientsRow) return [];
-    return nutrientMeta.map((n) => {
-      const val = num(nutrientsRow[n.key]);
-      const mid = (n.minRef + n.maxRef) / 2.0;
-      const indexRatio = val != null ? Math.min(160, Math.max(30, (val / mid) * 100)) : 100;
-      return {
-        subject: n.label.split(" ")[0],
-        Actual: Math.round(indexRatio),
-        Optimal: 100,
-        status: nutrientsRow[n.statusKey] || "NORMAL",
-      };
-    });
-  }, [nutrientsRow]);
-
   // 5-Stage Action Directives
   const actionPlan = useMemo(() => {
     const items = [];
-    const mainConcern = multiRiskRow?.Main_Contributing_Indicators || riskRow?.Risk_Contributor || "Yield Gap Variance";
+    const _mainConcern = multiRiskRow?.Main_Contributing_Indicators || riskRow?.Risk_Contributor || "Yield Gap Variance";
     const recAction = multiRiskRow?.Recommended_Action || riskRow?.Recommended_Action || "Inspect block field conditions and review fertilizer program.";
 
     // Action 1: Primary Productivity / Risk Concern
@@ -455,8 +439,6 @@ export default function UnifiedBlockIntelligence({
     }
   };
 
-
-  const actualArea = areaHa;
 
   const sections = [
     { id: "section-risk", label: "1. Risk & Reasons", icon: ShieldAlert },

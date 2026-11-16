@@ -34,23 +34,22 @@ def list_tasks(user: dict, estate_id: str = None, block_id: str = None, status: 
 
     # Role-based scoping
     if user["role"] == "WORKER":
-        # Workers can only see tasks explicitly assigned to them OR within their permitted blocks
-        allowed_blocks = user.get("block_permissions", [])
-        if "*" in allowed_blocks:
-            query += " AND (t.assigned_to_user_id = ? OR 1=1)"
-            params.append(user["id"])
-        else:
-            placeholders = ",".join("?" for _ in allowed_blocks)
-            query += f" AND (t.assigned_to_user_id = ? OR t.block_id IN ({placeholders}))"
-            params.append(user["id"])
-            params.extend([b.upper() for b in allowed_blocks])
-    else:
-        # Managers & Admins: scope to authorized estates
+        # Workers can only access tasks explicitly assigned to them; no wildcard bypass
+        query += " AND t.assigned_to_user_id = ?"
+        params.append(user["id"])
+    elif user["role"] == "MANAGER":
+        # Managers: scope to authorized estates and blocks
         allowed_estates = user.get("estate_permissions", [])
         if "*" not in allowed_estates:
             placeholders = ",".join("?" for _ in allowed_estates)
             query += f" AND t.estate_id IN ({placeholders})"
             params.extend(allowed_estates)
+        allowed_blocks = user.get("block_permissions", [])
+        if "*" not in allowed_blocks:
+            placeholders = ",".join("?" for _ in allowed_blocks)
+            query += f" AND UPPER(t.block_id) IN ({placeholders})"
+            params.extend([b.upper() for b in allowed_blocks])
+    # Admins: access all tasks without restriction
 
     if estate_id:
         query += " AND t.estate_id = ?"
@@ -132,8 +131,16 @@ def get_task_by_id(task_id: str, user: dict) -> dict | None:
 
     # Check permission
     if user["role"] == "WORKER":
+        if r["assigned_to_user_id"] != user["id"]:
+            conn.close()
+            return None
+    elif user["role"] == "MANAGER":
+        allowed_estates = user.get("estate_permissions", [])
+        if "*" not in allowed_estates and r["estate_id"] not in allowed_estates:
+            conn.close()
+            return None
         allowed_blocks = user.get("block_permissions", [])
-        if "*" not in allowed_blocks and r["block_id"].upper() not in [b.upper() for b in allowed_blocks] and r["assigned_to_user_id"] != user["id"]:
+        if "*" not in allowed_blocks and r["block_id"].upper() not in [b.upper() for b in allowed_blocks]:
             conn.close()
             return None
 
@@ -272,6 +279,10 @@ def submit_task_inspection(task_id: str, user: dict, data: dict) -> tuple[dict |
         conn.close()
         return None, "Task not found."
 
+    if user["role"] == "WORKER" and row["assigned_to_user_id"] != user["id"]:
+        conn.close()
+        return None, "Forbidden: Workers may only submit inspection observations for tasks assigned to them."
+
     prev_status = row["status"]
     now = utc_now_iso()
 
@@ -304,14 +315,21 @@ def review_task(task_id: str, user: dict, decision: str, comments: str) -> tuple
     if decision not in ("APPROVE", "RETURN"):
         return None, "Decision must be APPROVE or RETURN."
 
+    if user["role"] not in ("ADMIN", "MANAGER"):
+        return None, "Forbidden: Only Managers and Admins can review tasks."
+
     conn = get_db_connection()
     cur = conn.cursor()
 
-    cur.execute("SELECT status FROM field_tasks WHERE task_id = ?;", (task_id,))
+    cur.execute("SELECT status, assigned_to_user_id FROM field_tasks WHERE task_id = ?;", (task_id,))
     row = cur.fetchone()
     if not row:
         conn.close()
         return None, "Task not found."
+
+    if row["assigned_to_user_id"] == user["id"]:
+        conn.close()
+        return None, "Forbidden: Task assignee cannot review or approve their own assigned task."
 
     prev_status = row["status"]
     new_status = "COMPLETED" if decision == "APPROVE" else "RETURNED"

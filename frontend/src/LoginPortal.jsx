@@ -6,14 +6,9 @@ import {
   Mail,
   KeyRound,
   UserCheck,
-  Users,
-  CheckCircle2,
   ArrowRight,
   Sparkles,
-  MapPin,
-  ClipboardCheck,
-  AlertTriangle,
-  FileText
+  AlertTriangle
 } from "lucide-react";
 import "./LoginPortal.css";
 

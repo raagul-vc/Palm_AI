@@ -1,35 +1,23 @@
 import React from "react";
 import {
-  Shield,
-  ShieldAlert,
-  ShieldCheck,
-  UserCheck,
   Users,
-  Layers,
   MapPin,
   ClipboardCheck,
   Database,
-  Camera,
-  Layers3,
   ArrowRight,
-  TrendingUp,
   AlertTriangle,
   CheckCircle2,
-  Clock,
-  Sparkles,
-  Sprout,
-  Activity,
   FileText
 } from "lucide-react";
 import "./RoleDashboard.css";
 
 export default function RoleDashboard({
   currentUser,
-  selectedEstate,
+  selectedEstate: _selectedEstate,
   onSelectEstate,
   onNavigate,
   onOpenBlock,
-  riskCounts = { total: 42, high: 1, medium: 6, low: 35 },
+  riskCounts: _riskCounts = { total: 42, high: 1, medium: 6, low: 35 },
   meanYield = 21.8,
   onOpenAuditModal,
   onOpenUserModal

@@ -33,4 +33,4 @@ RUN chown -R appuser:appuser /app/data /app/outputs
 
 USER appuser
 EXPOSE 10000
-CMD ["python", "-m", "gunicorn", "backend.api:app", "--bind", "0.0.0.0:10000", "--workers", "1", "--threads", "4", "--timeout", "120"]
+CMD ["sh", "-c", "exec python -m gunicorn backend.api:app --bind 0.0.0.0:${PORT:-10000} --workers ${WEB_CONCURRENCY:-1} --threads 4 --timeout 120"]

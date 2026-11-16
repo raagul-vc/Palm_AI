@@ -179,7 +179,11 @@ def seed_default_data():
 
     now = datetime.now(timezone.utc).isoformat()
 
-    # Default Accounts
+    is_prod = os.environ.get("PALM_AI_ENV", "").lower() == "production" or os.environ.get("RENDER", "").lower() == "true"
+    enable_demo = os.environ.get("PALM_AI_ENABLE_DEMO_ACCOUNTS", "false" if is_prod else "true").lower() in ("true", "1", "yes")
+    default_active = 1 if enable_demo else 0
+
+    # Default Accounts (disabled by default in production unless PALM_AI_ENABLE_DEMO_ACCOUNTS=true)
     seed_users = [
         {
             "id": "USR-ADMIN-01",
@@ -188,7 +192,8 @@ def seed_default_data():
             "full_name": "Chief Plantation Administrator",
             "role": "ADMIN",
             "estate_permissions": ["*"],
-            "block_permissions": ["*"]
+            "block_permissions": ["*"],
+            "is_active": default_active
         },
         {
             "id": "USR-MGR-01",
@@ -197,7 +202,8 @@ def seed_default_data():
             "full_name": "Estate Agronomy Operations Manager",
             "role": "MANAGER",
             "estate_permissions": ["North Estate (PT Palm Indo)"],
-            "block_permissions": ["*"]
+            "block_permissions": ["*"],
+            "is_active": default_active
         },
         {
             "id": "USR-WRK-01",
@@ -206,7 +212,8 @@ def seed_default_data():
             "full_name": "Senior Field Inspector Ahmad",
             "role": "WORKER",
             "estate_permissions": ["North Estate (PT Palm Indo)"],
-            "block_permissions": ["B001", "B005", "B012", "B019", "B020", "B028", "B030", "B031"]
+            "block_permissions": ["B001", "B005", "B012", "B019", "B020", "B028", "B030", "B031"],
+            "is_active": default_active
         },
         {
             "id": "USR-WRK-02",
@@ -215,7 +222,8 @@ def seed_default_data():
             "full_name": "Field Agronomist Budi",
             "role": "WORKER",
             "estate_permissions": ["North Estate (PT Palm Indo)"],
-            "block_permissions": ["*"]
+            "block_permissions": ["*"],
+            "is_active": default_active
         }
     ]
 
@@ -225,8 +233,8 @@ def seed_default_data():
         if not existing:
             p_hash, salt = hash_password(u["password"])
             cur.execute("""
-                INSERT INTO users (id, email, password_hash, salt, full_name, role, estate_permissions, block_permissions, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+                INSERT INTO users (id, email, password_hash, salt, full_name, role, estate_permissions, block_permissions, is_active, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """, (
                 u["id"],
                 u["email"],
@@ -236,6 +244,7 @@ def seed_default_data():
                 u["role"],
                 json.dumps(u["estate_permissions"]),
                 json.dumps(u["block_permissions"]),
+                u.get("is_active", 1),
                 now
             ))
 

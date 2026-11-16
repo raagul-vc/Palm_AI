@@ -129,12 +129,12 @@ export default function MultispectralHealthPage({ datasets, sourceStatus, loadSo
           <div className="provenance-banner-top">
             <ShieldAlert size={18} className="disclaimer-accent-icon text-amber" />
             <span className="provenance-banner-title">
-              DATASET PROVENANCE · MSUAV500K BENCHMARK (GERMAN BEECH FOREST)
+              Technical Benchmark / Demonstration Only – German Beech Forest Dataset
             </span>
             <span className="provenance-tag-pill">NOT OIL-PALM DATA</span>
           </div>
           <p className="disclaimer-text">
-            <strong>Dataset Origin:</strong> MSUAV500K Benchmark (Hullerbusch Beech Forest, Mecklenburg-Vorpommern, Germany — Zenodo Record 16743975 / DOI 10.5281/zenodo.16743974). This 5-band imagery represents a European temperate deciduous beech forest (<em>Fagus sylvatica</em>). It serves strictly as an algorithmic benchmark to demonstrate calibrated surface reflectance and vegetation index formulas (NDVI/NDRE). It is <strong>NOT oil-palm plantation data</strong>, is <strong>not mapped to Palm Plantation Block_ID</strong> (B001–B042), and contributes <strong>0% to canonical block risk</strong>.
+            <strong>Dataset Origin:</strong> Technical Benchmark / Demonstration Only – German Beech Forest Dataset (MSUAV500K Benchmark, Hullerbusch Beech Forest, Mecklenburg-Vorpommern, Germany — Zenodo Record 16743975 / DOI 10.5281/zenodo.16743974). This 5-band imagery represents a European temperate deciduous beech forest (<em>Fagus sylvatica</em>). It serves strictly as an algorithmic benchmark to demonstrate calibrated surface reflectance and vegetation index formulas (NDVI/NDRE). It is <strong>NOT oil-palm plantation data</strong>, is <strong>not mapped to Palm Plantation Block_ID</strong> (B001–B042), and contributes <strong>0% to canonical block risk</strong>.
           </p>
           <div className="provenance-meta-badges">
             <span className="prov-badge warning">
@@ -484,7 +484,7 @@ export default function MultispectralHealthPage({ datasets, sourceStatus, loadSo
                 <h2>MSUAV500K Benchmark Dataset Specifications</h2>
               </div>
               <span className="operational-tag">
-                German Beech Forest · Non-Oil Palm Data
+                Technical Benchmark / Demonstration Only – German Beech Forest Dataset
               </span>
             </div>
             <div className="benchmark-provenance-grid">
