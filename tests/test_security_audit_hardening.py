@@ -128,6 +128,11 @@ class SecurityHardeningTests(unittest.TestCase):
 
     def test_07_drone_prediction_safe_empty_image_handling(self):
         """Drone inference on a blank synthetic image handles zero detections safely."""
+        try:
+            import ultralytics
+        except ImportError:
+            raise unittest.SkipTest("ultralytics not installed in local environment")
+
         # Create small test image
         img = Image.new("RGB", (64, 64), color=(0, 0, 0))
         buf = io.BytesIO()

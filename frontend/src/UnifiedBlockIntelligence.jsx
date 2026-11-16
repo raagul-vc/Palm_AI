@@ -102,7 +102,11 @@ export default function UnifiedBlockIntelligence({
   selectedActionId,
   estateName = "North Estate (PT Palm Indo)",
   isLoading = false,
+  currentUser = null,
+  authToken = null,
+  onOpenLogin = null,
 }) {
+  const isAuthenticated = Boolean(authToken && currentUser && authToken !== "public-session");
   const [activeTab, setActiveTab] = useState("overview");
   const [showFormulaModal, setShowFormulaModal] = useState(false);
 
@@ -154,6 +158,10 @@ export default function UnifiedBlockIntelligence({
   }, [actionKey, currentBlockId]);
 
   const handleSaveInspection = (newStatus = actionStatus) => {
+    if (!isAuthenticated) {
+      if (onOpenLogin) onOpenLogin();
+      return;
+    }
     const updated = {
       ...actionRecords,
       [actionKey]: {
@@ -1224,6 +1232,15 @@ export default function UnifiedBlockIntelligence({
                 <h4>Record Field Inspection &amp; Update Status</h4>
               </div>
               <div className="subcard-content">
+                {!isAuthenticated && (
+                  <div className="ubi-auth-banner">
+                    <ShieldAlert size={14} className="text-amber" />
+                    <span>Public Read-Only: Sign in to record inspection observations or complete directives.</span>
+                    <button type="button" className="ubi-auth-signin-link" onClick={onOpenLogin}>
+                      Sign In
+                    </button>
+                  </div>
+                )}
                 {/* Status Toggle Row */}
                 <div className="form-group">
                   <label className="form-label">Workflow Status:</label>

@@ -4,7 +4,7 @@ import {
   Sprout, ScanSearch, Layers3, ArrowUpRight, ArrowRight, RotateCcw, Sparkles,
   ShieldAlert, Info, Calendar, ChevronRight, AlertTriangle, UserCheck,
   FileText, ExternalLink, ShieldCheck, CheckSquare, Square, Search, XCircle,
-  ArrowUpDown, Check, RefreshCw
+  ArrowUpDown, Check, RefreshCw, Lock
 } from "lucide-react";
 import "./FieldActionCenter.css";
 
@@ -356,8 +356,9 @@ function exportDirectivesCsv(items, records) {
   URL.revokeObjectURL(url);
 }
 
-export default function FieldActionCenter({ datasets, onNavigateBlock, currentUser, authToken }) {
+export default function FieldActionCenter({ datasets, onNavigateBlock, currentUser, authToken, onOpenLogin }) {
   const allItems = useMemo(() => buildActionItems(datasets), [datasets]);
+  const isAuthenticated = Boolean(authToken && currentUser && authToken !== "public-session");
 
   // Persistent storage for field verification statuses and follow-up tracking
   const [records, setRecords] = useState(() => {
@@ -429,6 +430,10 @@ export default function FieldActionCenter({ datasets, onNavigateBlock, currentUs
 
   // Update status for a specific item
   const updateStatus = useCallback((id, newStatus) => {
+    if (!isAuthenticated) {
+      if (onOpenLogin) onOpenLogin();
+      return;
+    }
     const completedTimestamp = newStatus === "COMPLETED" ? new Date().toLocaleString() : null;
     setRecords((prev) => {
       const current = prev[id] || {};
@@ -463,10 +468,14 @@ export default function FieldActionCenter({ datasets, onNavigateBlock, currentUs
         })
         .catch(() => {});
     }
-  }, [authToken]);
+  }, [authToken, isAuthenticated, onOpenLogin]);
 
   // Update inspector name, date, and notes
   const updateDetails = useCallback((id, field, value) => {
+    if (!isAuthenticated) {
+      if (onOpenLogin) onOpenLogin();
+      return;
+    }
     setRecords((prev) => {
       const current = prev[id] || {};
       return {
@@ -477,10 +486,14 @@ export default function FieldActionCenter({ datasets, onNavigateBlock, currentUs
         }
       };
     });
-  }, []);
+  }, [isAuthenticated, onOpenLogin]);
 
   // Save follow-up tracking feedback
   const handleSaveFollowUp = (id) => {
+    if (!isAuthenticated) {
+      if (onOpenLogin) onOpenLogin();
+      return;
+    }
     setSaveFeedback((prev) => ({ ...prev, [id]: true }));
     setTimeout(() => {
       setSaveFeedback((prev) => ({ ...prev, [id]: false }));
@@ -682,6 +695,29 @@ export default function FieldActionCenter({ datasets, onNavigateBlock, currentUs
           </div>
         </div>
       </section>
+
+      {/* PUBLIC GUEST / AUTHENTICATION NOTICE BANNER */}
+      {!isAuthenticated && (
+        <section className="fac-auth-required-banner">
+          <div className="fac-auth-banner-left">
+            <ShieldAlert size={20} className="text-amber" />
+            <div className="fac-auth-banner-text">
+              <strong className="fac-auth-banner-title">Operational Directives — Public Read-Only Mode</strong>
+              <p className="fac-auth-banner-desc">
+                Public visitors can inspect block directives, AI recommendations, and evidence matrices. To update directive statuses, record inspector observations, or approve completions, please sign in with authorized operational credentials.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="fac-auth-signin-action-btn"
+            onClick={onOpenLogin}
+          >
+            <Lock size={13} />
+            <span>Sign In to Manage Directives</span>
+          </button>
+        </section>
+      )}
 
       {/* 2. TOOLBAR & CONTROLS (SORTING, FILTERING, SEARCH, EXPORT) */}
       <section className="fac-toolbar">

@@ -248,6 +248,35 @@ def seed_default_data():
                 now
             ))
 
+    # Environment-based Initial Admin Provisioning (One-Time Bootstrap only)
+    # Strictly checks that 0 active ADMINs exist before provisioning.
+    # Never overwrites or resets an existing active admin password.
+    env_admin_email = os.environ.get("PALM_AI_ADMIN_EMAIL", "").strip().lower()
+    env_admin_pass = os.environ.get("PALM_AI_ADMIN_PASSWORD", "")
+    if env_admin_email and env_admin_pass:
+        cur.execute("SELECT COUNT(*) as cnt FROM users WHERE role = 'ADMIN' AND is_active = 1;")
+        active_cnt = (cur.fetchone() or {})["cnt"]
+        if active_cnt == 0:
+            cur.execute("SELECT id, is_active FROM users WHERE email = ?;", (env_admin_email,))
+            existing_user = cur.fetchone()
+            p_hash, salt = hash_password(env_admin_pass)
+            if existing_user and existing_user["is_active"] == 0:
+                cur.execute("""
+                    UPDATE users
+                    SET password_hash = ?, salt = ?, role = 'ADMIN', is_active = 1, updated_at = ?
+                    WHERE id = ?;
+                """, (p_hash, salt, now, existing_user["id"]))
+            elif not existing_user:
+                new_adm_id = f"USR-ADM-{secrets.token_hex(2).upper()}"
+                cur.execute("""
+                    INSERT INTO users (id, email, password_hash, salt, full_name, role, estate_permissions, block_permissions, is_active, created_at)
+                    VALUES (?, ?, ?, ?, 'Enterprise Administrator', 'ADMIN', '["*"]', '["*"]', 1, ?);
+                """, (new_adm_id, env_admin_email, p_hash, salt, now))
+            cur.execute("""
+                INSERT INTO audit_events (user_id, event_type, details, timestamp)
+                VALUES ('SYSTEM', 'BOOTSTRAP_ADMIN_PROVISIONED', 'Initial admin account provisioned via secure environment bootstrap', ?);
+            """, (now,))
+
     # Seed Initial Evidence-Grounded Operational Field Tasks
     seed_tasks = [
         {

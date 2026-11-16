@@ -170,6 +170,11 @@ class DroneHealthApiTests(unittest.TestCase):
 
     def test_drone_predict_endpoint(self):
         """Test POST /api/drone/predict with an actual aerial survey image."""
+        try:
+            import ultralytics
+        except ImportError:
+            raise unittest.SkipTest("ultralytics not installed in local environment")
+
         img_path = BASE / "drone" / "outputs" / "yolo_error_analysis" / "class_confusions" / "44000_16000_149_2457_confusion_1.jpg"
         self.assertTrue(img_path.exists(), f"Sample test image missing at {img_path}")
 

@@ -29,7 +29,10 @@ import {
   HelpCircle,
   Clock,
   ClipboardCheck,
-  Database
+  Database,
+  Lock,
+  LogOut,
+  UserCheck
 } from "lucide-react";
 import {
   LineChart,
@@ -45,6 +48,7 @@ import {
 } from "recharts";
 import UnifiedBlockIntelligence from "./UnifiedBlockIntelligence";
 import FieldActionCenter from "./FieldActionCenter";
+import LoginPortal from "./LoginPortal";
 import MultiSourceEvidencePage from "./MultiSourceEvidencePage";
 import DroneHealthPage from "./DroneHealthPage";
 import MultispectralHealthPage from "./MultispectralHealthPage";
@@ -201,23 +205,63 @@ export default function App() {
     }
   });
 
-  // Enterprise Operations State (No user login required)
+  // Enterprise Operations Authentication State (Hybrid Public + Role Access)
   const [authToken, setAuthToken] = useState(() => {
     try {
-      return sessionStorage.getItem("palm_ai_auth_token") || "public-session";
+      const stored = sessionStorage.getItem("palm_ai_auth_token");
+      if (stored && stored !== "public-session") return stored;
+      return null;
     } catch {
-      return "public-session";
+      return null;
     }
   });
 
-  const [currentUser, setCurrentUser] = useState(() => ({
-    id: "USR-PUBLIC-01",
-    email: "operations@palmai.com",
-    full_name: "Plantation Operations Manager",
-    role: "MANAGER",
-    estate_permissions: ["North Estate (PT Palm Indo)"],
-    block_permissions: ["*"]
-  }));
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const stored = sessionStorage.getItem("palm_ai_user");
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [showLoginModal, setShowLoginModal] = useState(() => {
+    const hash = window.location.hash.replace(/^#/, "").trim();
+    return hash === "login";
+  });
+
+  const isAuthenticated = Boolean(authToken && currentUser && authToken !== "public-session");
+
+  const handleLoginSuccess = (user, token) => {
+    setCurrentUser(user);
+    setAuthToken(token);
+    try {
+      sessionStorage.setItem("palm_ai_user", JSON.stringify(user));
+      if (token) {
+        sessionStorage.setItem("palm_ai_auth_token", token);
+      }
+    } catch {
+      // Storage fallback
+    }
+    setShowLoginModal(false);
+  };
+
+  const handleLogout = async () => {
+    try {
+      if (authToken && authToken !== "public-session") {
+        await fetch(`${API_BASE}/auth/logout`, {
+          method: "POST",
+          headers: { "Authorization": `Bearer ${authToken}` }
+        }).catch(() => {});
+      }
+      sessionStorage.removeItem("palm_ai_user");
+      sessionStorage.removeItem("palm_ai_auth_token");
+    } catch {
+      // Storage fallback
+    }
+    setCurrentUser(null);
+    setAuthToken(null);
+  };
 
   // Navigation State: default to 'estates' on fresh session until estate is chosen
   const [viewLevel, setViewLevel] = useState(() => {
@@ -679,6 +723,37 @@ export default function App() {
           ) : null}
 
 
+
+          {/* Authentication Badge & Controls */}
+          {isAuthenticated ? (
+            <div className="topbar-auth-pill">
+              <span className={`topbar-role-badge badge-${(currentUser?.role || "user").toLowerCase()}`}>
+                {currentUser?.role}
+              </span>
+              <span className="topbar-user-name" title={currentUser?.email}>
+                {currentUser?.full_name?.split(" ")[0] || currentUser?.email?.split("@")[0] || "User"}
+              </span>
+              <button
+                type="button"
+                className="topbar-signout-btn"
+                onClick={handleLogout}
+                title="Sign out of operational session"
+              >
+                <LogOut size={12} />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="topbar-signin-btn"
+              onClick={() => setShowLoginModal(true)}
+              title="Sign in with enterprise credentials for operational task management"
+            >
+              <Lock size={13} />
+              <span>Sign In</span>
+            </button>
+          )}
 
           <div className="telemetry-pill">
             <span className="telemetry-dot" />
@@ -1448,6 +1523,7 @@ export default function App() {
               isLoading={isLoading}
               currentUser={currentUser}
               authToken={authToken}
+              onOpenLogin={() => setShowLoginModal(true)}
             />
           )
         )}
@@ -1466,6 +1542,7 @@ export default function App() {
               datasets={datasets}
               currentUser={currentUser}
               authToken={authToken}
+              onOpenLogin={() => setShowLoginModal(true)}
               onNavigateBlock={(bid, actionId) => navigateTo("block-detail", bid, actionId)}
             />
           )
@@ -1516,6 +1593,18 @@ export default function App() {
           />
         )}
       </main>
+
+      {/* ENTERPRISE LOGIN MODAL DIALOG */}
+      {showLoginModal && (
+        <div className="login-modal-overlay" onClick={() => setShowLoginModal(false)}>
+          <div className="login-modal-box" onClick={(e) => e.stopPropagation()}>
+            <LoginPortal
+              onLoginSuccess={handleLoginSuccess}
+              onCancel={() => setShowLoginModal(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

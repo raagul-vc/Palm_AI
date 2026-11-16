@@ -79,7 +79,7 @@ def authenticate_user(email: str, password: str, ip_address: str = None) -> tupl
 
 def get_user_from_token(token: str) -> dict | None:
     """Retrieves active user dict from valid session token."""
-    if not token:
+    if not token or str(token).strip().lower() in ("", "public-session", "null", "undefined"):
         return None
 
     conn = get_db_connection()
@@ -135,10 +135,15 @@ def logout_user(token: str) -> bool:
 def extract_token_from_request() -> str | None:
     """Extracts bearer token from headers or query parameters."""
     auth_header = request.headers.get("Authorization", "")
+    token = None
     if auth_header.startswith("Bearer "):
-        return auth_header[7:].strip()
-    # Fallback to custom header or query param
-    return request.headers.get("X-Palm-Session-Token") or request.args.get("auth_token")
+        token = auth_header[7:].strip()
+    elif not token:
+        token = request.headers.get("X-Palm-Session-Token") or request.args.get("auth_token")
+
+    if token and token.strip().lower() in ("", "public-session", "null", "undefined"):
+        return None
+    return token
 
 
 def check_estate_access(user: dict, estate_name: str) -> bool:
